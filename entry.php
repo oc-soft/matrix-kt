@@ -3,14 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Mine sweeper One day</title>
-  <script data-main="entry" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js"></script>
+  <link rel="stylesheet" type="text/css" href="entry.css">
+  <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+  <script data-main="entry"
+    src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js">
+    </script>
+
+
+  <script data-main="entry"
+    src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js">
+    </script>
+
 </head>
 <?php
 
 ?>
 
 <body>
-<p>Hello world from <?php print('php'); ?></p>
+<canvas id="game_grid" width="640" height="480" ></canvas>
 </body>
 
 </html>

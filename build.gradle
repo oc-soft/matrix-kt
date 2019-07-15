@@ -16,7 +16,7 @@ repositories {
 
 kotlin {
     jvm()
-    js {
+    js() {
         compilations.main.kotlinOptions {
             moduleKind='amd'
         }
@@ -36,8 +36,24 @@ kotlin {
                 implementation kotlin('test-js')
             }
         }
+        jsMain {
+            dependencies {
+                implementation kotlin('stdlib')
+                implementation kotlin('stdlib-js')
+                implementation 'org.jetbrains.kotlinx:kotlinx-html-js:0.6.12'
+            }
+        }
+        jvmMain {
+        }
     }
 }
     
-
+allprojects {
+    task hello {
+        doLast {
+            task ->
+                println "$task.project.name"
+        }   
+    }
+}
 
