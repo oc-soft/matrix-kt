@@ -39,7 +39,13 @@ class Grid {
      */
     var squareColorBuffer : WebGLBuffer? = null
 
+    /**
+     * vertex indices for cube
+     */
+    var boxIndexBuffer : WebGLBuffer? = null
+
     var matrixRotation : Float = 0f
+    
     /**
      * initialize gl context
      */
@@ -145,10 +151,13 @@ class Grid {
         
     private fun setupBuffer(gl: WebGLRenderingContext) {
        squareBuffer = createSimpleRectBuffer(gl)
-       squareColorBuffer = createSimpleColorBuffer(gl)  
+       squareColorBuffer = createSimpleColorBuffer(gl)
+       boxIndexBuffer = createSimpleIndicesBuffer(gl)
     }
     private fun teardownBuffer(gl: WebGLRenderingContext) {
-        arrayOf(squareBuffer, squareColorBuffer).forEach({ buffer ->
+        arrayOf(squareBuffer, 
+            squareColorBuffer, 
+            boxIndexBuffer).forEach({ buffer ->
             if (buffer != null) {
                 gl.deleteBuffer(buffer)
             }
@@ -161,25 +170,79 @@ class Grid {
         if (result != null) {
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
                 result)
-            val pos = arrayOf(
-                1.0f, 1.0f,
-                -1.0f, 1.0f,
-                1.0f, -1.0f,
-                -1.0f, -1.0f)
+            val pos : Array<Float> = arrayOf(
+                -1.0f, -1.0f, 1f,
+                1.0f, -1.0f, 1f,
+                1.0f, 1.0f, 1f,
+                -1.0f, 1.0f, 1f,
+
+                -1.0f, -1.0f, -1f,
+                -1.0f, 1.0f, -1f,
+                1.0f, 1.0f, -1f,
+                1.0f, -1.0f, -1f,
+
+        -1f, 1f, -1f,
+        -1f, 1f, 1f,
+        1f, 1f, 1f,
+        1f, 1f, -1f,
+
+        // Bottom face
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+  
+        // Right face
+        1.0f, -1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f,
+  
+        // Left face
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f)
             gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
                 Float32Array(pos), WebGLRenderingContext.STATIC_DRAW) 
         }
+        return result
+    }
+    private fun createSimpleIndicesBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val indices: Array<Short> = arrayOf<Short>(    
+            0,  1,  2,      0,  2,  3,    // front
+            4,  5,  6,      4,  6,  7,    // back
+            8,  9,  10,     8,  10, 11,   // top
+            12, 13, 14,     12, 14, 15,   // bottom
+            16, 17, 18,     16, 18, 19,   // right
+            20, 21, 22,     20, 22, 23   // left
+        )
+        val result = gl.createBuffer()
+        gl.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, result)
+
+        gl.bufferData(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+            Uint16Array(indices),
+            WebGLRenderingContext.STATIC_DRAW)
         return result
     }
     private fun createSimpleColorBuffer(
         gl: WebGLRenderingContext): WebGLBuffer? {
         val result = gl.createBuffer()
         if (result != null) {
-            val colors = arrayOf(
-                1.0f, 1.0f, 1.0f, 1.0f,
-                1.0f, 0.0f, 0.0f, 1.0f,
-                0.0f, 1.0f, 0.0f, 1.0f,    
-                0.0f, 0.0f, 1.0f, 1.0f)
+            val colorElem = arrayOf<Array<Float>>(
+                arrayOf(1.0f, 1.0f, 1.0f, 1.0f),
+                arrayOf(1.0f, 0.0f, 0.0f, 1.0f),
+                arrayOf(0.0f, 1.0f, 0.0f, 1.0f), 
+                arrayOf(0.0f, 0.0f, 1.0f, 1.0f),
+                arrayOf(1.0f, 1.0f, 0.0f, 1.0f),
+                arrayOf(1.0f, 0.0f, 1.0f, 1.0f))
+            val colors = Array(colorElem.size 
+                * colorElem[0].size * 4) {
+                i ->
+                colorElem[i / (colorElem[0].size * 4)][i % colorElem[0].size]
+            }
+                 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
             gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
                 Float32Array(colors),
@@ -201,7 +264,7 @@ class Grid {
 
             gl.vertexAttribPointer(
                 verLoc,
-                2,
+                3,
                 WebGLRenderingContext.FLOAT,
                 false,
                 0, 0)
@@ -216,10 +279,17 @@ class Grid {
                 false,
                 0, 0)
             gl.enableVertexAttribArray(verColor)
+
+
+            gl.bindBuffer(
+                WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+                boxIndexBuffer)
+
             gl.useProgram(shaderProg)
 
             updateViewMatrix(gl)
-            gl.drawArrays(WebGLRenderingContext.TRIANGLE_STRIP, 0, 4) 
+            gl.drawElements(WebGLRenderingContext.TRIANGLES, 36, 
+                WebGLRenderingContext.UNSIGNED_SHORT, 0) 
         }         
     }
     private fun updateViewMatrix(gl: WebGLRenderingContext) {
@@ -241,6 +311,10 @@ class Grid {
  
             mat4.rotate(modelMat, modelMat, matrixRotation,
                 vec3.fromValues(0, 0, 1)) 
+
+            mat4.rotate(modelMat, modelMat, matrixRotation * .7f,
+                vec3.fromValues(0, 1, 0))  
+
             gl.uniformMatrix4fv(uProjMat, false,
                 projMat as Float32Array)
                     
