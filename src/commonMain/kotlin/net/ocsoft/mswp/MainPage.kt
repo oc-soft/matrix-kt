@@ -7,6 +7,6 @@ expect class MainPage() {
     /**
      * setup body page
      */
-    fun setupBody(model: Model, camera: Camera)
+    fun setupBody(model: Model, camera: Camera, pointLight: PointLight)
 }
 

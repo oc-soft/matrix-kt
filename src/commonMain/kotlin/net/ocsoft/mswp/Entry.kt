@@ -7,7 +7,8 @@ fun main(args: Array<String>) {
    	val model = Model() 
     val mainPage = MainPage()
 	val boardCam = Camera()
-    mainPage.setupBody(model, boardCam)
+    val pointLight = PointLight()
+    mainPage.setupBody(model, boardCam, pointLight)
 }
 
 	

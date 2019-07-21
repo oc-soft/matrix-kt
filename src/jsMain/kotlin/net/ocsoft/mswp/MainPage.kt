@@ -8,13 +8,12 @@ import net.ocsoft.mswp.ui.Grid
 actual class MainPage {
 		
 	var grid : Grid? = null
-		set(value) {
-		}
 
-    actual fun setupBody(model : Model, camera: Camera) {
+    actual fun setupBody(model : Model, camera: Camera, 
+        pointLight: PointLight) {
 		jQuery({ 
 			val grid = Grid()
-			grid.bind("#game_grid", model, camera)
+			grid.bind("#game_grid", model, camera, pointLight)
     	})
     }
 }

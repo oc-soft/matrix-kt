@@ -7,14 +7,20 @@ package net.ocsoft.mswp
 class Camera(fieldOfView: Float = 45 * kotlin.math.PI.toFloat() / 180,
     aspect: Float = 2f,
     zNear: Float = 0.1f,
-    zFar: Float = 100f) {
+    zFar: Float = 100f,
+    eye: FloatArray = floatArrayOf(0f, 0f, 12f),
+    center: FloatArray = floatArrayOf(0f, 0f, 0f),
+    up: FloatArray = floatArrayOf(0f, 1f, 0f)) {
 
     companion object {
         val EVENT_NAMES = arrayOf(
             "fieldOfView",
             "aspect",
             "zNear",
-            "zFar")
+            "zFar",
+            "eye",
+            "center",
+            "up")
     }
     /**
      * field of view
@@ -56,6 +62,40 @@ class Camera(fieldOfView: Float = 45 * kotlin.math.PI.toFloat() / 180,
                this.notify("zFar")
             }
         }
+
+    /**
+     * eye
+     */
+    var eye = eye.copyOf(3)
+        set(value) {
+            if (!value.equals(field)) {
+                field = value.copyOf(3)
+                this.notify("eye")
+            }
+        }
+     
+    /**
+     * center 
+     */
+    var center = center.copyOf(3)
+        set(value) {
+            if (!value.equals(field)) {
+                field = value.copyOf(3)
+                this.notify("center")
+            }
+        }
+    /**
+     * up 
+     */
+    var up = up.copyOf(3)
+        set(value) {
+            if (!value.equals(field)) {
+                field = value.copyOf(3)
+                this.notify("up")
+            }
+        }
+      
+    
     /**
      * event listeners
      */
