@@ -15,7 +15,8 @@ repositories {
 }
 
 kotlin {
-    jvm()
+    jvm() {
+    }
     js() {
         compilations.main.kotlinOptions {
             moduleKind='amd'
@@ -44,16 +45,50 @@ kotlin {
             }
         }
         jvmMain {
+            dependencies {
+               implementation kotlin('stdlib') 
+               implementation 'javax.servlet:javax.servlet-api:4.0.1'
+            }
         }
+    }
+    targets.all {
+        
     }
 }
     
 allprojects {
-    task hello {
+    task hello1 {
         doLast {
             task ->
                 println "$task.project.name"
         }   
     }
 }
+
+class GreetingToFileTask extends DefaultTask {
+    def dest
+
+    File getDestination() {
+        project.file(dest)
+    }
+    @TaskAction
+    def myTask() {
+        def file = getDestination()
+        file.parentFile.mkdirs()
+        file.write 'Good evening!'
+    }
+}
+
+task myTask(type: GreetingToFileTask) {
+    dest  = { project.greetingFile }
+}
+
+
+task sayGreeting(dependsOn: myTask) {
+    doLast {
+        println file(greetingFile).text
+    }
+}
+
+ext.greetingFile = "$buildDir/hello.txt"
 

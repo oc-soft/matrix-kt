@@ -6,22 +6,26 @@ import org.khronos.webgl.*
 import jQuery
 import net.ocsoft.mswp.*
 import kotlin.browser.*
+import net.ocsoft.mswp.ui.grid.*
 
 typealias GLRctx = WebGLRenderingContext
 
 /**
  * game play ground grid
  */
-class Grid(val rowCount: Int = 4,
-    val columnCount: Int = 4,
-    mineButton: MineButton = MineButton(),
+class Grid(rowCount: Int = 4,
+    columnCount: Int = 4,
+    val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
+    floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f)),
     board: Board = Board(),
-    val buttonGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
-    val buttonZGap: FloatArray = floatArrayOf(0.01f, 0.005f),
     val renderingCtx: RenderingCtx = RenderingCtx()) {
     var model : Model? = null
+    /**
+     * open gl shader programs
+     */
+    var shaderPrograms : ShaderPrograms? = null
 
     var camera : Camera? = null
         set(value) {
@@ -43,53 +47,54 @@ class Grid(val rowCount: Int = 4,
             }
         }
     /**
-     * button element
+     * buttons row count
      */
-    var mineButton = mineButton
+    val rowCount: Int
+        get() {
+            return buttons.rowCount
+        }
+    /**
+     * buttons column count
+     */
+    val columnCount: Int
+        get() {
+            return buttons.columnCount
+        }
 
     /**
      * game board
      */
     var board = board 
+
+    var display = Display(renderingCtx, buttons, board)
     /**
      * total button size
      */
     val totalButtonSize : FloatArray
         get() {
-            val buttonSize = mineButton.buttonSize
-            return floatArrayOf(
-                buttonSize[0] * columnCount,
-                buttonSize[1] * rowCount)
+            return buttons.totalButtonSize
         }
     /**
      * total gap size
      */
-    val totalGapSize : FloatArray
+    val totalButtonsGapSize : FloatArray
         get() {
-            val totalButtonSize = this.totalButtonSize
-            val columnRows = arrayOf(columnCount, rowCount)
-            return totalButtonSize.mapIndexed({
-                i, value ->
-                    value * buttonGap[i] * (columnRows[i] - 1)
-            }).toFloatArray()
+            return buttons.totalGapSize
         }
     /**
      * gap for drawing
      */
     val gapForDrawing : FloatArray
         get() {
-            val totalButtonSize = this.totalButtonSize
-            return totalButtonSize.mapIndexed(
-                { i, value -> buttonGap[i] * value }).toFloatArray()
+            val buttonsTotalGap = buttons.gapForDrawing
+            return buttonsTotalGap
         } 
     /**
      * button z gap for drawing
      */ 
     val buttonZGapForDrawing : FloatArray
         get() {
-            val totalButtonSize = this.totalButtonSize
-            val maxSize = totalButtonSize.max() as Float
-            return buttonZGap.map({ it * maxSize }).toFloatArray()
+           return buttons.zGapForDrawing
         }
     /**
      * border size
@@ -113,7 +118,7 @@ class Grid(val rowCount: Int = 4,
     val boardSize : FloatArray
         get() {
             val totalButtonSize = this.totalButtonSize
-            val totalGapSize = this.totalGapSize
+            val totalGapSize = this.totalButtonsGapSize
             val borderSize = this.borderSize
             val boardEdgeSize = this.boardEdgeSize 
             
@@ -193,10 +198,12 @@ class Grid(val rowCount: Int = 4,
     fun bind(nodeQuery: String, 
         model: Model,
         camera: Camera,
-        pointLight: PointLight) {
+        pointLight: PointLight,
+        shaderPrograms: ShaderPrograms) {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight
+        this.shaderPrograms
         jQuery({
             val canvasNode = jQuery(nodeQuery)
             val canvas = canvasNode[0] as HTMLCanvasElement
@@ -246,7 +253,7 @@ class Grid(val rowCount: Int = 4,
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
                 result)
             gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-                mineButton.verticesAsFloat32, 
+                buttons.mineButton.verticesAsFloat32, 
                 WebGLRenderingContext.STATIC_DRAW) 
         }
         return result
@@ -259,7 +266,7 @@ class Grid(val rowCount: Int = 4,
         val result = gl.createBuffer()
         gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
         gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-            mineButton.normalVectorsAsFloat32,
+            buttons.mineButton.normalVectorsAsFloat32,
             WebGLRenderingContext.STATIC_DRAW)
         return result
     }
@@ -272,7 +279,7 @@ class Grid(val rowCount: Int = 4,
         if (result != null) {
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
             gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-                mineButton.verticesColorAsFloat32,
+                buttons.mineButton.verticesColorAsFloat32,
                 WebGLRenderingContext.STATIC_DRAW)
         }
         return result
@@ -328,8 +335,7 @@ class Grid(val rowCount: Int = 4,
             enableLightingAttrib(gl)
             enableCameraAttrib(gl) 
             updateCamera(gl)
-            updateButtons(gl)
-            updateBoard(gl)
+            display.drawScene(gl)
         }
     }
    
@@ -370,135 +376,6 @@ class Grid(val rowCount: Int = 4,
                 projMat as Float32Array)
         }
     }
-    private fun updateButtons(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
-        val cam = this.camera
-        if (shaderProg != null && cam != null) {
-            gl.useProgram(shaderProg)
-
-            val verLoc = gl.getAttribLocation(shaderProg, 
-                "aVertexPosition")
-            val verColor = gl.getAttribLocation(shaderProg,
-                "aVertexColor")
-            val normalVecLoc = gl.getAttribLocation(shaderProg,
-                "aNormalVector")
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.buttonBuffer)
-            gl.vertexAttribPointer(
-                verLoc,
-                3,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verLoc)
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
-                renderingCtx.buttonColorBuffer)
-            gl.vertexAttribPointer( 
-                verColor,
-                4,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verColor)
-
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.buttonNormalVecBuffer)
-            gl.vertexAttribPointer(
-                normalVecLoc, 3,
-                WebGLRenderingContext.FLOAT,
-                false, 0, 0)
-            gl.enableVertexAttribArray(normalVecLoc)
-
-
-            gl.bindBuffer(
-                WebGLRenderingContext.ARRAY_BUFFER,
-                renderingCtx.buttonBuffer)
-
-            for (rowIndex in 0 until rowCount) {
-                for (colIndex in 0 until columnCount) { 
-                    updateButtonViewMatrix(gl, rowIndex, colIndex)
-                    gl.drawArrays(
-                        mineButton.drawingMode, 0,
-                        mineButton.vertices.size / 3) 
-                }
-            }
-        }
-        
-    }
-    private fun updateButtonViewMatrix(
-        gl: WebGLRenderingContext,
-        rowIndex : Int,
-        columnIndex : Int) {
-        val cam = this.camera
-        val shaderProg = this.renderingCtx.shaderProgram
-
-
-        if (cam != null && shaderProg != null) {
-            val uModelMat = gl.getUniformLocation(shaderProg,
-                "uModelViewMatrix")
-            renderingCtx.buttonMatrices!![
-                rowIndex * columnCount + columnIndex]
-            val mat = renderingCtx.buttonMatrices!![
-                    rowIndex * columnCount + columnIndex]
-            gl.uniformMatrix4fv(uModelMat, false, 
-                Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
-        }
-    }
-    private fun updateBoard(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
-        val cam = this.camera
-        if (shaderProg != null && cam != null) {
-            gl.useProgram(shaderProg)
-            val uModelMat = gl.getUniformLocation(shaderProg,
-                "uModelViewMatrix")
-            val verLoc = gl.getAttribLocation(shaderProg, 
-                "aVertexPosition")
-            val verColor = gl.getAttribLocation(shaderProg,
-                "aVertexColor")
-            
-            val normalVecLoc = gl.getAttribLocation(shaderProg,
-                "aNormalVector")
-            
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.boardBuffer)
-            gl.vertexAttribPointer(
-                verLoc,
-                3,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verLoc)
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
-                renderingCtx.boardColorBuffer)
-            gl.vertexAttribPointer( 
-                verColor,
-                4,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verColor)
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.boardNormalVecBuffer)
-            gl.vertexAttribPointer(
-                normalVecLoc, 3,
-                WebGLRenderingContext.FLOAT,
-                false, 0, 0)
-            gl.enableVertexAttribArray(normalVecLoc)
-
-            gl.bindBuffer(
-                WebGLRenderingContext.ARRAY_BUFFER,
-                renderingCtx.boardBuffer)
-            val mat =  renderingCtx.boardMatrix!!
-            gl.uniformMatrix4fv(uModelMat, false, 
-                Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
-            gl.drawArrays(
-                board.drawingMode, 
-                0, 
-                board.vertices.size / 3) 
-            
-        }
-        
-    }
     /**
      * enable lighting related Attribute
      */
@@ -525,8 +402,6 @@ class Grid(val rowCount: Int = 4,
             val eyeLoc = gl.getUniformLocation(shaderProg,
                 "uEyePosition")
             
-            
-
             gl.uniform3f(eyeLoc as WebGLUniformLocation, 
                 cam.eye[0], 
                 cam.eye[1],
@@ -611,7 +486,7 @@ class Grid(val rowCount: Int = 4,
      */
     private fun createButtonMatrices(): Array<FloatArray> {
         val boardSize = this.boardSize
-        val buttonSize = this.mineButton.buttonSize
+        val buttonSize = this.buttons.mineButton.buttonSize
         val borderSize = this.borderSize 
         val boardEdgeSize = this.boardEdgeSize
         val boardLeftBottom = arrayOf(- boardSize[0] / 2, - boardSize[1] / 2)

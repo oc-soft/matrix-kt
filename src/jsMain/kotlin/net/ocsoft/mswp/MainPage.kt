@@ -2,6 +2,8 @@ package net.ocsoft.mswp
 
 import jQuery
 import net.ocsoft.mswp.ui.Grid
+import net.ocsoft.mswp.ui.ShaderPrograms
+
 /**
  * main page display
  */
@@ -13,7 +15,8 @@ actual class MainPage {
         pointLight: PointLight) {
 		jQuery({ 
 			val grid = Grid()
-			grid.bind("#game_grid", model, camera, pointLight)
+            var shaderPrograms = ShaderPrograms("", "")
+			grid.bind("#game_grid", model, camera, pointLight, shaderPrograms)
     	})
     }
 }
