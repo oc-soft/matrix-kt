@@ -22,6 +22,10 @@ class Grid(rowCount: Int = 4,
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
     val renderingCtx: RenderingCtx = RenderingCtx()) {
     var model : Model? = null
+    /**
+     * open gl shader programs
+     */
+    var shaderPrograms : ShaderPrograms? = null
 
     var camera : Camera? = null
         set(value) {
@@ -194,10 +198,12 @@ class Grid(rowCount: Int = 4,
     fun bind(nodeQuery: String, 
         model: Model,
         camera: Camera,
-        pointLight: PointLight) {
+        pointLight: PointLight,
+        shaderPrograms: ShaderPrograms) {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight
+        this.shaderPrograms
         jQuery({
             val canvasNode = jQuery(nodeQuery)
             val canvas = canvasNode[0] as HTMLCanvasElement

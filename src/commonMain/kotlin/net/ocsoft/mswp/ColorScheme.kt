@@ -1,4 +1,4 @@
-
+package net.ocsoft.mswp
 /**
  * color scheme
  */
