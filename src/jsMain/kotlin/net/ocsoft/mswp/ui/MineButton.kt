@@ -85,7 +85,7 @@ class MineButton(
     /**
      * polygon factor
      */
-    val polygonFactor = shortArrayOf(3, 3)
+    val polygonFactor = shortArrayOf(1, 1)
     /**
      * button size
      */
