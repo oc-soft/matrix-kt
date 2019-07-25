@@ -4,9 +4,16 @@
  * This generated file contains a sample Kotlin application project to get you started.
  */
 
+import org.apache.commons.codec.binary.Base64 
+
+
+
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform' version '1.3.41'
+    id 'war' apply:false version ''
 }
+
 
 repositories {
     // Use jcenter for resolving dependencies.
@@ -56,39 +63,4 @@ kotlin {
     }
 }
     
-allprojects {
-    task hello1 {
-        doLast {
-            task ->
-                println "$task.project.name"
-        }   
-    }
-}
-
-class GreetingToFileTask extends DefaultTask {
-    def dest
-
-    File getDestination() {
-        project.file(dest)
-    }
-    @TaskAction
-    def myTask() {
-        def file = getDestination()
-        file.parentFile.mkdirs()
-        file.write 'Good evening!'
-    }
-}
-
-task myTask(type: GreetingToFileTask) {
-    dest  = { project.greetingFile }
-}
-
-
-task sayGreeting(dependsOn: myTask) {
-    doLast {
-        println file(greetingFile).text
-    }
-}
-
-ext.greetingFile = "$buildDir/hello.txt"
 
