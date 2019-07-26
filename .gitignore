@@ -4,3 +4,4 @@ gradle-app.setting
 !gradle-wrapper.ja
 .gradletasknamecache
 *.swp
+prg/
