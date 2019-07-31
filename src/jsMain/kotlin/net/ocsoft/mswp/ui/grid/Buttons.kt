@@ -1,12 +1,37 @@
-package net.ocsoft.mswp.ui
+package net.ocsoft.mswp.ui.grid
+
+import kotlin.math.*
+import net.ocsoft.mswp.ui.*
+import org.khronos.webgl.*
+
 
 
 class Buttons(var mineButton : MineButton,
     var rowCount: Int,
     var columnCount: Int,
     var buttonGap : FloatArray,
-    var buttonZGap: FloatArray) {
+    var buttonZGap: FloatArray,
+    val colorMap : ColorMap) {
 
+    /**
+     * cached color for picking
+     */
+    var colorsForPickingCache : FloatArray? = null
+    /**
+     * color for picking
+     */
+    val colorsForPicking : FloatArray
+        get() {
+            if (colorsForPickingCache == null) {
+                registerPickingInfoIntoColorMap()
+            }
+            return colorsForPickingCache!!
+        }
+       
+
+    /**
+     * button size
+     */
     val totalButtonSize : FloatArray
         get() {
             val buttonSize = mineButton.buttonSize
@@ -45,6 +70,46 @@ class Buttons(var mineButton : MineButton,
             val maxSize = totalButtonSize.max() as Float
             return buttonZGap.map({ it * maxSize }).toFloatArray()
         }
- }
+    /**
+     * get picking color at row and column.
+     */
+    fun getPickingColor(rowIndex : Int, colIndex : Int): FloatArray {
+        val colors = colorsForPicking
+        val baseIndex = (rowIndex * columnCount + colIndex) * 4
+        return FloatArray(4) { i -> colors[baseIndex + i] }
+    } 
+
+    /**
+     * find color by position
+     */
+    fun findPositionByPickingColor(color : FloatArray) : IntArray? {
+        return colorMap.getValue(color) as IntArray?
+    }
+    fun findPositionByPickingColor(color : Short) : IntArray? {
+        return colorMap.getValue(color) as IntArray?
+    }
+    /**
+     * register picking (row and column) into color map
+     */
+    fun registerPickingInfoIntoColorMap() {
+        val maxIndex = min(ColorMap.ButtonsColorRangeIndices[1],
+            rowCount * columnCount + ColorMap.ButtonsColorRangeIndices[0])
+        val colors = FloatArray((maxIndex
+            - ColorMap.ButtonsColorRangeIndices[0]) * 4)
+        for (i in ColorMap.ButtonsColorRangeIndices[0]..maxIndex) {
+            val baseIndex = i -  ColorMap.ButtonsColorRangeIndices[0]
+            val colIndex = baseIndex % columnCount 
+            val rowIndex = baseIndex / columnCount
+            val color = ColorMap.colorIndexToColor(i)
+            colorMap.register(color, intArrayOf(rowIndex, colIndex)) 
+            color.forEachIndexed({ j, elem ->
+                colors[baseIndex * 4 + j] = elem
+            }) 
+        } 
+        colorsForPickingCache = colors
+    }
+    
+   
+}
 
 

@@ -23,6 +23,11 @@ class RenderingCtx() {
     var buttonColorBuffer : WebGLBuffer? = null
 
     /**
+     * color buffer for picking
+     */
+    var buttonPickingColorBuffer : WebGLBuffer? = null
+
+    /**
      * texture for button 
      */
     var buttonTexture : WebGLTexture? = null
@@ -33,9 +38,15 @@ class RenderingCtx() {
     var boardBuffer : WebGLBuffer? = null
 
     /**
-     * color buffer for board
+     * board color buffer for display 
      */
     var boardColorBuffer : WebGLBuffer? = null
+
+    /**
+     * board color buffer for picking
+     */
+    var boardPickingColorBuffer : WebGLBuffer? = null
+
     /**
      * vertex normal vector buffer for board
      */
@@ -45,21 +56,92 @@ class RenderingCtx() {
      * texture for board
      */
     var boardTexture : WebGLTexture? = null
+    
+    /**
+     * buffer for offscreen
+     */
+    var workableFramebuffer : WebGLFramebuffer? = null
+    
+    /**
+     * depth buffer for working
+     */
+    var depthBufferForWorking : WebGLRenderbuffer? = null
 
+    /**
+     * buffer for picking some objects
+     */
+    var pickingBuffer: WebGLRenderbuffer? = null
     /**
      * buttons location
      */
     var buttonMatrices : Array<FloatArray>? = null
 
     /**
+     * button matrices for displaying
+     */
+    var buttonMatricesForDrawing : Array<FloatArray>? = null 
+
+    /**
+     * spin and vertical motion matrices
+     */
+    var spinAndVMotionMatrices : Array<FloatArray>? = null
+
+    /**
+     * matrices for animation
+     */
+    var animationMatrices: MutableList<Array<FloatArray>>? = null
+    /**
      * bload location
      */
     var boardMatrix : FloatArray? = null
 
+    /**
+     * main scene render buffer
+     */
+    var sceneBuffer: WebGLRenderbuffer? = null
+
+    /**
+     * create clone buttons matrices 
+     */
+    fun cloneButtonMatrices() : Array<FloatArray>? {
+        var result : Array<FloatArray>? = null
+        val buttonMatrices = this.buttonMatrices
+        if (buttonMatrices != null) {
+            result = Array<FloatArray>(buttonMatrices.size) {
+                i ->
+                buttonMatrices[i].copyOf()
+            }
+        }
+        return result
+    }
+
+    /**
+     * get scene render buffer size
+     */
+    fun getSceneBufferSize(gl: WebGLRenderingContext) : IntArray {
+        val savedBuffer = gl.getParameter(
+            WebGLRenderingContext.RENDERBUFFER_BINDING) as
+                WebGLRenderbuffer?
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            sceneBuffer)
+        
+        val width = gl.getRenderbufferParameter(
+            WebGLRenderingContext.RENDERBUFFER,
+            WebGLRenderingContext.RENDERBUFFER_WIDTH) as Int
+        val height = gl.getRenderbufferParameter(
+            WebGLRenderingContext.RENDERBUFFER,
+            WebGLRenderingContext.RENDERBUFFER_HEIGHT) as Int
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            savedBuffer) 
+        return intArrayOf(width, height)
+    }
+    
     fun tearDown(gl : WebGLRenderingContext) {
         teardownBuffer(gl)
+        teardownRenderBuffer(gl)
         teardownShaderProgram(gl) 
-        teardonwMatrix() 
+        teardownFramebuffer(gl)
+        teardonwMatrix()
     }
     /**
      * free shader program
@@ -86,9 +168,11 @@ class RenderingCtx() {
         arrayOf(buttonBuffer, 
             buttonNormalVecBuffer,
             buttonColorBuffer,
+            buttonPickingColorBuffer,
             boardBuffer,
             boardNormalVecBuffer,
-            boardColorBuffer).forEach({ buffer ->
+            boardColorBuffer,
+            boardPickingColorBuffer).forEach({ buffer ->
             if (buffer != null) {
                 gl.deleteBuffer(buffer)
             }
@@ -96,9 +180,29 @@ class RenderingCtx() {
         buttonBuffer = null
         buttonNormalVecBuffer = null
         buttonColorBuffer = null
+        buttonPickingColorBuffer = null
         boardBuffer = null
         boardNormalVecBuffer = null
         boardColorBuffer = null
+        boardPickingColorBuffer = null
+    }
+    fun teardownRenderBuffer(gl: WebGLRenderingContext) {
+        arrayOf(pickingBuffer,
+            depthBufferForWorking).forEach({ buffer ->
+            if (buffer != null) {
+                gl.deleteRenderbuffer(buffer)
+            }
+        })
+        depthBufferForWorking = null
+        pickingBuffer = null
+    }
+    fun teardownFramebuffer(gl: WebGLRenderingContext) {
+        arrayOf(workableFramebuffer).forEach({ buffer ->
+            if (buffer != null) {
+                gl.deleteFramebuffer(buffer)
+            }
+        })
+        workableFramebuffer = null
     }
     fun teardonwMatrix() {
         this.buttonMatrices = null

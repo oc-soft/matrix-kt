@@ -79,6 +79,7 @@ class Board(
             return result 
         }
 
+    
     /**
      * board size
      */
@@ -93,5 +94,16 @@ class Board(
      * drawing mode
      */
     val drawingMode = WebGLRenderingContext.TRIANGLES
+
+
+    /**
+     * create vertices color
+     */
+    fun createVerticesColor(color: FloatArray) : Float32Array {
+        val verticesColor = Array<Float>((vertices.size / 3) * color.size) {
+            i ->color[i % color.size]
+        }
+        return Float32Array(verticesColor)
+    }
     
 }

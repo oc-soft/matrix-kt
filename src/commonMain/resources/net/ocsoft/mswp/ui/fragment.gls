@@ -1,14 +1,21 @@
 precision mediump float;
 uniform vec3 uLightPosition;
 uniform vec3 uEyePosition;
+uniform bool uEnableLighting;
 varying vec4 vNormal;
 varying vec4 vPosition;
 varying vec4 vColor;
 
 void main() {
-    vec3 lightVec = uLightPosition - vPosition.xyz;
-    vec3 viewDir = normalize(uEyePosition - vPosition.xyz);
-    vec3 reflectDir = reflect(- lightVec, vNormal.xyz);
-    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 1.0) * 0.8;
-    gl_FragColor = vColor * vec4(vec3(specular), 1.0);
+    vec4 color;
+    if (uEnableLighting) { 
+        vec3 lightVec = uLightPosition - vPosition.xyz;
+        vec3 viewDir = normalize(uEyePosition - vPosition.xyz);
+        vec3 reflectDir = reflect(- lightVec, vNormal.xyz);
+        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 1.0) * 0.8;
+        color = vColor * vec4(vec3(specular), 1.0);
+    } else {
+        color = vColor;
+    } 
+    gl_FragColor = color;
 }

@@ -14,6 +14,9 @@ class MineButton(
      */
     private var verticesCache : FloatArray? = null
    
+    /**
+     * vertices
+     */
     val vertices : FloatArray
         get() {
             if (verticesCache == null) {
@@ -98,5 +101,7 @@ class MineButton(
     fun createNormalVectors(): FloatArray {
         return Polygon.createNormalVectorsForTriangles(vertices)
     }
+
+    
     
 }

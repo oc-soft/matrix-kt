@@ -7,16 +7,19 @@ import jQuery
 import net.ocsoft.mswp.*
 import kotlin.browser.*
 import net.ocsoft.mswp.ui.grid.*
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.MouseEvent
 
 typealias GLRctx = WebGLRenderingContext
 
 /**
  * game play ground grid
  */
-class Grid(rowCount: Int = 4,
-    columnCount: Int = 4,
+class Grid(rowCount: Int = 6,
+    columnCount: Int = 6,
+    colorMap: ColorMap = ColorMap(),
     val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
-    floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f)),
+    floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
     board: Board = Board(),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
@@ -130,12 +133,45 @@ class Grid(rowCount: Int = 4,
                 boardSize
             }).toFloatArray()
         }
+    /**
+     * web gl rendering context
+     */
+    var canvasId : String? = null
+
+    /**
+     * event handler
+     */
+    var onClickHandler : ((Event) -> Unit) ? = null
+    /**
+     * back color for drawing
+     */
+    val backColorForDrawing = floatArrayOf(0f, 0f, 0f, 1f)
+ 
+    /**
+     * back color for picking
+     */
+    val backColorForPicking = floatArrayOf(0f, 0f, 0f, 0f)
+    /**
+     * back ground color
+     */
+    var backColor = backColorForDrawing 
     
+    /**
+     * lighting context for drawing
+     */
+    val lightingContextEnabledForDrawing = true
+ 
+    /**
+     * lighting context
+     */
+    var lightingContextEnabled = lightingContextEnabledForDrawing 
+    
+ 
     /**
      * initialize gl context
      */
     fun setupEnv(gl :WebGLRenderingContext) {
-        gl.clearColor(0.0f, 0.0f, 0.0f, 1.0f)
+        gl.clearColor(backColor[0], backColor[1], backColor[2], backColor[3])
         gl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT)
         gl.enable(GLRctx.DEPTH_TEST)
         gl.frontFace(WebGLRenderingContext.CW)
@@ -146,13 +182,59 @@ class Grid(rowCount: Int = 4,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
-       setupEnv(gl)
-       updateView(gl)
+        drawSceneI(gl)
     }
+
+
+    fun drawSceneI(gl: WebGLRenderingContext) {
+    
+        val renderingOperations: Array<Array<(WebGLRenderingContext) -> Unit>>
+            = arrayOf(
+                arrayOf(
+                    { glctx -> beginDrawingForPicking(glctx) },
+                    { glctx -> endDrawingForPicking(glctx) }),
+                arrayOf(
+                    { glctx -> beginDrawing(glctx) },
+                    { glctx -> endDrawing(glctx) })
+           )
+        renderingOperations.forEach({ elem ->
+            elem[0](gl)
+            setupEnv(gl)
+            updateView(gl)
+            elem[1](gl)
+        })
+    }
+
+    fun beginDrawingForPicking(gl: WebGLRenderingContext) {
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            renderingCtx.workableFramebuffer)
+        display.buttonColorBufferBind = display.buttonColorForPickingBind 
+        display.buttonColorDataForDraw = display.buttonColorDataForPicking  
+        display.boardColorBufferBind = display.boardColorForPickingBind
+        backColor = backColorForPicking
+        lightingContextEnabled = false
+    } 
+    fun endDrawingForPicking(gl: WebGLRenderingContext) {
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            null)
+        display.buttonColorBufferBind = display.buttonColorForDisplayBind 
+        display.buttonColorDataForDraw = display.buttonColorDataForDisplay 
+        display.boardColorBufferBind = display.boardColorForDisplayBind
+        backColor = backColorForDrawing
+        lightingContextEnabled = lightingContextEnabledForDrawing
+    } 
+
+    fun beginDrawing(gl: WebGLRenderingContext) {
+    } 
+    fun endDrawing(gl: WebGLRenderingContext) {
+    } 
+     
     fun setup(gl: WebGLRenderingContext) {
+        setupSceneBuffer(gl)
         setupShaderProgram(gl)
         setupBuffer(gl)
         setupCamera(gl)
+        setupWorkingFrameBuffer(gl)
         setupMatrices()
     }
     fun teardown(gl: WebGLRenderingContext) {
@@ -170,6 +252,29 @@ class Grid(rowCount: Int = 4,
             cam.aspect = aspect
             attachCameraListener() 
         } 
+    }
+
+    fun setupWorkingFrameBuffer(gl: WebGLRenderingContext) {
+        renderingCtx.workableFramebuffer = gl.createFramebuffer() 
+        val savedFramebuffer = gl.getParameter(
+            WebGLRenderingContext.FRAMEBUFFER_BINDING) as
+                WebGLFramebuffer?
+  
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            renderingCtx.workableFramebuffer) 
+        setupRenderbufferForPicking(gl)
+        renderingCtx.buttonPickingColorBuffer = 
+            createButtonColorBufferForPicking(gl)
+        renderingCtx.boardPickingColorBuffer =
+            createBoardColorBufferForPicking(gl) 
+ 
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            savedFramebuffer) 
+    }
+    fun setupSceneBuffer(gl: WebGLRenderingContext) {
+        renderingCtx.sceneBuffer = gl.getParameter(
+            WebGLRenderingContext.RENDERBUFFER_BINDING)
+                as WebGLRenderbuffer?
     }
     fun setupShaderProgram(gl: WebGLRenderingContext) {
         val vertexShader : WebGLShader? = createVertexShader(gl)
@@ -191,7 +296,57 @@ class Grid(rowCount: Int = 4,
             }
         }
     }
+    
+    fun onClick(event: Event) {
+        if (event is MouseEvent) {
+            val mouseEvent = event as MouseEvent
+            val canvas = document.querySelector(
+                canvasId!!) as HTMLCanvasElement
+            val y = (canvas.height
+                - mouseEvent.offsetY)   
+            val x = mouseEvent.offsetX
+            postHandleUserInput(x, y)
+        }
 
+    }
+    
+    fun postHandleUserInput(x : Double, y: Double) {
+        window.setTimeout({
+           handleUserInput(x, y)  
+        }, 100)
+    }
+    fun handleUserInput(x : Double, y: Double) {
+        val canvas = document.querySelector(
+            canvasId!!) as HTMLCanvasElement
+        val gl = canvas.getContext("webgl") as WebGLRenderingContext
+
+
+        handleUserInput(gl, round(x).toInt(), round(y).toInt())
+        
+    } 
+    fun handleUserInput(gl: WebGLRenderingContext,
+        x: Int, y: Int) {
+        beginDrawingForPicking(gl)
+        val buffer = Uint16Array(1)
+
+        gl.readPixels(x, y, 1, 1,
+            WebGLRenderingContext.RGBA, 
+            WebGLRenderingContext.UNSIGNED_SHORT_5_5_5_1, 
+            buffer)
+        val location = buttons.findPositionByPickingColor(buffer[0])
+        if (location != null) {
+            val buttonIndices = Array<IntArray>(1) { location }
+            Animation.setupButtons(buttons, buttonIndices, renderingCtx)
+            postStartAnimation(gl)
+        }
+        endDrawingForPicking(gl)
+    }
+    
+    fun tapButton(gl: WebGLRenderingContext,
+        rowIndex: Int, colIndex: Int) {
+        
+    } 
+    
     /**
      * connect a canvas and create grid
      */
@@ -203,25 +358,38 @@ class Grid(rowCount: Int = 4,
         this.model = model
         this.camera = camera
         this.pointLight = pointLight
-        this.shaderPrograms
+        this.shaderPrograms = shaderPrograms
+        this.canvasId = nodeQuery
         jQuery({
             val canvasNode = jQuery(nodeQuery)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
+            onClickHandler = { event -> this.onClick(event) }
+            canvas.addEventListener("click", onClickHandler)
             setup(gl)
             drawScene(gl)
         }) 
     }
+    fun unbind() {
+        val canvasNode = jQuery(this.canvasId!!)
+        val canvas = canvasNode[0] as HTMLCanvasElement
+        canvas.removeEventListener("click", onClickHandler) 
+        this.onClickHandler = null
+    }
+    private fun postStartAnimation(gl: WebGLRenderingContext) {
+        window.setTimeout({ 
+            startAnimation(gl) 
+        }, 100)
+    }
     private fun startAnimation(gl: WebGLRenderingContext) {
         var then = .0
         fun render(now : Double): Unit {
-
-            val now1 = now * 0.001
-            var deltaTime = now1 - then
-            // matrixRotation += deltaTime.toFloat()
-            then = now1
+            Animation.doAnimate(renderingCtx)
             drawScene(gl)
-            window.requestAnimationFrame { render(it) } 
+ 
+            if (Animation.hasNextFrame(renderingCtx)) {
+                window.requestAnimationFrame { render(it) } 
+            }
         } 
         window.requestAnimationFrame { render(it) }
     }
@@ -230,10 +398,20 @@ class Grid(rowCount: Int = 4,
         renderingCtx.buttonBuffer = createButtonBuffer(gl)
         renderingCtx.buttonNormalVecBuffer = createButtonNormalVecBuffer(gl)
         renderingCtx.buttonColorBuffer = createButtonColorBuffer(gl)
-
         renderingCtx.boardBuffer = createBoardBuffer(gl)
         renderingCtx.boardNormalVecBuffer = createBoardNormalVecBuffer(gl)
         renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
+    }
+    private fun setupBufferForWorking(gl: WebGLRenderingContext) {
+        renderingCtx.buttonPickingColorBuffer = 
+            createButtonColorBufferForPicking(gl)
+        renderingCtx.boardPickingColorBuffer =
+            createBoardColorBufferForPicking(gl) 
+    } 
+    private fun setupRenderbufferForPicking(gl: WebGLRenderingContext) {
+        renderingCtx.pickingBuffer = createPickingBuffer(gl)
+        renderingCtx.depthBufferForWorking = 
+            createDepthBufferForWorking(gl) 
     }
 
     /**
@@ -241,7 +419,9 @@ class Grid(rowCount: Int = 4,
      */
     private fun setupMatrices() {
         renderingCtx.buttonMatrices = createButtonMatrices() 
+        renderingCtx.buttonMatricesForDrawing = renderingCtx.buttonMatrices 
         renderingCtx.boardMatrix = createBoardMatrix() 
+        renderingCtx.spinAndVMotionMatrices = createSpinAndVMotionMatrices()
     }
     /**
      * button buffer
@@ -286,6 +466,16 @@ class Grid(rowCount: Int = 4,
     }
 
     /**
+     * button color buffer for picking
+     */
+    private fun createButtonColorBufferForPicking(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        return result
+    }
+
+
+    /**
      * board buffer
      */
     private fun createBoardBuffer(
@@ -326,7 +516,70 @@ class Grid(rowCount: Int = 4,
         }
         return result
     }
+    /**
+     * boad color buffer for picking
+     */
+    private fun createBoardColorBufferForPicking(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        if (result != null) {
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
+            
+            gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+                board.createVerticesColor(floatArrayOf(0f,0f, 0f, 0f)),
+                WebGLRenderingContext.STATIC_DRAW)
+        }
+        return result
+    }
 
+
+      
+    /**
+     * create picking buffer
+     */
+    private fun createPickingBuffer(
+        gl: WebGLRenderingContext): WebGLRenderbuffer? {
+        val result = gl.createRenderbuffer()
+        if (result != null) {
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.RENDERBUFFER_BINDING) 
+                    as WebGLRenderbuffer?
+ 
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                result)
+            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.RGB5_A1,
+                gl.canvas.width, gl.canvas.height)
+
+            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
+                WebGLRenderingContext.COLOR_ATTACHMENT0, 
+                WebGLRenderingContext.RENDERBUFFER, result)
+ 
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                savedBuffer) 
+        }  
+        return result
+    }
+
+    /**
+     * create depth buffer for working
+     */
+    private fun createDepthBufferForWorking(
+        gl: WebGLRenderingContext): WebGLRenderbuffer? {
+        val result = gl.createRenderbuffer()
+        if (result != null) {
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                result) 
+            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.DEPTH_COMPONENT16,
+                gl.canvas.width, gl.canvas.height);
+  
+            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
+                WebGLRenderingContext.DEPTH_ATTACHMENT, 
+                WebGLRenderingContext.RENDERBUFFER, result)
+        }  
+        return result
+    }
     private fun updateView(gl: WebGLRenderingContext) {
         val cam = this.camera
         val shaderProg = this.renderingCtx.shaderProgram
@@ -335,6 +588,7 @@ class Grid(rowCount: Int = 4,
             enableLightingAttrib(gl)
             enableCameraAttrib(gl) 
             updateCamera(gl)
+            enableLightingContext(gl, lightingContextEnabled)
             display.drawScene(gl)
         }
     }
@@ -393,6 +647,22 @@ class Grid(rowCount: Int = 4,
     } 
 
     /**
+     * enable lighting
+     */
+    private fun enableLightingContext(
+        gl: WebGLRenderingContext,
+        enabled: Boolean) {
+        val shaderProg = this.renderingCtx.shaderProgram
+        if (shaderProg != null) {
+            val enableLoc = gl.getUniformLocation(shaderProg,
+                "uEnableLighting")
+            fun Boolean.toInt() = if (this) 1 else 0 
+            gl.uniform1i(enableLoc as WebGLUniformLocation, 
+                enabled.toInt());
+        }
+    } 
+
+    /**
      * enable camera related Attribute
      */
     private fun enableCameraAttrib(gl: WebGLRenderingContext) {
@@ -419,22 +689,8 @@ class Grid(rowCount: Int = 4,
         return result 
     }  
     private fun createVertexShader(gl: WebGLRenderingContext): WebGLShader? {
-        val prog = """
-    attribute vec4 aVertexPosition;
-    attribute vec4 aNormalVector;
-    attribute vec4 aVertexColor;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    varying vec4 vPosition;
-    varying vec4 vNormal;
-    varying vec4 vColor;
-    void main() {
-        vNormal = aNormalVector;
-        vPosition = uModelViewMatrix * aVertexPosition;
-        gl_Position = uProjectionMatrix * vPosition;
-        vColor = aVertexColor;
-    }
-"""
+        val shaderProg = this.shaderPrograms!!
+        val prog = shaderProg.vertexShader
         var result : WebGLShader? = null
         val shader = gl.createShader(WebGLRenderingContext.VERTEX_SHADER)
         if (shader != null) {
@@ -445,22 +701,8 @@ class Grid(rowCount: Int = 4,
         return result
     } 
     private fun createFragmentShader(gl: WebGLRenderingContext): WebGLShader? {
-        val prog = """
-    precision mediump float;
-    uniform vec3 uLightPosition;
-    uniform vec3 uEyePosition;
-    varying vec4 vNormal;
-    varying vec4 vPosition;
-    varying vec4 vColor;
-    void main() {
-        vec3 lightVec = uLightPosition - vPosition.xyz;
-        vec3 viewDir = normalize(uEyePosition - vPosition.xyz);
-        vec3 reflectDir = reflect(- lightVec, vNormal.xyz);
-        float specular = pow(max(dot(viewDir, reflectDir), 0.0), 1.0) * 0.8;
-        gl_FragColor = vColor * vec4(vec3(specular), 1.0);
-    }
-"""
-
+        val shaderProg = this.shaderPrograms!!
+        val prog = shaderProg.fragmentShader
         var result : WebGLShader? = null
         val shader = gl.createShader(WebGLRenderingContext.FRAGMENT_SHADER)
         if (shader != null) {
@@ -515,6 +757,18 @@ class Grid(rowCount: Int = 4,
         }
     } 
     
+    /**
+     * create spin and vertical movement matrices.
+     */
+    fun createSpinAndVMotionMatrices(): Array<FloatArray>? {
+        
+        val t = 1f
+        val rotationCount = 2.5f
+        val axis = floatArrayOf(1f, 0f, 0f)
+        return model!!.physicsEng.calcSpinAndVerticalMotion1(t, axis, 
+            rotationCount)
+    }
+
     /**
      * create board matrix
      */
