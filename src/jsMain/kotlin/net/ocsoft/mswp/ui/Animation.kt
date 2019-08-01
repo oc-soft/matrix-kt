@@ -31,7 +31,7 @@ class Animation {
                         var locMatIdx = rowCol[0] * buttons.columnCount
                         locMatIdx += rowCol[1]
                         val locMat = frameMat[locMatIdx]
-                        val newLocMat = Matrix.multiply(locMat, aniMtx)
+                        val newLocMat = Matrix.multiply(aniMtx, locMat)
                         frameMat[locMatIdx] = newLocMat!!
                     })
                     frameMat 

@@ -7,7 +7,10 @@ import net.ocsoft.mswp.*
  * button to cover mine
  */
 class MineButton(
-    var color: FloatArray = ColorScheme.colors[1]) {
+    frontColor: FloatArray = ColorScheme.colors[1],
+    backColor: FloatArray = ColorScheme.colors[3],
+    buttonSize : FloatArray = floatArrayOf(1f, 1f),
+    thickness: Float = 0.1f) {
     
     /**
      * cache of vertices
@@ -66,9 +69,13 @@ class MineButton(
     val verticesColor : FloatArray
         get() {
             val vertices = this.vertices
-            val color = this.color
-            return FloatArray((vertices.size / 3) * color.size) {
-                i -> color[i % color.size] 
+            val colors = arrayOf(this.frontColor, this.backColor)
+           
+            return FloatArray(
+                (vertices.size / 3) * (colors.size * colors[0].size)) {
+                i -> 
+                val colorIdx = i / ((vertices.size / 3) * colors[0].size)
+                colors[colorIdx][i % colors[0].size] 
             }
         }
     val verticesColorAsFloat32 : Float32Array
@@ -93,9 +100,29 @@ class MineButton(
      * button size
      */
     val buttonSize : FloatArray = floatArrayOf(1f, 1f)
+    /**
+     * thicness of button
+     */
+    val thickness : Float = thickness
+    /**
+     * front face color
+     */
+    var frontColor : FloatArray = frontColor
+    /**
+     * back bace color
+     */
+    var backColor : FloatArray = backColor
+
 
     fun createPolygons(xDivider: Int, yDivider: Int): FloatArray {
-        return Polygon.divideSquare2(buttonSize, xDivider, yDivider)
+        val thickness = buttonSize.min()!! * this.thickness
+        val frontV = Polygon.divideSquare2(buttonSize, 
+            xDivider, yDivider, false, thickness)
+        val backV = Polygon.divideSquare2(buttonSize, 
+            xDivider, yDivider, true) 
+        val result = frontV.copyOf(frontV.size + backV.size)
+        backV.forEachIndexed({ i, elem -> result[frontV.size + i] = elem })   
+        return result
     }
     
     fun createNormalVectors(): FloatArray {

@@ -763,10 +763,13 @@ class Grid(rowCount: Int = 6,
     fun createSpinAndVMotionMatrices(): Array<FloatArray>? {
         
         val t = 1f
-        val rotationCount = 2.5f
+        val rotationCount = 0.5f
         val axis = floatArrayOf(1f, 0f, 0f)
-        return model!!.physicsEng.calcSpinAndVerticalMotion1(t, axis, 
+        var result : Array<FloatArray>? = null
+
+        result = model!!.physicsEng.calcSpinAndVerticalMotion1(t, axis, 
             rotationCount)
+        return result 
     }
 
     /**

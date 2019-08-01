@@ -7,7 +7,7 @@ import kotlin.math.*
 /**
  * physics engine
  */
-class PhysicsEng(val gravity: Float = 9.8f,
+class PhysicsEng(var gravity: Float = 9.8f,
     val fps : Float = 30f){
 
     companion object { 
@@ -196,7 +196,7 @@ class PhysicsEng(val gravity: Float = 9.8f,
             if (vMotionMat != null && sMotionMat != null) {
                 result = Array<FloatArray>(vMotionMat.size) {
                     i ->
-                    Matrix.multiply(vMotionMat[i], sMotionMat[i])!!
+                    Matrix.multiply(sMotionMat[i], vMotionMat[i])!!
                 }        
             } 
             return result 
@@ -212,7 +212,8 @@ class PhysicsEng(val gravity: Float = 9.8f,
             val v = 0.5f * g * t
             val totalRadians = (PI * 2 * abs(rotationCount)).toFloat()
             val vMotionMat = createVerticalMotion(v, g, divisionCount)
-            val sMotionMat = calcSpin(axis, divisionCount, rotationCount)
+            val sMotionMat = calcSpin(axis, 
+                divisionCount, rotationCount)
             var result: Array<FloatArray>? = null
             if (vMotionMat != null && sMotionMat != null) {
                 result = Array<FloatArray>(vMotionMat.size) {
@@ -251,7 +252,7 @@ class PhysicsEng(val gravity: Float = 9.8f,
         var countOfFrames = t / frameDuration
         countOfFrames = ceil(countOfFrames)
          
-        return PhysicsEng.calcSpinAndVerticalMotionTest(
+        return PhysicsEng.calcSpinAndVerticalMotion(
             frameDuration * countOfFrames, gravity,
             axis, rotationCount, countOfFrames.toInt())
     } 

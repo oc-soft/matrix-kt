@@ -9,13 +9,16 @@ class Polygon {
     companion object {
         fun divideSquare2(
             size : FloatArray,
-            xDivider: Int, yDivider: Int): FloatArray {
+            xDivider: Int, 
+            yDivider: Int,
+            reverse: Boolean = false,
+            zCoord: Float = 0f): FloatArray {
             val size3 = size.copyOf(3)
 
             val sizeD = floatArrayOf(
                 size[0] / xDivider, 
                 size[1] / yDivider,
-                0f)
+                zCoord)
 
             val vertexArray = Array<FloatArray>(
                 (xDivider + 1) * (yDivider + 1)) {
@@ -38,6 +41,9 @@ class Polygon {
                     rowIndex * (xDivider + 1) + colIndex + 1,
                     (rowIndex + 1) * (xDivider + 1) + colIndex + 1,
                     (rowIndex + 1) * (xDivider + 1) + colIndex)
+                if (reverse) {
+                    indices.reverse()
+                }
                 val quadVert = Array<FloatArray>(indices.size) { 
                    j1 -> vertexArray[indices[j1]]
                 }
