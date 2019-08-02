@@ -327,13 +327,15 @@ class Grid(rowCount: Int = 6,
     fun handleUserInput(gl: WebGLRenderingContext,
         x: Int, y: Int) {
         beginDrawingForPicking(gl)
-        val buffer = Uint16Array(1)
-
+        // val buffer = Uint16Array(1)
+        val buffer = Uint8Array(4)
         gl.readPixels(x, y, 1, 1,
             WebGLRenderingContext.RGBA, 
-            WebGLRenderingContext.UNSIGNED_SHORT_5_5_5_1, 
+            // WebGLRenderingContext.UNSIGNED_SHORT_5_5_5_1, 
+            WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
-        val location = buttons.findPositionByPickingColor(buffer[0])
+        val colorVal = ByteArray(buffer.length) { buffer[it] } 
+        val location = buttons.findPositionByPickingColor(colorVal)
         if (location != null) {
             val buttonIndices = Array<IntArray>(1) { location }
             Animation.setupButtons(buttons, buttonIndices, renderingCtx)

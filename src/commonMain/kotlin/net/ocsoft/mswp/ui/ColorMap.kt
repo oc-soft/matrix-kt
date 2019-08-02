@@ -16,6 +16,8 @@ class ColorMap {
         val displacement : Float
             = 1 / (ColorRange[1] - ColorRange[0]).toFloat()
 
+        val displacementByte : Byte
+            = (0xff / (ColorRange[1] - ColorRange[0])).toByte()
         fun getColorKey(index: Int): Short {
             var tmpIdx = max(ButtonsColorRangeIndices[0], index)
             tmpIdx = min(ButtonsColorRangeIndices[1], tmpIdx)
@@ -59,7 +61,22 @@ class ColorMap {
                 tmpVal
             }
         }
-          
+        fun isColorKey(key : ByteArray) : Boolean {
+            var result = key.size > 3
+            if (result) {
+                result = key[3] == 0xff.toByte()
+            }
+            return result
+        }
+        fun conv8to5Color(color: ByteArray) : ByteArray {
+            val colorToConv = color.copyOf(3) 
+            val result = ByteArray(colorToConv.size) { 
+                val tmpValI = (colorToConv[it].toInt() and 0xff).toInt()
+                (tmpValI / displacementByte - ColorRange[0]).toByte()
+            }
+            return result
+        }
+           
         fun colorToIndex(color : FloatArray) : Int  {
             return getKeyIndex(colorToKey(color))     
         }
@@ -84,6 +101,10 @@ class ColorMap {
         fun colorToKey(color : FloatArray) : Short {
             val colorToBeConverted = color.copyOf(3)
             val byteColor = floatColorToByteColor(colorToBeConverted)
+            return colorToKey(byteColor)
+        }
+        fun colorToKey(color : ByteArray) : Short {
+            val byteColor = color.copyOf(3)
             val mask = 0b11111
             val shiftIndices =  intArrayOf(11, 6, 1)
             var result = 0b1.toShort()
@@ -93,8 +114,8 @@ class ColorMap {
                     or ((mask and byteColor[idx].toInt()) shl shift)).toShort()
             }) 
             return result 
-        }
-        
+             
+        } 
     }
   
     val colorKeyMap = HashMap<Short, Any?>() 
@@ -103,7 +124,6 @@ class ColorMap {
         val keyI = colorToKey(key) 
         colorKeyMap[keyI] = value 
     }
-
     fun getValue(key : FloatArray) : Any? {
         val keyI = colorToKey(key) 
         return colorKeyMap[keyI]
@@ -112,5 +132,19 @@ class ColorMap {
     fun getValue(key : Short) : Any? {
         return colorKeyMap[key]
     }
-    
+    fun getValueBy255(key : ByteArray) : Any? {
+        var result : Any? = null
+        if (isColorKey(key)) {
+            val key5 = conv8to5Color(key)
+
+            // val colorF = FloatArray(key.size) {
+            //     (key[it].toInt() and 0xff).toFloat() / 0xff
+            // }
+            // result = getValue(colorF)
+            val keyI = colorToKey(key5) 
+            result = getValue(keyI)
+        }
+        return result
+    } 
+     
 } 

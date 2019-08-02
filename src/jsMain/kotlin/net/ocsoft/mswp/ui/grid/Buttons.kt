@@ -80,11 +80,18 @@ class Buttons(var mineButton : MineButton,
     } 
 
     /**
-     * find color by position
+     * find position by color
      */
     fun findPositionByPickingColor(color : FloatArray) : IntArray? {
         return colorMap.getValue(color) as IntArray?
     }
+    /**
+     * find position by color
+     */
+    fun findPositionByPickingColor(color : ByteArray) : IntArray? {
+        return colorMap.getValueBy255(color) as IntArray?
+    }
+ 
     fun findPositionByPickingColor(color : Short) : IntArray? {
         return colorMap.getValue(color) as IntArray?
     }
