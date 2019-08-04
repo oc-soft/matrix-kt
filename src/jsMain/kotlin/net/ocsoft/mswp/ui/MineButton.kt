@@ -8,9 +8,9 @@ import net.ocsoft.mswp.*
  */
 class MineButton(
     frontColor: FloatArray = ColorScheme.colors[1],
-    backColor: FloatArray = floatArrayOf(0f, 1f, 1f, 1f),
+    backColor: FloatArray = ColorScheme.colors[3],
     buttonSize : FloatArray = floatArrayOf(1f, 1f),
-    thickness: Float = 0.1f) {
+    thickness: Float = 0.001f) {
     
     /**
      * cache of vertices
@@ -70,11 +70,12 @@ class MineButton(
         get() {
             val vertices = this.vertices
             val colors = arrayOf(this.frontColor, this.backColor)
-           
-            return FloatArray(
-                (vertices.size / 3) * (colors.size * colors[0].size)) {
+            var faceVertexCount = vertices.size / 2 
+            faceVertexCount /= 3
+            val faceColorCompCount = faceVertexCount * colors[0].size 
+            return FloatArray(faceColorCompCount * colors.size) {
                 i -> 
-                val colorIdx = i / ((vertices.size / 3) * colors[0].size)
+                val colorIdx = i / faceColorCompCount
                 colors[colorIdx][i % colors[0].size] 
             }
         }

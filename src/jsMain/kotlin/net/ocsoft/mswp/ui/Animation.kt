@@ -18,18 +18,19 @@ class Animation {
             renderingCtx : RenderingCtx) {
             val buttonMatrices = renderingCtx.cloneButtonMatrices()    
             val spinAndVMotionMtx = renderingCtx.spinAndVMotionMatrices
-            val spinMotionMtx = renderingCtx.spinMatrices
+            val spinMotionMtx = renderingCtx.spinMotionMatrices
             val buttonNormalVecMatrices = renderingCtx.buttonNormalVecMatrices
             if (buttonMatrices != null
+                && buttonNormalVecMatrices != null
                 && spinAndVMotionMtx != null
-                && spinMotionMtx) {
+                && spinMotionMtx != null) {
                 val countOfFrames = min(spinAndVMotionMtx.size,
                     spinMotionMtx.size)
 
                 var animationMatrices = Array<Array<FloatArray>>(
                     countOfFrames) {
                     i ->
-                    val aniMtx = spinMotionMtx[midx]
+                    val aniMtx = spinMotionMtx[i]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {
                         j -> buttonMatrices[j]          
@@ -44,10 +45,11 @@ class Animation {
                     })
                     frameMat 
                      
-                }  Array<Array<FloatArray>>(
+                }
+                val normalVecAnimMatrices = Array<Array<FloatArray>>(
                     countOfFrames) {
                     midx ->
-                    val aniMtx = spinAndVMotionMtx[midx]
+                    val normalVecAniMtx = spinMotionMtx[midx]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {
                         j ->           
@@ -58,15 +60,16 @@ class Animation {
                         var locMatIdx = rowCol[0] * buttons.columnCount
                         locMatIdx += rowCol[1]
                         val aMat = frameMat[locMatIdx]
-                        val newMat = Matrix.multiply(aniMtx, aMat)
+                        val newMat = Matrix.multiply(normalVecAniMtx, aMat)
                         frameMat[locMatIdx] = newMat!!
                     })
                     frameMat 
                 }
-                var animationNormalMatrices
                 renderingCtx.animationMatrices = 
                     animationMatrices.toMutableList()
-            }
+                renderingCtx.animationNormalMatrices =
+                    normalVecAnimMatrices.toMutableList()
+             }
         }
         /**
          * start animation if rendering context has animation matrices
@@ -74,12 +77,20 @@ class Animation {
         fun doAnimate(renderingCtx : RenderingCtx) {
             if (Animation.hasNextFrame(renderingCtx)) {
                 val animationMatrices = renderingCtx.animationMatrices
-                if (animationMatrices != null) {
+                val normalVecAniMtx = renderingCtx.animationNormalMatrices 
+                if (animationMatrices != null
+                    && normalVecAniMtx != null) {
                     renderingCtx.buttonMatricesForDrawing = 
                         animationMatrices[0]
-                    animationMatrices.removeAt(0)    
+                    renderingCtx.buttonNormalVecMatricesForDrawing =
+                        normalVecAniMtx[0] 
+                    animationMatrices.removeAt(0)
+                    normalVecAniMtx.removeAt(0)
                     if (animationMatrices.size == 0) {
                         renderingCtx.animationMatrices = null
+                    }
+                    if (normalVecAniMtx.size == 0) {
+                        renderingCtx.animationNormalMatrices = null
                     }
                 }
             }
