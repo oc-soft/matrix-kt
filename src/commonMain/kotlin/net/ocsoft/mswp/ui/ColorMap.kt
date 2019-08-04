@@ -137,10 +137,6 @@ class ColorMap {
         if (isColorKey(key)) {
             val key5 = conv8to5Color(key)
 
-            // val colorF = FloatArray(key.size) {
-            //     (key[it].toInt() and 0xff).toFloat() / 0xff
-            // }
-            // result = getValue(colorF)
             val keyI = colorToKey(key5) 
             result = getValue(keyI)
         }

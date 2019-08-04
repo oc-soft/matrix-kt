@@ -222,7 +222,20 @@ class PhysicsEng(var gravity: Float = 9.8f,
             } 
             return result 
         } 
-     }
+    }
+    val frameDuration : Float
+        get() {
+            return 1 / fps
+        }
+    /**
+     * calculate count of frames
+     */
+    fun calcCountOfFrames(t: Float): Int {
+        val frameDuration = this.frameDuration
+        var countOfFrames = t / frameDuration
+        countOfFrames = ceil(countOfFrames)
+        return countOfFrames.toInt()
+    }
     /**
      * create matrices vertical motion.
      * I use z axis as Vertical axis.
@@ -248,12 +261,19 @@ class PhysicsEng(var gravity: Float = 9.8f,
     fun calcSpinAndVerticalMotion1(t: Float,
         axis: FloatArray,
         rotationCount: Float): Array<FloatArray>? {
-        val frameDuration = 1 / fps  
-        var countOfFrames = t / frameDuration
-        countOfFrames = ceil(countOfFrames)
-         
+        val frameDulation = this.frameDuration
+        val countOfFrames = this.calcCountOfFrames(t)         
         return PhysicsEng.calcSpinAndVerticalMotion(
             frameDuration * countOfFrames, gravity,
-            axis, rotationCount, countOfFrames.toInt())
+            axis, rotationCount, countOfFrames)
     } 
+    /**
+     * calc matrices to spin
+     */
+    fun calcSpinMotion(t: Float,
+        axis: FloatArray,
+        rotationCount: Float) : Array<FloatArray>? {
+        return calcSpin(axis, calcCountOfFrames(t), rotationCount)
+    }
+
 }

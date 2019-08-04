@@ -1,5 +1,6 @@
 package net.ocsoft.mswp.ui
 
+import kotlin.math.min
 import net.ocsoft.mswp.ui.grid.Buttons
 import net.ocsoft.mswp.Matrix
 
@@ -17,11 +18,18 @@ class Animation {
             renderingCtx : RenderingCtx) {
             val buttonMatrices = renderingCtx.cloneButtonMatrices()    
             val spinAndVMotionMtx = renderingCtx.spinAndVMotionMatrices
-            if (buttonMatrices != null && spinAndVMotionMtx != null) {
+            val spinMotionMtx = renderingCtx.spinMatrices
+            val buttonNormalVecMatrices = renderingCtx.buttonNormalVecMatrices
+            if (buttonMatrices != null
+                && spinAndVMotionMtx != null
+                && spinMotionMtx) {
+                val countOfFrames = min(spinAndVMotionMtx.size,
+                    spinMotionMtx.size)
+
                 var animationMatrices = Array<Array<FloatArray>>(
-                    spinAndVMotionMtx.size) {
-                    midx ->
-                    val aniMtx = spinAndVMotionMtx[midx]
+                    countOfFrames) {
+                    i ->
+                    val aniMtx = spinMotionMtx[midx]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {
                         j -> buttonMatrices[j]          
@@ -35,7 +43,27 @@ class Animation {
                         frameMat[locMatIdx] = newLocMat!!
                     })
                     frameMat 
+                     
+                }  Array<Array<FloatArray>>(
+                    countOfFrames) {
+                    midx ->
+                    val aniMtx = spinAndVMotionMtx[midx]
+                    val frameMat = Array<FloatArray>(
+                        buttons.rowCount * buttons.columnCount) {
+                        j ->           
+                        buttonNormalVecMatrices[j]
+                    }
+                    buttonIndices.forEach({
+                        rowCol ->
+                        var locMatIdx = rowCol[0] * buttons.columnCount
+                        locMatIdx += rowCol[1]
+                        val aMat = frameMat[locMatIdx]
+                        val newMat = Matrix.multiply(aniMtx, aMat)
+                        frameMat[locMatIdx] = newMat!!
+                    })
+                    frameMat 
                 }
+                var animationNormalMatrices
                 renderingCtx.animationMatrices = 
                     animationMatrices.toMutableList()
             }

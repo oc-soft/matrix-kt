@@ -421,9 +421,15 @@ class Grid(rowCount: Int = 6,
      */
     private fun setupMatrices() {
         renderingCtx.buttonMatrices = createButtonMatrices() 
+        renderingCtx.buttonNormalVecMatrices = createButtonNormalVecMatrices()
         renderingCtx.buttonMatricesForDrawing = renderingCtx.buttonMatrices 
+        renderingCtx.buttonNormalVecMatricesForDrawing =
+            renderingCtx.buttonNormalVecMatrices
+
         renderingCtx.boardMatrix = createBoardMatrix() 
+        renderingCtx.boardNormalVecMatrix = createBoardNormalVecMatrix()
         renderingCtx.spinAndVMotionMatrices = createSpinAndVMotionMatrices()
+        renderingCtx.spinMotionMatrices = createSpinMatrices()
     }
     /**
      * button buffer
@@ -758,6 +764,17 @@ class Grid(rowCount: Int = 6,
                 locations[i][0], locations[i][1], zGap[0], 1f); 
         }
     } 
+    /**
+     * create buttons normal vector matrices
+     */
+    private fun createButtonNormalVecMatrices(): Array<FloatArray> {
+        val unitMatrix = floatArrayOf(
+            1f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f,
+            0f, 0f, 1f, 0f,
+            0f, 0f, 0f, 1f) 
+        return Array<FloatArray>(rowCount * columnCount) { unitMatrix }
+    } 
     
     /**
      * create spin and vertical movement matrices.
@@ -773,7 +790,21 @@ class Grid(rowCount: Int = 6,
             rotationCount)
         return result 
     }
+    
+    /**
+     * create spin movement  matrices.
+     */
+    fun createSpinMatrices(): Array<FloatArray>? {
+        val t = 1f
+        val rotationCount = 0.5f
+        val axis = floatArrayOf(1f, 0f, 0f)
+        var result : Array<FloatArray>? = null
 
+        result = model!!.physicsEng.calcSpinMotion(t, axis, 
+            rotationCount)
+        return result 
+    }
+ 
     /**
      * create board matrix
      */
@@ -782,6 +813,16 @@ class Grid(rowCount: Int = 6,
         return floatArrayOf(
             boardSize[0], 0f, 0f, 0f,
             0f, boardSize[1], 0f, 0f,
+            0f, 0f, 1f, 0f,
+            0f, 0f, 0f, 1f)
+    }
+    /**
+     * create board normal vector matrix
+     */
+    fun createBoardNormalVecMatrix() : FloatArray {
+        return floatArrayOf(
+            1f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f,
             0f, 0f, 1f, 0f,
             0f, 0f, 0f, 1f)
     }

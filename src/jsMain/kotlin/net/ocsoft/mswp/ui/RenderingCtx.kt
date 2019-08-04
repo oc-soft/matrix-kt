@@ -77,9 +77,19 @@ class RenderingCtx() {
     var buttonMatrices : Array<FloatArray>? = null
 
     /**
+     * matrix for button's normal vector.
+     */
+    var buttonNormalVecMatrices : Array<FloatArray>? = null
+
+    /**
      * button matrices for displaying
      */
     var buttonMatricesForDrawing : Array<FloatArray>? = null 
+
+    /**
+     * matrix for button's normal vector.
+     */
+    var buttonNormalVecMatricesForDrawing : Array<FloatArray>? = null
 
     /**
      * spin and vertical motion matrices
@@ -87,14 +97,28 @@ class RenderingCtx() {
     var spinAndVMotionMatrices : Array<FloatArray>? = null
 
     /**
+     * spin motion matrices
+     */
+    var spinMotionMatrices: Array<FloatArray>? = null
+    /**
      * matrices for animation
      */
     var animationMatrices: MutableList<Array<FloatArray>>? = null
+
+    /**
+     *
+     */
+    var animationNormalMatrices: MutableList<Array<FloatArray>>? = null
+
     /**
      * bload location
      */
     var boardMatrix : FloatArray? = null
 
+    /**
+     * board normal vector matrix
+     */
+    var boardNormalVecMatrix : FloatArray? = null
     /**
      * main scene render buffer
      */

@@ -8,7 +8,7 @@ import net.ocsoft.mswp.*
  */
 class MineButton(
     frontColor: FloatArray = ColorScheme.colors[1],
-    backColor: FloatArray = ColorScheme.colors[3],
+    backColor: FloatArray = floatArrayOf(0f, 1f, 1f, 1f),
     buttonSize : FloatArray = floatArrayOf(1f, 1f),
     thickness: Float = 0.1f) {
     

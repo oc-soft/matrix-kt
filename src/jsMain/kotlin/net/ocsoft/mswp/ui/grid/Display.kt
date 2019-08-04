@@ -187,13 +187,23 @@ class Display(var renderingCtx : RenderingCtx,
         if (shaderProg != null) {
             val uModelMat = gl.getUniformLocation(shaderProg,
                 "uModelViewMatrix")
+            val uNormalVecMat = gl.getUniformLocation(shaderProg,
+                "uNormalVecMatrix")
             renderingCtx.buttonMatrices!![
                 rowIndex * columnCount + columnIndex]
             val mat = renderingCtx.buttonMatricesForDrawing!![
                 rowIndex * columnCount + columnIndex]
+
             gl.uniformMatrix4fv(uModelMat, false, 
                 Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
         
+            val normalVecMat = renderingCtx.buttonNormalVecMatrices!![
+                rowIndex * columnCount + columnIndex]
+
+            gl.uniformMatrix4fv(uNormalVecMat, false,
+                Float32Array(Array<Float>(normalVecMat.size) {
+                    normalVecMat[it] 
+                }))
         }
     }
     /**
@@ -204,6 +214,8 @@ class Display(var renderingCtx : RenderingCtx,
         if (shaderProg != null) {
             val uModelMat = gl.getUniformLocation(shaderProg,
                 "uModelViewMatrix")
+            val uNormalVecMat = gl.getUniformLocation(shaderProg,
+                "uNormalVecMatrix")
             val verLoc = gl.getAttribLocation(shaderProg, 
                 "aVertexPosition")
             val verColor = gl.getAttribLocation(shaderProg,
@@ -244,6 +256,11 @@ class Display(var renderingCtx : RenderingCtx,
             val mat =  renderingCtx.boardMatrix!!
             gl.uniformMatrix4fv(uModelMat, false, 
                 Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
+            val normalVecMat = renderingCtx.boardNormalVecMatrix!!
+            gl.uniformMatrix4fv(uNormalVecMat, false,
+                Float32Array(Array<Float>(normalVecMat.size) {
+                    normalVecMat[it] 
+                }))
             gl.drawArrays(
                 board.drawingMode, 
                 0, 
