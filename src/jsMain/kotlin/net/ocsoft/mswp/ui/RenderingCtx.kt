@@ -174,6 +174,7 @@ class RenderingCtx() {
         teardownRenderBuffer(gl)
         teardownShaderProgram(gl) 
         teardownFramebuffer(gl)
+        teardownTextures(gl)
         teardonwMatrix()
     }
     /**
@@ -238,6 +239,13 @@ class RenderingCtx() {
             }
         })
         workableFramebuffer = null
+    }
+    /**
+     * destroy all textures
+     */
+    fun teardownTextures(gl: WebGLRenderingContext) {
+        arrayOf(buttonTexture).forEach({ gl.deleteTexture(it) })
+        this.buttonTexture = null
     }
     fun teardonwMatrix() {
         this.buttonMatrices = null

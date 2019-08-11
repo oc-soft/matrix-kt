@@ -57,6 +57,7 @@ class Glyph {
     fun setupNumbers(ctx: CanvasRenderingContext2D) {
         setupNumbers0(ctx)
         setupNumbers1()
+        draw3()
     }
     /**
      * setup numbers
@@ -68,6 +69,7 @@ class Glyph {
         val canvas = ctx.canvas
         val width = canvas.width
         val height = canvas.height
+        ctx.fillStyle = "blue" 
         ctx.textBaseline = CanvasTextBaseline.MIDDLE
         ctx.font = "${fontSize}px sans-serif"
         val numberImageMap = HashMap<Int, ImageData>()
@@ -77,8 +79,10 @@ class Glyph {
             val numStr = number.toString()
             val texMtx = ctx.measureText(numStr)
             var xcoord = .0
+            
             xcoord += (fontSize - texMtx.width) / 2.0
             val ycoord = buttonTextureSize * .5
+            ctx.fillRect(0.0, 0.0, width.toDouble(), height.toDouble()) 
             ctx.fillText(numStr, xcoord, ycoord) 
             val img = ctx.getImageData(0.0, 0.0,
                buttonTextureSize.toDouble(),
@@ -102,6 +106,8 @@ class Glyph {
                 val arr = Uint8ClampedArray(
                     it.value.width * it.value.height * 2 * 4) 
                 arr.set(it.value.data, 0) 
+                arr.set(it.value.data, 
+                    it.value.width * it.value.height * 4)
                 ImageData(arr, it.value.width)
             })
             this.numberImageBlankMap = numberImageBlankMap

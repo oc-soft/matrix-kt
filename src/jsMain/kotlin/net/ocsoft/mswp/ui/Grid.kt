@@ -285,7 +285,7 @@ class Grid(rowCount: Int = 6,
      * setup textrues
      */
     fun setupTextures(gl: WebGLRenderingContext) {
-        textures.setupNumberImageBlankTexture(gl, this.glyph) 
+        renderingCtx.buttonTexture = gl.createTexture()
     }
 
 
@@ -348,7 +348,7 @@ class Grid(rowCount: Int = 6,
         val colorVal = ByteArray(buffer.length) { buffer[it] } 
         val location = buttons.findPositionByPickingColor(colorVal)
         if (location != null) {
-            if (!model.logic.status!!.isOpened(location[0], location[1])) { 
+            if (!model.logic.isOpened(location[0], location[1])) { 
                 model.logic.startIfNot(location[0], location[1])
                 if (!model.logic.status!!.inAnimating) {
                     
@@ -388,7 +388,7 @@ class Grid(rowCount: Int = 6,
     fun finishAnimation(buttonIndices: IntArray) {
         val model = this.model!!
         model.logic.status!!.inAnimating = false 
-        model.logic.status!!.registerOpened(buttonIndices[0], buttonIndices[1])
+        model.logic.registerOpened(buttonIndices[0], buttonIndices[1])
     }
     
     fun tapButton(gl: WebGLRenderingContext,
@@ -410,7 +410,7 @@ class Grid(rowCount: Int = 6,
         model.logic.columnSize = columnCount
         this.model = model
         this.buttons.logic = model.logic
-        this.buttons.textures = this.textures 
+        this.buttons.glyph = this.glyph
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms

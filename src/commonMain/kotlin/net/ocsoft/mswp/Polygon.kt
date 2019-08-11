@@ -18,7 +18,7 @@ class Polygon {
             val diviededVertices3 = divideSquare2(
                 size, xDivider, yDivider, reverse)
             val result = FloatArray((diviededVertices3.size / 3) * 2) {
-                val coordIdx = it * 3 
+                val coordIdx = (it / 2) * 3 
                 val xyIdx = it % 2
                 diviededVertices3[coordIdx + xyIdx]
             }

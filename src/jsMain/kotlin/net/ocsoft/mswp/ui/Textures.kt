@@ -2,6 +2,7 @@ package net.ocsoft.mswp.ui
 
 import org.khronos.webgl.*
 import kotlin.collections.Map
+import kotlin.collections.MutableMap
 import kotlin.collections.HashMap
 
 
@@ -19,8 +20,9 @@ class Textures {
     /**
      * number texture map
      */
-    val numberImageBlankTextureMap : Map<Int, WebGLTexture>
+    val numberImageBlankTextureMap : MutableMap<Int, WebGLTexture>
         = HashMap<Int, WebGLTexture>() 
+       
     /**
      * get number texture
      */
@@ -45,16 +47,18 @@ class Textures {
             val numImage = glyph.getNumberImageBlank(num)
             if (numImage != null) {
                 val tex = gl.createTexture();
-                gl.bindTexture(
-                    WebGLRenderingContext.TEXTURE_2D,
-                    tex)
-                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
-                    0,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.UNSIGNED_BYTE,
-                    numImage)
-                
+                if (tex != null) {
+                    gl.bindTexture(
+                        WebGLRenderingContext.TEXTURE_2D,
+                        tex)
+                    gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                        0,
+                        WebGLRenderingContext.RGBA,
+                        WebGLRenderingContext.RGBA,
+                        WebGLRenderingContext.UNSIGNED_BYTE,
+                        numImage)
+                    numberImageBlankTextureMap[num] = tex!!
+                }
             }
         }
         gl.bindTexture(
@@ -72,5 +76,6 @@ class Textures {
                 gl.deleteTexture(tex)
             }
         }
+        numberImageBlankTextureMap.clear()
     }
 }

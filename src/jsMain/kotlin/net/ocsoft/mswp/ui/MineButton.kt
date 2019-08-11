@@ -57,7 +57,7 @@ class MineButton(
 
     val textureCoordinatesAsFloat32 : Float32Array
         get() {
-            val textureCoodinates = this.textureCoordinates
+            val textureCoordinates = this.textureCoordinates
             val result = Float32Array(Array<Float>(textureCoordinates.size) {
                 textureCoordinates[it]
             })
@@ -163,15 +163,28 @@ class MineButton(
      * create texture coordinates
      */
     fun createTextureCoordinates(xDivider : Int, yDivider : Int): FloatArray {
-        val texSize = floatArrayOf(1f, .5f)
-        val frontT =  Polygon.divideSquare2d2(texSize, xDivider, yDivider)
-        val backT = Polygon.divideSquare2d2(texSize, xDivider, yDivider)
-        val result = frontT.copyOf(frontT.size + backT.size)
-        val offsetBackT = floatArrayOf(0f, .5f)
-        backT.forEachIndexed({ 
-            i, elem -> 
-            result[frontT.size + i] = elem + offsetBackT[i % 2]
-        })   
+        val texSize = floatArrayOf(1f, 1f)
+        // val texSize = floatArrayOf(1f, .5f)
+        val textures = arrayOf(
+            Polygon.divideSquare2d2(texSize, xDivider, yDivider),
+            Polygon.divideSquare2d2(texSize, xDivider, yDivider))
+       
+
+        //val offset = arrayOf(
+        //    floatArrayOf(.5f, .5f + .25f),
+        //    floatArrayOf(.5f, .25f))
+        val offset = arrayOf(
+            floatArrayOf(.5f, .5f),
+            floatArrayOf(.5f, .5f))
+
+
+        val result = FloatArray(textures[0].size + textures[1].size) {
+            val texIdx0 = it / textures[0].size
+            val texIdx1 = it % textures[0].size
+            val offsetIdx = it % offset[0].size
+            textures[texIdx0][texIdx1] + offset[texIdx0][offsetIdx]  
+        }
+
         return result
     }    
     

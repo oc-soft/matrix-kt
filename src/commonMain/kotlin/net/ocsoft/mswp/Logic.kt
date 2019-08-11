@@ -70,6 +70,36 @@ class Logic(rowSize: Int,
     } 
 
     /**
+     * you get true if the cell is opened
+     */
+    fun isOpened(rowIndex: Int, colIndex: Int) : Boolean {
+        var result = false
+        val status = this.status
+        if (status != null) {
+            result = status.isOpened(rowIndex, colIndex)
+        }
+        return result
+    }
+    /**
+     * register opened cell
+     */
+    fun registerOpened(rowIndex: Int, colIndex: Int) {
+        var status = this.status
+        if (status != null) {
+            status.registerOpened(rowIndex, colIndex)
+        }  
+    }
+    /**
+     * get the number to display on button if it was opened
+     */
+    fun getNumberIfOpened(rowIndex: Int, colIndex: Int) : Int? {
+        var result : Int? = null
+        if (isOpened(rowIndex, colIndex)) {
+            result = getNumber(rowIndex, colIndex)
+        }
+        return  result
+    }
+    /**
      * get the number to display on button
      */ 
     fun getNumber(rowIndex : Int, colIndex: Int) : Int? {

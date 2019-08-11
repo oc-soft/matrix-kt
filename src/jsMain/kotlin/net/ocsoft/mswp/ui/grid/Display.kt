@@ -48,10 +48,19 @@ class Display(var renderingCtx : RenderingCtx,
      */ 
     val buttonTextureBindForDisplay : (WebGLRenderingContext, Int, Int) -> Unit
         = { gl, rowIndex, colIndex -> 
-            val tex = buttons.getTexture(rowIndex, colIndex)
-            if (tex != null) {
-
-                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex)
+            val numImg = buttons.getNumberImage(rowIndex, colIndex)
+            if (numImg != null) {
+                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                    renderingCtx.buttonTexture)
+ 
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    numImg)
+ 
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
             }
             val shaderProg = this.renderingCtx.shaderProgram
             if (shaderProg != null) {
@@ -59,8 +68,19 @@ class Display(var renderingCtx : RenderingCtx,
                     "uEnableTexture")
                 fun Boolean.toInt() = if (this) 1 else 0 
                 gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
-                    (tex != null).toInt());
+                    (numImg != null).toInt());
+                if (numImg != null) {
+                    val texSampler = gl.getUniformLocation(shaderProg,
+                        "uSampler")
+
+                    var txtNumber = buttons.mineButton.textureIndex0
+                    txtNumber -= WebGLRenderingContext.TEXTURE0
+                    gl.uniform1i(texSampler, txtNumber)
  
+
+                }
+
+
             }
         }
 
@@ -217,14 +237,19 @@ class Display(var renderingCtx : RenderingCtx,
                 WebGLRenderingContext.FLOAT,
                 false, 0, 0)
             gl.enableVertexAttribArray(normalVecLoc)
-            
+
             val savedTex = gl.getParameter(
+                WebGLRenderingContext.TEXTURE_BINDING_2D)
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                renderingCtx.buttonTexture)
+            
+            val savedTexNum = gl.getParameter(
                 WebGLRenderingContext.ACTIVE_TEXTURE)
             gl.activeTexture(
                 buttons.mineButton.textureIndex0)
-            gl.uniform1i(texSampler,
-                buttons.mineButton.textureIndex0
-                - WebGLRenderingContext.TEXTURE0)
+            var txtNumber = buttons.mineButton.textureIndex0
+            txtNumber -= WebGLRenderingContext.TEXTURE0
+            gl.uniform1i(texSampler, txtNumber)
   
             for (rowIndex in 0 until rowCount) {
                 for (colIndex in 0 until columnCount) { 
@@ -241,7 +266,11 @@ class Display(var renderingCtx : RenderingCtx,
                         buttons.mineButton.vertices.size / 3) 
                 }
             }
-            gl.activeTexture(savedTex as Int)
+            gl.activeTexture(savedTexNum as Int)
+
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                savedTex as WebGLTexture?)
+ 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
                 savedArrayBuffer as WebGLBuffer?)
          }

@@ -4,6 +4,8 @@ import kotlin.math.*
 import net.ocsoft.mswp.ui.*
 import org.khronos.webgl.*
 import net.ocsoft.mswp.Logic
+import org.w3c.dom.*
+
 
 
 class Buttons(var mineButton : MineButton,
@@ -72,9 +74,9 @@ class Buttons(var mineButton : MineButton,
         }
 
     /**
-     * textures
+     * glyph 
      */
-    var textures : Textures? = null
+    var glyph : Glyph? = null
 
     /**
      * logic
@@ -130,15 +132,16 @@ class Buttons(var mineButton : MineButton,
     /**
      * get texture instance for button
      */
-    fun getTexture(rowIndex: Int, colIndex: Int): WebGLTexture? {
-        var result : WebGLTexture? = null
-        var textures = this.textures 
+    fun getNumberImage(rowIndex: Int, colIndex: Int): ImageData? {
+        var result : ImageData? = null
+        var glyph = this.glyph
         var logic = this.logic
-        if (textures != null && logic != null) {
+        if (glyph != null && logic != null) {
             var num : Int? = null 
-            num = logic.getNumber(rowIndex, colIndex)  
+            num = logic.getNumberIfOpened(rowIndex, colIndex)  
             if (num != null) {
-                result = textures.getNumberImageBlankTexture(num)
+                // result = glyph.getNumberImageBlank(num)
+                result = glyph.getNumberImage(num)
             }  
         }
         return result
