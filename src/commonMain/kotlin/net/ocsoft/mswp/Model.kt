@@ -2,10 +2,11 @@
 package net.ocsoft.mswp
 
 
-class Model(val rowCount: Int = 20, 
-    val columnCount: Int = 20,
-    val physicsEng: PhysicsEng = PhysicsEng()) {
-    override fun toString(): String
-        = "rowCount: ${this.rowCount}\ncolumnCount: ${this.columnCount}"
-	
+class Model(rowCount: Int = 20, 
+    columnCount: Int = 20,
+    val physicsEng: PhysicsEng = PhysicsEng(),
+    val logic: Logic = Logic(rowCount, columnCount, 3)) {
+    init {
+        logic.status = Status()
+    }	
 }

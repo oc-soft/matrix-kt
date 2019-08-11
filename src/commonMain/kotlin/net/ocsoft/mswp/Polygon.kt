@@ -7,6 +7,26 @@ import kotlin.math.*
 class Polygon {
      
     companion object {
+        /**
+         * diveice square-2d by 2
+         */
+        fun divideSquare2d2(
+            size : FloatArray,
+            xDivider: Int, 
+            yDivider: Int,
+            reverse: Boolean = false): FloatArray {
+            val diviededVertices3 = divideSquare2(
+                size, xDivider, yDivider, reverse)
+            val result = FloatArray((diviededVertices3.size / 3) * 2) {
+                val coordIdx = it * 3 
+                val xyIdx = it % 2
+                diviededVertices3[coordIdx + xyIdx]
+            }
+            return result
+        }
+        /**
+         * divide squere by 2
+         */
         fun divideSquare2(
             size : FloatArray,
             xDivider: Int, 

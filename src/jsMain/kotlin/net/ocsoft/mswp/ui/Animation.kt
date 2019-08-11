@@ -3,7 +3,7 @@ package net.ocsoft.mswp.ui
 import kotlin.math.min
 import net.ocsoft.mswp.ui.grid.Buttons
 import net.ocsoft.mswp.Matrix
-
+import net.ocsoft.mswp.Status
 /**
  * managing animation
  */
@@ -14,6 +14,7 @@ class Animation {
          * create matrices for each frame
          */
         fun setupButtons(buttons : Buttons,
+            openedButtonIndices: Array<IntArray>,
             buttonIndices : Array<IntArray>,
             renderingCtx : RenderingCtx) {
             val buttonMatrices = renderingCtx.cloneButtonMatrices()    
@@ -31,10 +32,19 @@ class Animation {
                     countOfFrames) {
                     i ->
                     val aniMtx = spinMotionMtx[i]
+                    val lastAniMtx = spinMotionMtx[spinMotionMtx.size - 1]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {
                         j -> buttonMatrices[j]          
                     }
+                    openedButtonIndices.forEach({
+                        rowCol ->
+                        var locMatIdx = rowCol[0] * buttons.columnCount
+                        locMatIdx += rowCol[1]
+                        val locMat = frameMat[locMatIdx]
+                        val newLocMat = Matrix.multiply(lastAniMtx, locMat)
+                        frameMat[locMatIdx] = newLocMat!!
+                    }) 
                     buttonIndices.forEach({
                         rowCol ->
                         var locMatIdx = rowCol[0] * buttons.columnCount

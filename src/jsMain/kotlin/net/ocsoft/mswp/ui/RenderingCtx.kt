@@ -23,9 +23,17 @@ class RenderingCtx() {
     var buttonColorBuffer : WebGLBuffer? = null
 
     /**
+     * button texture coordinates buffer
+     */
+    var buttonTextureCoordinatesBuffer : WebGLBuffer? = null
+     
+
+    /**
      * color buffer for picking
      */
     var buttonPickingColorBuffer : WebGLBuffer? = null
+
+   
 
     /**
      * texture for button 
@@ -124,6 +132,7 @@ class RenderingCtx() {
      */
     var sceneBuffer: WebGLRenderbuffer? = null
 
+     
     /**
      * create clone buttons matrices 
      */
@@ -193,6 +202,7 @@ class RenderingCtx() {
             buttonNormalVecBuffer,
             buttonColorBuffer,
             buttonPickingColorBuffer,
+            buttonTextureCoordinatesBuffer,
             boardBuffer,
             boardNormalVecBuffer,
             boardColorBuffer,
@@ -204,6 +214,7 @@ class RenderingCtx() {
         buttonBuffer = null
         buttonNormalVecBuffer = null
         buttonColorBuffer = null
+        buttonTextureCoordinatesBuffer = null
         buttonPickingColorBuffer = null
         boardBuffer = null
         boardNormalVecBuffer = null

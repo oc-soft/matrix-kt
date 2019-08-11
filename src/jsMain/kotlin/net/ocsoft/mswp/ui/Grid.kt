@@ -19,10 +19,12 @@ class Grid(rowCount: Int = 6,
     columnCount: Int = 6,
     colorMap: ColorMap = ColorMap(),
     val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
-    floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
+        floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
     board: Board = Board(),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
+    val glyph: Glyph = Glyph(),
+    val textures: Textures = Textures(),
     val renderingCtx: RenderingCtx = RenderingCtx()) {
     var model : Model? = null
     /**
@@ -211,6 +213,7 @@ class Grid(rowCount: Int = 6,
         display.buttonColorBufferBind = display.buttonColorForPickingBind 
         display.buttonColorDataForDraw = display.buttonColorDataForPicking  
         display.boardColorBufferBind = display.boardColorForPickingBind
+        display.buttonTextureBind = display.buttonTextureBindForPicking 
         backColor = backColorForPicking
         lightingContextEnabled = false
     } 
@@ -219,6 +222,7 @@ class Grid(rowCount: Int = 6,
             null)
         display.buttonColorBufferBind = display.buttonColorForDisplayBind 
         display.buttonColorDataForDraw = display.buttonColorDataForDisplay 
+        display.buttonTextureBind = display.buttonTextureBindForDisplay 
         display.boardColorBufferBind = display.boardColorForDisplayBind
         backColor = backColorForDrawing
         lightingContextEnabled = lightingContextEnabledForDrawing
@@ -235,6 +239,7 @@ class Grid(rowCount: Int = 6,
         setupBuffer(gl)
         setupCamera(gl)
         setupWorkingFrameBuffer(gl)
+        setupTextures(gl)
         setupMatrices()
     }
     fun teardown(gl: WebGLRenderingContext) {
@@ -276,6 +281,14 @@ class Grid(rowCount: Int = 6,
             WebGLRenderingContext.RENDERBUFFER_BINDING)
                 as WebGLRenderbuffer?
     }
+    /**
+     * setup textrues
+     */
+    fun setupTextures(gl: WebGLRenderingContext) {
+        textures.setupNumberImageBlankTexture(gl, this.glyph) 
+    }
+
+
     fun setupShaderProgram(gl: WebGLRenderingContext) {
         val vertexShader : WebGLShader? = createVertexShader(gl)
         var fragmentShader : WebGLShader? = createFragmentShader(gl)
@@ -322,26 +335,60 @@ class Grid(rowCount: Int = 6,
 
 
         handleUserInput(gl, round(x).toInt(), round(y).toInt())
-        
     } 
     fun handleUserInput(gl: WebGLRenderingContext,
         x: Int, y: Int) {
+        val model = this.model!!
         beginDrawingForPicking(gl)
-        // val buffer = Uint16Array(1)
         val buffer = Uint8Array(4)
         gl.readPixels(x, y, 1, 1,
             WebGLRenderingContext.RGBA, 
-            // WebGLRenderingContext.UNSIGNED_SHORT_5_5_5_1, 
             WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
         val colorVal = ByteArray(buffer.length) { buffer[it] } 
         val location = buttons.findPositionByPickingColor(colorVal)
         if (location != null) {
-            val buttonIndices = Array<IntArray>(1) { location }
-            Animation.setupButtons(buttons, buttonIndices, renderingCtx)
-            postStartAnimation(gl)
+            if (!model.logic.status!!.isOpened(location[0], location[1])) { 
+                model.logic.startIfNot(location[0], location[1])
+                if (!model.logic.status!!.inAnimating) {
+                    
+                    val cells = model.logic.getOpenableCells(
+                        location[0], location[1])
+
+                    startAnimation()
+                    val buttonIndices = Array<IntArray>(cells.size) {
+                        cells.elementAt(it).toIntArray()
+                    }
+
+                    cells.forEachIndexed({
+                        idx, cell ->
+                        buttonIndices[idx] = cell.toIntArray() 
+                    })
+
+                    Animation.setupButtons(buttons, 
+                        model.logic.status!!.getOpenedIndices(),
+                        buttonIndices, renderingCtx)
+                    postStartAnimation(gl, { finishAnimation(location) })
+                } 
+            }
         }
         endDrawingForPicking(gl)
+    }
+    
+    /**
+     * start animation
+     */
+    fun startAnimation() {
+        val model = this.model!!
+        model.logic.status!!.inAnimating = true
+    }
+    /**
+     * finish animation
+     */
+    fun finishAnimation(buttonIndices: IntArray) {
+        val model = this.model!!
+        model.logic.status!!.inAnimating = false 
+        model.logic.status!!.registerOpened(buttonIndices[0], buttonIndices[1])
     }
     
     fun tapButton(gl: WebGLRenderingContext,
@@ -353,11 +400,17 @@ class Grid(rowCount: Int = 6,
      * connect a canvas and create grid
      */
     fun bind(nodeQuery: String, 
+        glyphCanvasId: String,
         model: Model,
         camera: Camera,
         pointLight: PointLight,
         shaderPrograms: ShaderPrograms) {
+        
+        model.logic.rowSize = rowCount
+        model.logic.columnSize = columnCount
         this.model = model
+        this.buttons.logic = model.logic
+        this.buttons.textures = this.textures 
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms
@@ -368,6 +421,7 @@ class Grid(rowCount: Int = 6,
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
             onClickHandler = { event -> this.onClick(event) }
             canvas.addEventListener("click", onClickHandler)
+            glyph.bind(glyphCanvasId)
             setup(gl)
             drawScene(gl)
         }) 
@@ -378,12 +432,14 @@ class Grid(rowCount: Int = 6,
         canvas.removeEventListener("click", onClickHandler) 
         this.onClickHandler = null
     }
-    private fun postStartAnimation(gl: WebGLRenderingContext) {
+    private fun postStartAnimation(gl: WebGLRenderingContext,
+        animationFinishedListener: (()->Unit)) {
         window.setTimeout({ 
-            startAnimation(gl) 
+            startAnimation(gl, animationFinishedListener) 
         }, 100)
     }
-    private fun startAnimation(gl: WebGLRenderingContext) {
+    private fun startAnimation(gl: WebGLRenderingContext,
+        animationFinishedListener: (()->Unit)) {
         var then = .0
         fun render(now : Double): Unit {
             Animation.doAnimate(renderingCtx)
@@ -391,6 +447,8 @@ class Grid(rowCount: Int = 6,
  
             if (Animation.hasNextFrame(renderingCtx)) {
                 window.requestAnimationFrame { render(it) } 
+            } else {
+                animationFinishedListener()
             }
         } 
         window.requestAnimationFrame { render(it) }
@@ -400,6 +458,8 @@ class Grid(rowCount: Int = 6,
         renderingCtx.buttonBuffer = createButtonBuffer(gl)
         renderingCtx.buttonNormalVecBuffer = createButtonNormalVecBuffer(gl)
         renderingCtx.buttonColorBuffer = createButtonColorBuffer(gl)
+        renderingCtx.buttonTextureCoordinatesBuffer =
+            createButtonTextureCoordinateBuffer(gl)
         renderingCtx.boardBuffer = createBoardBuffer(gl)
         renderingCtx.boardNormalVecBuffer = createBoardNormalVecBuffer(gl)
         renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
@@ -455,6 +515,18 @@ class Grid(rowCount: Int = 6,
         gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
         gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
             buttons.mineButton.normalVectorsAsFloat32,
+            WebGLRenderingContext.STATIC_DRAW)
+        return result
+    }
+    /**
+     * button texture coordinate buffer
+     */
+    private fun createButtonTextureCoordinateBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
+        gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+            buttons.mineButton.textureCoordinatesAsFloat32,
             WebGLRenderingContext.STATIC_DRAW)
         return result
     }

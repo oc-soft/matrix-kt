@@ -37,7 +37,8 @@ actual class MainPage {
                 var shaderPrograms = ShaderPrograms(
                     responses[0], 
                     responses[1])
-                grid.bind("#game_grid", model, camera, 
+                grid.bind("#game_grid", "#font_test",
+                    model, camera, 
                     pointLight, shaderPrograms)
  
             })

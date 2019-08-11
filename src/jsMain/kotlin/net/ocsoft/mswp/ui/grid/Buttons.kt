@@ -3,7 +3,7 @@ package net.ocsoft.mswp.ui.grid
 import kotlin.math.*
 import net.ocsoft.mswp.ui.*
 import org.khronos.webgl.*
-
+import net.ocsoft.mswp.Logic
 
 
 class Buttons(var mineButton : MineButton,
@@ -70,6 +70,17 @@ class Buttons(var mineButton : MineButton,
             val maxSize = totalButtonSize.max() as Float
             return buttonZGap.map({ it * maxSize }).toFloatArray()
         }
+
+    /**
+     * textures
+     */
+    var textures : Textures? = null
+
+    /**
+     * logic
+     */
+    var logic: Logic? = null
+
     /**
      * get picking color at row and column.
      */
@@ -116,6 +127,22 @@ class Buttons(var mineButton : MineButton,
         colorsForPickingCache = colors
     }
     
+    /**
+     * get texture instance for button
+     */
+    fun getTexture(rowIndex: Int, colIndex: Int): WebGLTexture? {
+        var result : WebGLTexture? = null
+        var textures = this.textures 
+        var logic = this.logic
+        if (textures != null && logic != null) {
+            var num : Int? = null 
+            num = logic.getNumber(rowIndex, colIndex)  
+            if (num != null) {
+                result = textures.getNumberImageBlankTexture(num)
+            }  
+        }
+        return result
+    }
    
 }
 

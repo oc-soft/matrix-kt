@@ -32,6 +32,7 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.buttonColorBuffer)
+
         }
 
     /**
@@ -42,6 +43,42 @@ class Display(var renderingCtx : RenderingCtx,
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.buttonPickingColorBuffer)
         }
+    /**
+     * bind buffer for button texture for displaying
+     */ 
+    val buttonTextureBindForDisplay : (WebGLRenderingContext, Int, Int) -> Unit
+        = { gl, rowIndex, colIndex -> 
+            val tex = buttons.getTexture(rowIndex, colIndex)
+            if (tex != null) {
+
+                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex)
+            }
+            val shaderProg = this.renderingCtx.shaderProgram
+            if (shaderProg != null) {
+                val enableTexLoc = gl.getUniformLocation(shaderProg,
+                    "uEnableTexture")
+                fun Boolean.toInt() = if (this) 1 else 0 
+                gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
+                    (tex != null).toInt());
+ 
+            }
+        }
+
+    /**
+     * bind buffer for button texture for picking
+     */ 
+    val buttonTextureBindForPicking : (WebGLRenderingContext, Int, Int) -> Unit
+        = { gl, rowIndex, colIndex -> 
+            val shaderProg = this.renderingCtx.shaderProgram
+            if (shaderProg != null) {
+                val enableTexLoc = gl.getUniformLocation(shaderProg,
+                    "uEnableTexture")
+                gl.uniform1i(enableTexLoc as WebGLUniformLocation, 0);
+ 
+            }
+        }
+
+
 
     /**
      * bind buffer for board color for display
@@ -50,7 +87,7 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.boardColorBuffer)
-        }
+       }
 
     /**
      * bind buffer for board color for picking 
@@ -59,7 +96,7 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.boardPickingColorBuffer)
-        }
+       }
 
 
      /**
@@ -80,6 +117,8 @@ class Display(var renderingCtx : RenderingCtx,
             val colors = Array<Float>(countOfColors * color.size) { 
                 i -> color[i % color.size]
             } 
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
+                renderingCtx.buttonPickingColorBuffer)
             gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
                 Float32Array(colors), 
                 WebGLRenderingContext.STATIC_DRAW) 
@@ -89,6 +128,12 @@ class Display(var renderingCtx : RenderingCtx,
      */
     var buttonColorBufferBind : (WebGLRenderingContext) -> Unit
         = buttonColorForDisplayBind 
+    /**
+     * bind texture for button
+     */
+    var buttonTextureBind : (WebGLRenderingContext, Int, Int) -> Unit
+        = buttonTextureBindForDisplay 
+
 
     /**
      *  set up color for drawing
@@ -129,6 +174,15 @@ class Display(var renderingCtx : RenderingCtx,
                 "aVertexColor")
             val normalVecLoc = gl.getAttribLocation(shaderProg,
                 "aNormalVector")
+            val texLoc = gl.getAttribLocation(shaderProg,
+                "aTextureCoord")
+            val texSampler = gl.getUniformLocation(shaderProg,
+                "uSampler")
+
+
+            val savedArrayBuffer = gl.getParameter(
+                WebGLRenderingContext.ARRAY_BUFFER_BINDING)
+
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
                 renderingCtx.buttonBuffer)
             gl.vertexAttribPointer(
@@ -149,17 +203,32 @@ class Display(var renderingCtx : RenderingCtx,
             gl.enableVertexAttribArray(verColor)
 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                renderingCtx.buttonTextureCoordinatesBuffer)
+            gl.vertexAttribPointer(
+                texLoc, 2,
+                WebGLRenderingContext.FLOAT,
+                false, 0, 0)
+            gl.enableVertexAttribArray(texLoc)
+ 
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
                 renderingCtx.buttonNormalVecBuffer)
             gl.vertexAttribPointer(
                 normalVecLoc, 3,
                 WebGLRenderingContext.FLOAT,
                 false, 0, 0)
             gl.enableVertexAttribArray(normalVecLoc)
-
-
+            
+            val savedTex = gl.getParameter(
+                WebGLRenderingContext.ACTIVE_TEXTURE)
+            gl.activeTexture(
+                buttons.mineButton.textureIndex0)
+            gl.uniform1i(texSampler,
+                buttons.mineButton.textureIndex0
+                - WebGLRenderingContext.TEXTURE0)
+  
             for (rowIndex in 0 until rowCount) {
                 for (colIndex in 0 until columnCount) { 
-                    buttonColorBufferBind(gl) 
+                    buttonTextureBind(gl, rowIndex, colIndex)
                     buttonColorDataForDraw(gl, rowIndex, colIndex)
                      
                     updateButtonViewMatrix(gl, rowIndex, colIndex)
@@ -172,7 +241,10 @@ class Display(var renderingCtx : RenderingCtx,
                         buttons.mineButton.vertices.size / 3) 
                 }
             }
-        }
+            gl.activeTexture(savedTex as Int)
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                savedArrayBuffer as WebGLBuffer?)
+         }
     }
 
     /**
@@ -220,6 +292,8 @@ class Display(var renderingCtx : RenderingCtx,
                 "aVertexPosition")
             val verColor = gl.getAttribLocation(shaderProg,
                 "aVertexColor")
+            val enableTexLoc = gl.getUniformLocation(shaderProg,
+                "uEnableTexture")
             
             val normalVecLoc = gl.getAttribLocation(shaderProg,
                 "aNormalVector")
@@ -250,6 +324,9 @@ class Display(var renderingCtx : RenderingCtx,
                 false, 0, 0)
             gl.enableVertexAttribArray(normalVecLoc)
 
+            gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
+                0);
+ 
             gl.bindBuffer(
                 WebGLRenderingContext.ARRAY_BUFFER,
                 renderingCtx.boardBuffer)
@@ -268,7 +345,6 @@ class Display(var renderingCtx : RenderingCtx,
             
         }
     }
-    
 }
 
 

@@ -4,3 +4,13 @@
   height: 480px;
   */
 }
+
+body {
+    background-color: lightblue;
+}
+
+#font_test {
+    border: solid; 
+    font-family: "M PLUS Rounded 1c, sans-serif"; 
+    font-size: 12px;
+}

@@ -39,6 +39,32 @@ class MineButton(
         }
     
     /**
+     * texture coordinates
+     */
+    var textureCoordinatesCache : FloatArray? = null
+
+    /**
+     * texture coordinates
+     */
+    val textureCoordinates : FloatArray
+        get() {
+            if (textureCoordinatesCache == null) {
+                textureCoordinatesCache = createTextureCoordinates(
+                    polygonFactor[0].toInt(), polygonFactor[1].toInt())
+            }
+            return textureCoordinatesCache!!
+        }
+
+    val textureCoordinatesAsFloat32 : Float32Array
+        get() {
+            val textureCoodinates = this.textureCoordinates
+            val result = Float32Array(Array<Float>(textureCoordinates.size) {
+                textureCoordinates[it]
+            })
+            return result
+        }
+     
+    /**
      * normal vector's cache
      */
     private var normalVecCache : FloatArray? = null
@@ -92,7 +118,14 @@ class MineButton(
      * drawing mode
      */
     val drawingMode = WebGLRenderingContext.TRIANGLES
-    
+  
+    /**
+     * texture index
+     */ 
+    val textureIndex0 : Int
+        get() {
+            return Textures.ButtonTextureIndex 
+        }
     /**
      * polygon factor
      */
@@ -125,6 +158,22 @@ class MineButton(
         backV.forEachIndexed({ i, elem -> result[frontV.size + i] = elem })   
         return result
     }
+
+    /**
+     * create texture coordinates
+     */
+    fun createTextureCoordinates(xDivider : Int, yDivider : Int): FloatArray {
+        val texSize = floatArrayOf(1f, .5f)
+        val frontT =  Polygon.divideSquare2d2(texSize, xDivider, yDivider)
+        val backT = Polygon.divideSquare2d2(texSize, xDivider, yDivider)
+        val result = frontT.copyOf(frontT.size + backT.size)
+        val offsetBackT = floatArrayOf(0f, .5f)
+        backT.forEachIndexed({ 
+            i, elem -> 
+            result[frontT.size + i] = elem + offsetBackT[i % 2]
+        })   
+        return result
+    }    
     
     fun createNormalVectors(): FloatArray {
         return Polygon.createNormalVectorsForTriangles(vertices)
