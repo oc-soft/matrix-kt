@@ -19,12 +19,7 @@ void main() {
         texColor = vec4(0.0, 0.0, 0.0, 0.0); 
     }
     // maskVec = greaterThan(texColor, vec4(0, 0, 0, 0));
-    // if (any(maskVec)) {
-    if (texColor.a > 0.0) {
-        color = texColor; 
-    } else {
-        color = vColor;
-    }
+    color = mix(vColor, texColor, texColor.a); 
     if (uEnableLighting) { 
         vec3 lightVec = uLightPosition - vPosition.xyz;
         vec3 viewDir = normalize(uEyePosition - vPosition.xyz);
