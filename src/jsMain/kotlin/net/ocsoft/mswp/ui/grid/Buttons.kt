@@ -74,9 +74,9 @@ class Buttons(var mineButton : MineButton,
         }
 
     /**
-     * glyph 
+     * textures
      */
-    var glyph : Glyph? = null
+    var textures: Textures? = null
 
     /**
      * logic
@@ -132,16 +132,15 @@ class Buttons(var mineButton : MineButton,
     /**
      * get texture instance for button
      */
-    fun getNumberImage(rowIndex: Int, colIndex: Int): ImageData? {
-        var result : ImageData? = null
-        var glyph = this.glyph
+    fun getNumberImage(rowIndex: Int, colIndex: Int): WebGLTexture? {
+        var result : WebGLTexture? = null
         var logic = this.logic
-        if (glyph != null && logic != null) {
+        var textures = this.textures
+        if (textures != null && logic != null) {
             var num : Int? = null 
             num = logic.getNumberIfOpened(rowIndex, colIndex)  
             if (num != null) {
-                // result = glyph.getNumberImageBlank(num)
-                result = glyph.getNumberImage(num)
+                result = textures.getNumberImageBlankTexture(num)
             }  
         }
         return result

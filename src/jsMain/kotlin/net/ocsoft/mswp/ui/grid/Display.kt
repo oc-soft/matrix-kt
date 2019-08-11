@@ -48,19 +48,11 @@ class Display(var renderingCtx : RenderingCtx,
      */ 
     val buttonTextureBindForDisplay : (WebGLRenderingContext, Int, Int) -> Unit
         = { gl, rowIndex, colIndex -> 
-            val numImg = buttons.getNumberImage(rowIndex, colIndex)
-            if (numImg != null) {
+            val numTex = buttons.getNumberImage(rowIndex, colIndex)
+            if (numTex != null) {
                 gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
-                    renderingCtx.buttonTexture)
+                    numTex)
  
-                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
-                    0,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.UNSIGNED_BYTE,
-                    numImg)
- 
-                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
             }
             val shaderProg = this.renderingCtx.shaderProgram
             if (shaderProg != null) {
@@ -68,18 +60,7 @@ class Display(var renderingCtx : RenderingCtx,
                     "uEnableTexture")
                 fun Boolean.toInt() = if (this) 1 else 0 
                 gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
-                    (numImg != null).toInt());
-                if (numImg != null) {
-                    val texSampler = gl.getUniformLocation(shaderProg,
-                        "uSampler")
-
-                    var txtNumber = buttons.mineButton.textureIndex0
-                    txtNumber -= WebGLRenderingContext.TEXTURE0
-                    gl.uniform1i(texSampler, txtNumber)
- 
-
-                }
-
+                    (numTex != null).toInt());
 
             }
         }

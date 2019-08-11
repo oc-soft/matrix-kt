@@ -57,6 +57,7 @@ class Textures {
                         WebGLRenderingContext.RGBA,
                         WebGLRenderingContext.UNSIGNED_BYTE,
                         numImage)
+                    gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
                     numberImageBlankTextureMap[num] = tex!!
                 }
             }

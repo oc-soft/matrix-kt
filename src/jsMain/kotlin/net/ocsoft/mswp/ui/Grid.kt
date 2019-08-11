@@ -286,6 +286,7 @@ class Grid(rowCount: Int = 6,
      */
     fun setupTextures(gl: WebGLRenderingContext) {
         renderingCtx.buttonTexture = gl.createTexture()
+        textures.setupNumberImageBlankTexture(gl, glyph)
     }
 
 
@@ -410,7 +411,7 @@ class Grid(rowCount: Int = 6,
         model.logic.columnSize = columnCount
         this.model = model
         this.buttons.logic = model.logic
-        this.buttons.glyph = this.glyph
+        this.buttons.textures = this.textures
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms
