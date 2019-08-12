@@ -161,7 +161,8 @@ class Grid(rowCount: Int = 6,
     /**
      * lighting context for drawing
      */
-    val lightingContextEnabledForDrawing = true
+    //val lightingContextEnabledForDrawing = false 
+     val lightingContextEnabledForDrawing = true
  
     /**
      * lighting context

@@ -10,8 +10,9 @@ import org.w3c.dom.*
 
 import jQuery
 import kotlin.math.*
+import net.ocsoft.mswp.ColorScheme
 
-class Glyph {
+class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
 
     /**
      * button texture pixel size
@@ -69,8 +70,17 @@ class Glyph {
         val canvas = ctx.canvas
         val width = canvas.width
         val height = canvas.height
+        fun FloatArray.toRgba():String { 
+            val fltArray = this
+            val rgb = IntArray(3) {
+                max(min(round(fltArray[it] * 255), 255f), 0f).toInt()
+            }
+            return "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${fltArray[3]})" 
+        }
+        var colorStr = numberColor.toRgba()
         ctx.textBaseline = CanvasTextBaseline.MIDDLE
         ctx.font = "${fontSize}px sans-serif"
+        ctx.fillStyle = colorStr 
         val numberImageMap = HashMap<Int, ImageData>()
 
 
