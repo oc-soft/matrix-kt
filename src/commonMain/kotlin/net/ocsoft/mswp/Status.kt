@@ -19,6 +19,11 @@ class Status {
     val openedButtons : MutableSet<CellIndex>  = HashSet<CellIndex>()
 
     /**
+     * the progress of opening buttons
+     */
+    var openingButtons: Set<CellIndex>? = null
+
+    /**
      * whether the game is started or not
      */
     val isStarted : Boolean
@@ -49,6 +54,12 @@ class Status {
             result[idx][1] = elem.column
         }) 
         return result
+    }
+    /**
+     * get openend cells
+     */
+    fun getOpenedCellsRef(): Set<CellIndex>  {
+        return openedButtons
     }
     /**
      * clear opened buttons

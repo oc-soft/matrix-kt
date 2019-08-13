@@ -64,6 +64,11 @@ class RenderingCtx() {
      * texture for board
      */
     var boardTexture : WebGLTexture? = null
+
+    /**
+     * board texture coordinate buffer
+     */
+    var boardTextureCoordinateBuffer : WebGLBuffer? = null
     
     /**
      * buffer for offscreen
@@ -207,6 +212,7 @@ class RenderingCtx() {
             boardBuffer,
             boardNormalVecBuffer,
             boardColorBuffer,
+            boardTextureCoordinateBuffer,
             boardPickingColorBuffer).forEach({ buffer ->
             if (buffer != null) {
                 gl.deleteBuffer(buffer)
@@ -221,6 +227,7 @@ class RenderingCtx() {
         boardNormalVecBuffer = null
         boardColorBuffer = null
         boardPickingColorBuffer = null
+        boardTextureCoordinateBuffer = null
     }
     fun teardownRenderBuffer(gl: WebGLRenderingContext) {
         arrayOf(pickingBuffer,

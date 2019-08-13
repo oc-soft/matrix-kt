@@ -49,11 +49,13 @@ class Display(var renderingCtx : RenderingCtx,
     val buttonTextureBindForDisplay : (WebGLRenderingContext, Int, Int) -> Unit
         = { gl, rowIndex, colIndex -> 
             val numTex = buttons.getNumberImage(rowIndex, colIndex)
+            var tex : WebGLTexture?
             if (numTex != null) {
-                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
-                    numTex)
- 
+                tex = numTex
+            } else {
+                tex = buttons.transparentTexture
             }
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex)
             val shaderProg = this.renderingCtx.shaderProgram
             if (shaderProg != null) {
                 val enableTexLoc = gl.getUniformLocation(shaderProg,
@@ -70,6 +72,10 @@ class Display(var renderingCtx : RenderingCtx,
      */ 
     val buttonTextureBindForPicking : (WebGLRenderingContext, Int, Int) -> Unit
         = { gl, rowIndex, colIndex -> 
+
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                buttons.transparentTexture)
+ 
             val shaderProg = this.renderingCtx.shaderProgram
             if (shaderProg != null) {
                 val enableTexLoc = gl.getUniformLocation(shaderProg,
@@ -88,7 +94,7 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.boardColorBuffer)
-       }
+        }
 
     /**
      * bind buffer for board color for picking 
@@ -97,7 +103,7 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.boardPickingColorBuffer)
-       }
+        }
 
 
      /**
@@ -298,6 +304,8 @@ class Display(var renderingCtx : RenderingCtx,
                 "uModelViewMatrix")
             val uNormalVecMat = gl.getUniformLocation(shaderProg,
                 "uNormalVecMatrix")
+            val texLoc = gl.getAttribLocation(shaderProg,
+                "aTextureCoord")
             val verLoc = gl.getAttribLocation(shaderProg, 
                 "aVertexPosition")
             val verColor = gl.getAttribLocation(shaderProg,
@@ -316,6 +324,24 @@ class Display(var renderingCtx : RenderingCtx,
                 false,
                 0, 0)
             gl.enableVertexAttribArray(verLoc) 
+
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                renderingCtx.boardTextureCoordinateBuffer)
+            gl.vertexAttribPointer(
+                texLoc, 2,
+                WebGLRenderingContext.FLOAT,
+                false, 0, 0)
+
+            val savedTexNum = gl.getParameter(
+                WebGLRenderingContext.ACTIVE_TEXTURE)
+            gl.activeTexture(
+                WebGLRenderingContext.TEXTURE0)
+ 
+            val savedTex = gl.getParameter(
+                WebGLRenderingContext.TEXTURE_BINDING_2D)
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                board.transparentTexture)
+ 
             boardColorBufferBind(gl)
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.boardColorBuffer)
@@ -352,7 +378,12 @@ class Display(var renderingCtx : RenderingCtx,
                 board.drawingMode, 
                 0, 
                 board.vertices.size / 3) 
-            
+
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                savedTex as WebGLTexture?)
+            gl.activeTexture(
+                savedTexNum as Int)
+             
         }
     }
 }

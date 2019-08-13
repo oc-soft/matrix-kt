@@ -81,6 +81,20 @@ class Logic(rowSize: Int,
         return result
     }
     /**
+     * you get true if the cell is opening
+     */
+    fun isOpening(rowIndex: Int, colIndex: Int) : Boolean {
+        val status = this.status
+        var result = false
+        if (status != null) {
+            val cells = status.openingButtons
+            if (cells != null) {
+                result = CellIndex(rowIndex, colIndex) in cells        
+            }
+        } 
+        return result
+    }
+    /**
      * register opened cell
      */
     fun registerOpened(rowIndex: Int, colIndex: Int) {
@@ -94,7 +108,7 @@ class Logic(rowSize: Int,
      */
     fun getNumberIfOpened(rowIndex: Int, colIndex: Int) : Int? {
         var result : Int? = null
-        if (isOpened(rowIndex, colIndex)) {
+        if (isOpened(rowIndex, colIndex) || isOpening(rowIndex, colIndex)) {
             result = getNumber(rowIndex, colIndex)
         }
         return  result
@@ -116,9 +130,16 @@ class Logic(rowSize: Int,
                     val cell1 = CellIndex(cell.row + xIdx, 
                         cell.column + yIdx)
                     if (cell != cell1) {
-                        val disp = if (cell1 in hitLocations) 1 else 0
-                        totalNumber += disp
-                    }  
+                        if (0 <= cell1.row 
+                            && cell1.row < rowSize) {
+                            if (0 <= cell1.column 
+                                && cell1.column < columnSize) {
+                                    var disp: Int 
+                                    disp = if (cell1 in hitLocations) 1 else 0
+                                    totalNumber += disp
+                            }
+                        }
+                    }
                 })
             }) 
             result = totalNumber
@@ -130,7 +151,7 @@ class Logic(rowSize: Int,
      */ 
     fun getOpenableCells(
         rowIndex : Int, 
-        columnIndex : Int) : Set<CellIndex> {
+        columnIndex : Int) : MutableSet<CellIndex> {
         
         val result = HashSet<CellIndex>()
        
@@ -145,6 +166,10 @@ class Logic(rowSize: Int,
                     it, step, result)   
             }) 
         })
+        val status = this.status
+        if (status != null) {
+            result.removeAll(status.getOpenedCellsRef())  
+        }
         return result
     }
 
@@ -158,7 +183,11 @@ class Logic(rowSize: Int,
         step: Int,
         indices: MutableSet<CellIndex>) {
         var cellNumber = getNumber(rowIndex, colIndex) 
-        if (cellNumber != null) {
+        if (cellNumber != null 
+            && 0 <= rowIndex 
+            && rowIndex < rowSize
+            && 0 <= colIndex
+            && colIndex < columnSize) {
             indices.add(CellIndex(rowIndex, colIndex))
             if (cellNumber == 0) {
                 val subIndices = HashSet<CellIndex>()
@@ -174,7 +203,7 @@ class Logic(rowSize: Int,
                 } else if (step < 0) {
                     nextRowIndex--
                 }
-                if (nextRowIndex >= 0 && nextRowIndex < rowSize - 1
+                if (nextRowIndex >= 0 && nextRowIndex < rowSize
                     && nextRowIndex != rowIndex) {
                     zeroColumns.forEach({ 
                         updateOpenableCellIndices(

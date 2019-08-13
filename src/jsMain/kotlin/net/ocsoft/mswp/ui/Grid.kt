@@ -287,7 +287,7 @@ class Grid(rowCount: Int = 6,
      */
     fun setupTextures(gl: WebGLRenderingContext) {
         renderingCtx.buttonTexture = gl.createTexture()
-        textures.setupNumberImageBlankTexture(gl, glyph)
+        textures.setup(gl, glyph)
     }
 
 
@@ -356,21 +356,19 @@ class Grid(rowCount: Int = 6,
                     
                     val cells = model.logic.getOpenableCells(
                         location[0], location[1])
+                    
+                    val openedIndices = model.logic.status!!.getOpenedIndices()
 
-                    startAnimation()
+                    startAnimation(cells)
                     val buttonIndices = Array<IntArray>(cells.size) {
                         cells.elementAt(it).toIntArray()
                     }
-
-                    cells.forEachIndexed({
-                        idx, cell ->
-                        buttonIndices[idx] = cell.toIntArray() 
-                    })
+                    
 
                     Animation.setupButtons(buttons, 
                         model.logic.status!!.getOpenedIndices(),
                         buttonIndices, renderingCtx)
-                    postStartAnimation(gl, { finishAnimation(location) })
+                    postStartAnimation(gl, { finishAnimation(cells) })
                 } 
             }
         }
@@ -380,18 +378,25 @@ class Grid(rowCount: Int = 6,
     /**
      * start animation
      */
-    fun startAnimation() {
+    fun startAnimation(cells: Set<CellIndex>?) {
         val model = this.model!!
         model.logic.status!!.inAnimating = true
+        model.logic.status!!.openingButtons = cells
     }
     /**
      * finish animation
      */
-    fun finishAnimation(buttonIndices: IntArray) {
+    fun finishAnimation(cells: Set<CellIndex>?) {
         val model = this.model!!
+        model.logic.status!!.openingButtons = null
         model.logic.status!!.inAnimating = false 
-        model.logic.registerOpened(buttonIndices[0], buttonIndices[1])
-    }
+    
+        if (cells != null) {
+            cells.forEach({ 
+                model.logic.registerOpened(it.row, it.column)
+            })
+        }
+     }
     
     fun tapButton(gl: WebGLRenderingContext,
         rowIndex: Int, colIndex: Int) {
@@ -413,6 +418,7 @@ class Grid(rowCount: Int = 6,
         this.model = model
         this.buttons.logic = model.logic
         this.buttons.textures = this.textures
+        this.board.textures = this.textures
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms
@@ -462,9 +468,12 @@ class Grid(rowCount: Int = 6,
         renderingCtx.buttonColorBuffer = createButtonColorBuffer(gl)
         renderingCtx.buttonTextureCoordinatesBuffer =
             createButtonTextureCoordinateBuffer(gl)
+        
         renderingCtx.boardBuffer = createBoardBuffer(gl)
         renderingCtx.boardNormalVecBuffer = createBoardNormalVecBuffer(gl)
         renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
+        renderingCtx.boardTextureCoordinateBuffer =
+            createBoardTextureCoordinateBuffer(gl) 
     }
     private fun setupBufferForWorking(gl: WebGLRenderingContext) {
         renderingCtx.buttonPickingColorBuffer = 
@@ -614,7 +623,19 @@ class Grid(rowCount: Int = 6,
         return result
     }
 
-
+    /**
+     * board texture coordinate buffer
+     */
+    private fun createBoardTextureCoordinateBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, result)
+        gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+            board.textureCoordinatesAsFloat32,
+            WebGLRenderingContext.STATIC_DRAW)
+        return result
+    }
+ 
       
     /**
      * create picking buffer

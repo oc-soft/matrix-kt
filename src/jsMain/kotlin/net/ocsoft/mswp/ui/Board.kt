@@ -95,7 +95,43 @@ class Board(
      */
     val drawingMode = WebGLRenderingContext.TRIANGLES
 
+    /**
+     * texture coordinates
+     */
+    var textureCoordinatesCache : FloatArray? = null
 
+    /**
+     * texture coordinates
+     */
+    val textureCoordinates : FloatArray
+        get() {
+            if (textureCoordinatesCache == null) {
+                textureCoordinatesCache = createTextureCoordinates()
+            }
+            return textureCoordinatesCache!!
+        }
+
+    val textureCoordinatesAsFloat32 : Float32Array
+        get() {
+            val textureCoordinates = this.textureCoordinates
+            val result = Float32Array(Array<Float>(textureCoordinates.size) {
+                textureCoordinates[it]
+            })
+            return result
+        }
+ 
+    /**
+     * textures
+     */
+    var textures: Textures? = null
+
+    /**
+     * transpanent texture
+     */
+    val transparentTexture: WebGLTexture?
+        get() {
+            return getTransparentTexture()
+        }
     /**
      * create vertices color
      */
@@ -105,5 +141,25 @@ class Board(
         }
         return Float32Array(verticesColor)
     }
-    
+    /**
+     * create texture coordinates
+     */
+    fun createTextureCoordinates(): FloatArray {
+        val result = Polygon.divideSquare2d2(floatArrayOf(1f, 1f), 
+                polygonFactor[0].toInt(), 
+                polygonFactor[1].toInt())
+        return result
+    }    
+     
+    /**
+     * get transparent texture
+     */
+    fun getTransparentTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.blackTransparentTexture 
+        }
+        return result
+    }
 }

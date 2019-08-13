@@ -118,7 +118,6 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
             })
             this.numberImageBlankMap = numberImageBlankMap
         } 
-        
     }
 
     /**

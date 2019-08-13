@@ -84,6 +84,13 @@ class Buttons(var mineButton : MineButton,
     var logic: Logic? = null
 
     /**
+     * transparent texture
+     */
+    val transparentTexture: WebGLTexture?
+        get() {
+            return getTransparentTexture()
+        }
+    /**
      * get picking color at row and column.
      */
     fun getPickingColor(rowIndex : Int, colIndex : Int): FloatArray {
@@ -146,6 +153,17 @@ class Buttons(var mineButton : MineButton,
         return result
     }
    
+    /**
+     * get transparent texture
+     */
+    fun getTransparentTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.blackTransparentTexture 
+        }
+        return result
+    }
 }
 
 
