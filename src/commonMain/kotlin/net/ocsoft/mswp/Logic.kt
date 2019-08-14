@@ -115,6 +115,12 @@ class Logic(rowSize: Int,
     }
     /**
      * get the number to display on button
+     */
+    fun getNumber(cell: CellIndex) : Int? {
+        return getNumber(cell.row, cell.column)
+    } 
+    /**
+     * get the number to display on button
      */ 
     fun getNumber(rowIndex : Int, colIndex: Int) : Int? {
         var result : Int? = null 
@@ -154,26 +160,89 @@ class Logic(rowSize: Int,
         columnIndex : Int) : MutableSet<CellIndex> {
         
         val result = HashSet<CellIndex>()
-       
-        var cellsToStart = HashSet<CellIndex>()  
-        updateOpenableCellIndices(rowIndex, columnIndex, 0, cellsToStart)
-        result.addAll(cellsToStart)
-        val zeroColumns =  findZeroColumns(rowIndex, cellsToStart)
-
-        intArrayOf(-1, 1).forEach({ step ->
-            zeroColumns.forEach({
-                updateOpenableCellIndices(rowIndex + step,
-                    it, step, result)   
-            }) 
-        })
-        val status = this.status
-        if (status != null) {
-            result.removeAll(status.getOpenedCellsRef())  
-        }
+        val startCell = CellIndex(rowIndex, columnIndex)
+        val cellNum = getNumber(startCell)
+        if (cellNum != null) {
+            if (cellNum == 0) {
+                val cellsProcessed = HashSet<CellIndex>()  
+                val cells = ArrayList<CellIndex>()
+                val openableCells = HashSet<CellIndex>()
+                cells.add(startCell) 
+                updateOpenableCells(cells, cellsProcessed, openableCells)
+                result.addAll(createUiOpenableCells(openableCells)) 
+            } else {
+                result.add(startCell) 
+            } 
+        }  
+        return result
+    }
+    /**
+     * create openable cells to display user interface
+     */
+    fun createUiOpenableCells(openableCells:Set<CellIndex>): Set<CellIndex> {
+        val result = HashSet<CellIndex>()
+        val cellNext = arrayOf(
+            CellIndex(-1, -1), CellIndex(-1, 0), CellIndex(-1, 1),
+            CellIndex(0, -1), CellIndex(0, 0), CellIndex(0, 1),
+            CellIndex(1, -1), CellIndex(1, 0), CellIndex(1, 1))
+        openableCells.forEach({
+            currentCell->
+            cellNext.forEach({
+                cellDisp->
+                val neighborCell = CellIndex(
+                    currentCell.row + cellDisp.row,
+                    currentCell.column + cellDisp.column)
+                if (isValidCell(neighborCell)) {
+                    result.add(neighborCell)
+                }
+            })
+        }) 
         return result
     }
 
+     
+    /**
+     * update openable cell
+     */
+    fun updateOpenableCells(cells: MutableList<CellIndex>,
+        cellsProcessed: MutableSet<CellIndex>,
+        openableCells: MutableSet<CellIndex>) {
+        if (cells.size > 0) {
+            val cellNext = arrayOf(
+                CellIndex(-1, -1), CellIndex(-1, 0), CellIndex(-1, 1),
+                CellIndex(0, -1), CellIndex(0, 1),
+                CellIndex(1, -1), CellIndex(1, 0), CellIndex(1, 1))
+            val currentCell = cells.removeAt(0) 
+            openableCells.add(currentCell)
+            cellsProcessed.add(currentCell) 
+            cellNext.forEach({
+                cellDisp->
+                val neighborCell = CellIndex(currentCell.row + cellDisp.row,
+                    currentCell.column + cellDisp.column)
+                if (isValidCell(neighborCell)) {
+                    val neighborNumber = getNumber(neighborCell)
+                    if (neighborNumber != null && neighborNumber == 0) {
+                        if (neighborCell !in cellsProcessed) {
+                            cells.add(neighborCell)
+                        }
+                    }
+                }
+            })
+            updateOpenableCells(cells, cellsProcessed, openableCells)
+        }
+    } 
 
+    /**
+     * you get true if the celli is in 0..rowSize - 1 and 0..columnSize - 1
+     */
+    fun isValidCell(cell: CellIndex) : Boolean {
+        var result = false
+        result = cell.row in 0..rowSize - 1
+        if (result) {
+            result = cell.column in 0..columnSize - 1
+        } 
+        return result
+    }
     /**
      * update openable cell incies
      */

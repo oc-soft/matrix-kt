@@ -146,7 +146,7 @@ class Buttons(var mineButton : MineButton,
         if (textures != null && logic != null) {
             var num : Int? = null 
             num = logic.getNumberIfOpened(rowIndex, colIndex)  
-            if (num != null) {
+            if (num != null && num > 0) {
                 result = textures.getNumberImageBlankTexture(num)
             }  
         }

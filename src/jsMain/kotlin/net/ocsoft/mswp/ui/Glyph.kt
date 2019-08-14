@@ -12,7 +12,9 @@ import jQuery
 import kotlin.math.*
 import net.ocsoft.mswp.ColorScheme
 
-class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
+class Glyph(
+    val numberColor: FloatArray = ColorScheme.colors[0].copyOf(),
+    val mineColor: FloatArray = numberColor) {
 
     /**
      * button texture pixel size
@@ -39,6 +41,11 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
     var numberImageBlankMap : Map<Int, ImageData>? = null
 
     /**
+     * mine image
+     */
+    var mineImage : ImageData? = null
+
+    /**
      * connect nodeid into this class
      */
     fun bind(nodeId: String) {
@@ -57,8 +64,10 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
      */
     fun setupNumbers(ctx: CanvasRenderingContext2D) {
         setupNumbers0(ctx)
+        setupMineImage(ctx)
         setupNumbers1()
-        draw3()
+
+        drawScal()
     }
     /**
      * setup numbers
@@ -79,7 +88,7 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
         }
         var colorStr = numberColor.toRgba()
         ctx.textBaseline = CanvasTextBaseline.MIDDLE
-        ctx.font = "${fontSize}px sans-serif"
+        ctx.font = "${fontSize}px 'M PLUS Rounded 1c'"
         ctx.fillStyle = colorStr 
         val numberImageMap = HashMap<Int, ImageData>()
 
@@ -104,6 +113,48 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
         ctx.textBaseline = savedBaseline
         ctx.font = savedFont
     }
+
+    /**
+     * setup mine image
+     */
+    fun setupMineImage(ctx : CanvasRenderingContext2D) {
+        val savedFont = ctx.font 
+        val savedBaseline: CanvasTextBaseline = ctx.textBaseline
+        val fontSize = round(this.buttonTextureSize + buttonTextRatio).toInt()
+        val canvas = ctx.canvas
+        val width = canvas.width
+        val height = canvas.height
+        fun FloatArray.toRgba():String { 
+            val fltArray = this
+            val rgb = IntArray(3) {
+                max(min(round(fltArray[it] * 255), 255f), 0f).toInt()
+            }
+            return "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${fltArray[3]})" 
+        }
+        var colorStr = mineColor.toRgba()
+        ctx.textBaseline = CanvasTextBaseline.MIDDLE
+        ctx.font = "900 ${fontSize}px 'Font Awesome 5 Pro'"
+        ctx.fillStyle = colorStr 
+        // scal icon
+        // val mineStr = "\uf02b"
+        // val mineStr = String.fromCharCode(0xf26b)
+        val mineStr = "\uf54c"
+        val texMtx = ctx.measureText(mineStr)
+        var xcoord = .0
+        xcoord += (fontSize - texMtx.width) / 2.0
+        val ycoord = buttonTextureSize * .5
+        ctx.fillText(mineStr, xcoord, ycoord) 
+        val mineImage = ctx.getImageData(0.0, 0.0,
+            buttonTextureSize.toDouble(),
+            buttonTextureSize.toDouble())
+        ctx.clearRect(0.0, 0.0, 
+            width.toDouble(),
+            height.toDouble())
+        this.mineImage = mineImage 
+        ctx.textBaseline = savedBaseline
+        ctx.font = savedFont
+    }
+ 
     /**
      * setup number image-blank map
      */
@@ -152,5 +203,11 @@ class Glyph(val numberColor: FloatArray = ColorScheme.colors[0].copyOf()) {
         val canvas = jQuery(nodeId!!)[0] as HTMLCanvasElement
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         ctx.putImageData(img, 10.0, 10.0)         
+    }
+    fun drawScal() {
+        val img = mineImage
+        val canvas = jQuery(nodeId!!)[0] as HTMLCanvasElement
+        val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+        ctx.putImageData(img!!, 10.0, 10.0)         
     }
 }
