@@ -25,28 +25,40 @@ actual class MainPage {
             "wf-active"
         ).toList())
     }
+    /**
+     * game grid
+     */
     var grid : Grid? = null
+    /**
+     * model
+     */
+    var model: Model? = null
 
-    fun getWebfontConfig() : WebFont.Config {
-        return object: WebFont.Config {
-            override val fontactive: ((familyName: String, fvd: String) -> Unit)? = {
-                family, fvd ->
-                console.log("${family}, ${fvd}") 
-            }
+    /**
+     * camera
+     */
+    var camera: Camera? = null
 
-            override var google: WebFont.Google? = object: WebFont.Google {
-                override var families: Array<String> = arrayOf("M PLUS Rounded 1c") 
-            }
-        }
-    }
+    /**
+     * light
+     */
+    var pointLight: PointLight? = null
+    
+
     /**
      * setup body
      */ 
     actual fun setupBody(model : Model, camera: Camera, 
         pointLight: PointLight) {
+        
         attachMutationToHtml({ setupBodyI(model, camera, pointLight) })
     }
- 
+    /**
+     * setup for html page
+     */
+    actual fun setup(settings: Settings) {
+    }     
+   
     fun setupBodyI(model : Model, camera: Camera, 
         pointLight: PointLight) {
         // WebFont.load(getWebfontConfig())
@@ -101,16 +113,17 @@ actual class MainPage {
             })
         })
     }
+
     /**
      * attach mutation observer int html 
      */
-    fun attachMutationToHtmlNew(loadFinished:(()->Unit)) {
+    fun attachMutationToHtml(loadFinished:(()->Unit)) {
         loadFinished()
     }
      /**
      * attach mutation observer int html 
      */
-    fun attachMutationToHtml(loadFinished:(()->Unit)) {
+    fun attachMutationToHtmlForFutureReleaase(loadFinished:(()->Unit)) {
         val topNodes = window.document.getElementsByTagName(
             "html")
         val aNode : Element = topNodes.item(0) as Element

@@ -1,3 +1,4 @@
+package net.ocsoft.mswp
 
 /**
  * manage byte order

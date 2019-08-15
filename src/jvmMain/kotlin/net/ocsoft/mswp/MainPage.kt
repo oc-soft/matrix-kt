@@ -5,9 +5,13 @@ package net.ocsoft.mswp
  */
 actual class MainPage {
 
-   actual fun setupBody(model : Model, camera: Camera, 
+    actual fun setupBody(model : Model, camera: Camera, 
         pointLight: PointLight) {
-   }
+    }
+    
+    actual fun setup(settings: Settings) {
+    }
+   
 }
 
 
