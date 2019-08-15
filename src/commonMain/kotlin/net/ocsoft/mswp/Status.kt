@@ -41,7 +41,7 @@ class Status {
      * you will have true if the button is opened.
      */
     fun isOpened(row: Int, column: Int): Boolean {
-        return openedButtons.contains(CellIndex(row, column))
+        return CellIndex(row, column) in openedButtons
     }
     /**
      * get opened indecies

@@ -42,6 +42,22 @@ class Logic(rowSize: Int,
         get() {
             return hitLocations
         }
+
+    /**
+     * get opened cells
+     */
+    val openedCells : Set<CellIndex>
+        get() {
+            var openedCells : Set<CellIndex>? = null
+            val status = this.status
+            if (status != null) {
+                openedCells = status.openedButtons
+            } else {
+                openedCells = HashSet<CellIndex>()
+            } 
+            return openedCells!!
+        }
+
     /**
      * is game over
      */
@@ -109,6 +125,13 @@ class Logic(rowSize: Int,
         }
         return result
     }
+    /**
+     * you get true if the cell is opened
+     */
+    fun isOpened(cell: CellIndex) : Boolean {
+        return isOpened(cell.row, cell.column)
+    }
+
     /**
      * you get true if the cell is opening
      */
@@ -196,6 +219,8 @@ class Logic(rowSize: Int,
                 val cellsProcessed = HashSet<CellIndex>()  
                 val cells = ArrayList<CellIndex>()
                 val openableCells = HashSet<CellIndex>()
+                cellsProcessed.addAll(mineLocations)
+                cellsProcessed.addAll(openedCells)
                 cells.add(startCell) 
                 updateOpenableCells(cells, cellsProcessed, openableCells)
                 result.addAll(createUiOpenableCells(openableCells)) 
@@ -222,7 +247,11 @@ class Logic(rowSize: Int,
                     currentCell.row + cellDisp.row,
                     currentCell.column + cellDisp.column)
                 if (isValidCell(neighborCell)) {
-                    result.add(neighborCell)
+                    if (neighborCell !in mineLocations) {
+                        if (!isOpened(neighborCell)) {
+                            result.add(neighborCell)
+                        }
+                    }
                 }
             })
         }) 
@@ -262,7 +291,7 @@ class Logic(rowSize: Int,
     } 
 
     /**
-     * you get true if the celli is in 0..rowSize - 1 and 0..columnSize - 1
+     * you get true if the cell is in 0..rowSize - 1 and 0..columnSize - 1
      */
     fun isValidCell(cell: CellIndex) : Boolean {
         var result = false
