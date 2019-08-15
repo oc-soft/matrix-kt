@@ -5,7 +5,8 @@ import kotlin.collections.Map
 import kotlin.collections.MutableMap
 import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
-
+import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.ArrayBufferView
 
 /**
  * manage textures
@@ -74,7 +75,7 @@ class Textures {
         
        
         if (tex != null) { 
-            val transBlack = Uint8ClampedArray(Array<Byte>(4) { 0x00 })
+            val transBlack = Uint8Array(Array<Byte>(4) { 0x00 })
 
             gl.bindTexture(
                 WebGLRenderingContext.TEXTURE_2D,
@@ -85,7 +86,7 @@ class Textures {
                 1, 1, 0,
                 WebGLRenderingContext.RGBA,
                 WebGLRenderingContext.UNSIGNED_BYTE,
-                transBlack)
+                transBlack as ArrayBufferView)
             this.blackTransparentTexture = tex
         }
         gl.bindTexture(
