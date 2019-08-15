@@ -30,7 +30,8 @@ class Status {
         get() {
             return openedButtons.size != 0
         }
-    /**
+
+   /**
      * register opened button
      */
     fun registerOpened(row: Int, column: Int) {

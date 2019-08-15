@@ -2,6 +2,7 @@ package net.ocsoft.mswp.ui.grid
 
 import kotlin.math.*
 import net.ocsoft.mswp.ui.*
+import net.ocsoft.mswp.CellIndex
 import org.khronos.webgl.*
 import net.ocsoft.mswp.Logic
 import org.w3c.dom.*
@@ -152,6 +153,23 @@ class Buttons(var mineButton : MineButton,
         }
         return result
     }
+    /**
+     * get alternate texture
+     */
+    fun getAlternateTexture(rowIndex: Int, colIndex: Int) : WebGLTexture? {
+        var result : WebGLTexture? = null
+        var logic = this.logic
+        if (logic != null) {
+            val cell = CellIndex(rowIndex, colIndex)
+            if (logic.isOver && cell in logic.mineLocations) {
+                result = getMineTexture() 
+            } else {
+                result = getTransparentTexture()
+            }
+        }
+        return result
+    }
+    
    
     /**
      * get transparent texture
@@ -161,6 +179,17 @@ class Buttons(var mineButton : MineButton,
         var result : WebGLTexture? = null
         if (textures != null) {
             result = textures.blackTransparentTexture 
+        }
+        return result
+    }
+    /**
+     * get mine image texture
+     */
+    fun getMineTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.mineImageTexture 
         }
         return result
     }

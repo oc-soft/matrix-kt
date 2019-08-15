@@ -6,7 +6,9 @@ import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.Image
 import org.w3c.dom.*
+import org.w3c.dom.svg.*
 
 import jQuery
 import kotlin.math.*
@@ -46,28 +48,33 @@ class Glyph(
     var mineImage : ImageData? = null
 
     /**
+     * mine blank image
+     */
+    var mineImageBlank : ImageData? = null
+    /**
      * connect nodeid into this class
      */
-    fun bind(nodeId: String) {
+    fun bind(nodeId: String, mineImage : Image) {
         this.nodeId = nodeId     
         val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-        setup(ctx)
+        setup(ctx, mineImage)
     }
     
 
-    fun setup(ctx : CanvasRenderingContext2D) {
-        setupNumbers(ctx)
+    fun setup(ctx : CanvasRenderingContext2D, mineImage : Image) {
+        setupNumbers(ctx, mineImage)
     }
     /**
      * setup numbers
      */
-    fun setupNumbers(ctx: CanvasRenderingContext2D) {
+    fun setupNumbers(ctx: CanvasRenderingContext2D,
+        mineImage: Image) {
         setupNumbers0(ctx)
-        setupMineImage(ctx)
+        setupMineImage(ctx, mineImage)
         setupNumbers1()
-
-        drawScal()
+        setupMineImage1()
+        // drawScal()
     }
     /**
      * setup numbers
@@ -75,7 +82,7 @@ class Glyph(
     fun setupNumbers0(ctx : CanvasRenderingContext2D) {
         val savedFont = ctx.font 
         val savedBaseline: CanvasTextBaseline = ctx.textBaseline
-        val fontSize = round(this.buttonTextureSize + buttonTextRatio).toInt()
+        val fontSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
         val canvas = ctx.canvas
         val width = canvas.width
         val height = canvas.height
@@ -88,7 +95,7 @@ class Glyph(
         }
         var colorStr = numberColor.toRgba()
         ctx.textBaseline = CanvasTextBaseline.MIDDLE
-        ctx.font = "${fontSize}px 'M PLUS Rounded 1c'"
+        ctx.font = "${fontSize}px sans-serif"
         ctx.fillStyle = colorStr 
         val numberImageMap = HashMap<Int, ImageData>()
 
@@ -98,7 +105,7 @@ class Glyph(
             val texMtx = ctx.measureText(numStr)
             var xcoord = .0
             
-            xcoord += (fontSize - texMtx.width) / 2.0
+            xcoord += (this.buttonTextureSize - texMtx.width) / 2.0
             val ycoord = buttonTextureSize * .5
             ctx.fillText(numStr, xcoord, ycoord) 
             val img = ctx.getImageData(0.0, 0.0,
@@ -113,11 +120,71 @@ class Glyph(
         ctx.textBaseline = savedBaseline
         ctx.font = savedFont
     }
-
     /**
      * setup mine image
      */
-    fun setupMineImage(ctx : CanvasRenderingContext2D) {
+    fun setupMineImage(ctx : CanvasRenderingContext2D,
+        mineImageSrc: Image) {
+        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        val canvas = ctx.canvas
+        val width = canvas.width
+        val height = canvas.height
+        fun FloatArray.toRgba():String { 
+            val fltArray = this
+            val rgb = IntArray(3) {
+                max(min(round(fltArray[it] * 255), 255f), 0f).toInt()
+            }
+            return "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${fltArray[3]})" 
+        }
+        val imageWidth = mineImageSrc.width.toFloat()
+        val imageHeight  = mineImageSrc.height.toFloat()
+        val imgScale = imgSize / imageHeight   
+        val targetSize = floatArrayOf(imageWidth * imgScale,
+            imageHeight * imgScale)
+        val loc = floatArrayOf((buttonTextureSize - targetSize[0]) / 2,
+            (buttonTextureSize - targetSize[1]) / 2)
+  
+        
+        var colorStr = mineColor.toRgba()
+        // mineImageSrc.style.color = colorStr
+        // mineImageSrc.style.backgroundColor = colorStr
+        // mineImageSrc.style.fill = colorStr
+
+        ctx.drawImage(mineImageSrc, 
+            loc[0].toDouble(), 
+            loc[1].toDouble(), 
+            targetSize[0].toDouble(),
+            targetSize[1].toDouble()) 
+
+        val mineImage = ctx.getImageData(0.0, 0.0,
+            buttonTextureSize.toDouble(),
+            buttonTextureSize.toDouble())
+        ctx.clearRect(0.0, 0.0, 
+            width.toDouble(),
+            height.toDouble())
+        this.mineImage = mineImage 
+        // mineImageSrc.style.color = savedColor
+    }
+    /**
+     * setup mine image-blank map
+     */
+    fun setupMineImage1() {
+        val mineImage = this.mineImage
+        if (mineImage != null) {
+            val arr = Uint8ClampedArray(
+                mineImage.width * mineImage.height * 2 * 4) 
+            arr.set(mineImage.data, 0) 
+                            
+            this.mineImageBlank = ImageData(arr, mineImage.width)
+        } 
+    }
+
+ 
+    /**
+     * setup mine image
+     */
+    fun setupMineImageOld(ctx : CanvasRenderingContext2D,
+        mineImageSrc: Image) {
         val savedFont = ctx.font 
         val savedBaseline: CanvasTextBaseline = ctx.textBaseline
         val fontSize = round(this.buttonTextureSize + buttonTextRatio).toInt()
@@ -194,6 +261,15 @@ class Glyph(
         return result
     }
 
+    /**
+     * create mine image node
+     */
+    fun createMineImageNode() {
+//        val svgNode = document.createElementNS(
+//            "http://www.w3.org/2000/svg",
+//            "svg") as SVGElement
+//        svgNode.setAttributeNS("http://www.w3.org/1999/xlink", "href", "")
+    }
 
     /**
      * simple test

@@ -5,10 +5,12 @@ import org.w3c.dom.*
 import org.khronos.webgl.*
 import jQuery
 import net.ocsoft.mswp.*
+import kotlin.collections.Set
 import kotlin.browser.*
 import net.ocsoft.mswp.ui.grid.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.Image
 
 typealias GLRctx = WebGLRenderingContext
 
@@ -354,11 +356,12 @@ class Grid(rowCount: Int = 6,
                 model.logic.startIfNot(location[0], location[1])
                 if (!model.logic.status!!.inAnimating) {
                     
-                    val cells = model.logic.getOpenableCells(
+                    var cells : Set<CellIndex> = model.logic.getOpenableCells(
                         location[0], location[1])
-                    
-                    val openedIndices = model.logic.status!!.getOpenedIndices()
-
+                    if (cells.size == 0) {
+                        cells = model.logic.mineLocations
+                    }
+                
                     startAnimation(cells)
                     val buttonIndices = Array<IntArray>(cells.size) {
                         cells.elementAt(it).toIntArray()
@@ -380,6 +383,7 @@ class Grid(rowCount: Int = 6,
      */
     fun startAnimation(cells: Set<CellIndex>?) {
         val model = this.model!!
+        
         model.logic.status!!.inAnimating = true
         model.logic.status!!.openingButtons = cells
     }
@@ -411,7 +415,8 @@ class Grid(rowCount: Int = 6,
         model: Model,
         camera: Camera,
         pointLight: PointLight,
-        shaderPrograms: ShaderPrograms) {
+        shaderPrograms: ShaderPrograms,
+        mineImage: Image) {
         
         model.logic.rowSize = rowCount
         model.logic.columnSize = columnCount
@@ -429,7 +434,7 @@ class Grid(rowCount: Int = 6,
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
             onClickHandler = { event -> this.onClick(event) }
             canvas.addEventListener("click", onClickHandler)
-            glyph.bind(glyphCanvasId)
+            glyph.bind(glyphCanvasId, mineImage)
             setup(gl)
             drawScene(gl)
         }) 

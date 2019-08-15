@@ -13,5 +13,9 @@ body {
     border: solid; 
     font-family: "M PLUS Rounded 1c, sans-serif"; 
     font-size: 12px;
-    /* display: none;*/
+    display: none;
+}
+
+.resource {
+    display: none; 
 }

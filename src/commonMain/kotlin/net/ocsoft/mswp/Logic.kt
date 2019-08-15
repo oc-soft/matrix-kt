@@ -36,6 +36,35 @@ class Logic(rowSize: Int,
     val hitLocations : MutableSet<CellIndex> = HashSet<CellIndex>()
 
     /**
+     * all mine locations
+     */
+    val mineLocations : Set<CellIndex>
+        get() {
+            return hitLocations
+        }
+    /**
+     * is game over
+     */
+    val isOver: Boolean
+        get() {
+            var result = false
+            val mineLocations = this.mineLocations
+            val status = this.status
+            if (status != null && mineLocations != null) {
+                val openingCells = status.openingButtons
+
+                if (openingCells != null) {
+                    result = (openingCells intersect mineLocations).size > 0
+                }
+                if (!result) {
+                    val openedCells = status.openedButtons
+                    result = (openedCells intersect mineLocations).size > 0
+                }
+            }
+            return result 
+        }
+ 
+    /**
      * start game if it did not start
      */
     fun startIfNot(rowIndex: Int, colIndex: Int) {

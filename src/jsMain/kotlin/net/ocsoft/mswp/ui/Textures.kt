@@ -23,6 +23,11 @@ class Textures {
      */
     val numberImageBlankTextureMap : MutableMap<Int, WebGLTexture>
         = HashMap<Int, WebGLTexture>() 
+
+    /**
+     * mine texture
+     */
+    var mineImageTexture: WebGLTexture? = null
        
     /**
      * to use for dummy
@@ -47,11 +52,13 @@ class Textures {
     fun setup(gl: WebGLRenderingContext, glyph: Glyph) {
         setupTransparentBlackTexture(gl)
         setupNumberImageBlankTexture(gl, glyph)
+        setupMineImageTexture(gl, glyph)
     }
     /**
      * teardown
      */
     fun teardown(gl: WebGLRenderingContext) {
+        teardownMineImageTexture(gl)
         teardownNumberImageBlankTexture(gl)
         teardownTransparentBlackTexture(gl) 
     }
@@ -93,6 +100,7 @@ class Textures {
         gl.deleteTexture(this.blackTransparentTexture)
         this.blackTransparentTexture = null
     }
+
     /**
      * setup number texture
      */
@@ -137,5 +145,46 @@ class Textures {
             }
         }
         numberImageBlankTextureMap.clear()
+    }
+    /**
+     * setup mine image texture
+     */
+    fun setupMineImageTexture(gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+        val mineImage = glyph.mineImageBlank
+        if (mineImage != null) {
+            val tex = gl.createTexture();
+            if (tex != null) {
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    tex)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    mineImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                mineImageTexture = tex
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex as WebGLTexture?)
+
+    }
+    /**
+     * tear down mine image texture
+     */
+    fun teardownMineImageTexture(gl: WebGLRenderingContext) {
+        val tex = mineImageTexture
+        if (tex != null) {
+            gl.deleteTexture(tex)
+        }
+        this.mineImageTexture = null
     }
 }

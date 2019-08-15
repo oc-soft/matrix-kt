@@ -31,7 +31,7 @@ class Animation {
                 var animationMatrices = Array<Array<FloatArray>>(
                     countOfFrames) {
                     i ->
-                    val aniMtx = spinMotionMtx[i]
+                    val aniMtx = spinAndVMotionMtx[i]
                     val lastAniMtx = spinMotionMtx[spinMotionMtx.size - 1]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {

@@ -53,7 +53,7 @@ class Display(var renderingCtx : RenderingCtx,
             if (numTex != null) {
                 tex = numTex
             } else {
-                tex = buttons.transparentTexture
+                tex = buttons.getAlternateTexture(rowIndex, colIndex)
             }
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex)
             val shaderProg = this.renderingCtx.shaderProgram
@@ -62,7 +62,7 @@ class Display(var renderingCtx : RenderingCtx,
                     "uEnableTexture")
                 fun Boolean.toInt() = if (this) 1 else 0 
                 gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
-                    (numTex != null).toInt());
+                    (tex != null).toInt());
 
             }
         }
