@@ -105,7 +105,10 @@ actual class MainPage {
                 var shaderPrograms = ShaderPrograms(
                     responses[0] as String, 
                     responses[1] as String)
-                grid.bind("#game_grid", "#font_test",
+                val idSettings = GridSettings("#game_grid", 
+                    "#font_test",
+                    "#game_over_modal")
+                grid.bind(idSettings,
                     model, camera, 
                     pointLight, shaderPrograms,
                     responses[2] as Image)

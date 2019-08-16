@@ -4,6 +4,7 @@ import kotlin.math.*
 import org.w3c.dom.*
 import org.khronos.webgl.*
 import jQuery
+import JQueryEventObject
 import net.ocsoft.mswp.*
 import kotlin.collections.Set
 import kotlin.browser.*
@@ -143,9 +144,31 @@ class Grid(rowCount: Int = 6,
     var canvasId : String? = null
 
     /**
+     * game over modal dialog
+     */
+    var gameOverModalId : String? = null
+
+    /**
      * event handler
      */
     var onClickHandler : ((Event) -> Unit) ? = null
+
+
+    /**
+     * game over modal hidden handler
+     */
+    var onHiddenGameOverModalHandler: ((JQueryEventObject, Any) -> Any)? = null
+
+    /**
+     * play again button handler
+     */
+    var onClickToPlayAgainHandler: ((JQueryEventObject, Any) -> Any)? = null
+    
+    /**
+     * next game operation
+     */
+    var nextGameOperation: (() -> Unit)? = null
+
     /**
      * back color for drawing
      */
@@ -182,6 +205,15 @@ class Grid(rowCount: Int = 6,
         gl.frontFace(WebGLRenderingContext.CW)
         gl.depthFunc(GLRctx.LEQUAL)
         gl.clear(GLRctx.COLOR_BUFFER_BIT or GLRctx.DEPTH_BUFFER_BIT)
+    }
+    /**
+     * draw scene
+     */
+    fun drawScene() {
+        val canvasNode = jQuery(canvasId!!)
+        val canvas = canvasNode[0] as HTMLCanvasElement
+        var gl = canvas.getContext("webgl") as WebGLRenderingContext
+        drawScene(gl) 
     }
     /**
      * draw scene
@@ -367,7 +399,8 @@ class Grid(rowCount: Int = 6,
         if (location != null) {
             if (!model.logic.isOpened(location[0], location[1])) { 
                 model.logic.startIfNot(location[0], location[1])
-                if (!model.logic.status!!.inAnimating) {
+                if (!model.logic.status!!.inAnimating
+                    && !model.logic.isOver) {
                     
                     var cells : Set<CellIndex> = model.logic.getOpenableCells(
                         location[0], location[1])
@@ -407,11 +440,16 @@ class Grid(rowCount: Int = 6,
         val model = this.model!!
         model.logic.status!!.openingButtons = null
         model.logic.status!!.inAnimating = false 
+
     
         if (cells != null) {
             cells.forEach({ 
                 model.logic.registerOpened(it.row, it.column)
             })
+        }
+        
+        if (model.logic.isOver) {
+            postDisplayGameOverModal()    
         }
      }
     
@@ -423,8 +461,8 @@ class Grid(rowCount: Int = 6,
     /**
      * connect a canvas and create grid
      */
-    fun bind(nodeQuery: String, 
-        glyphCanvasId: String,
+    fun bind( 
+        idSettings: GridSettings,
         model: Model,
         camera: Camera,
         pointLight: PointLight,
@@ -440,15 +478,17 @@ class Grid(rowCount: Int = 6,
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms
-        this.canvasId = nodeQuery
+        this.canvasId = idSettings.canvasId 
+        this.gameOverModalId = idSettings.gameOverModalId
         jQuery({
-            val canvasNode = jQuery(nodeQuery)
+            val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
             onClickHandler = { event -> this.onClick(event) }
+            setupGameOverModal()
             syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
             canvas.addEventListener("click", onClickHandler)
-            glyph.bind(glyphCanvasId, mineImage)
+            glyph.bind(idSettings.glyphCanvasId, mineImage)
             setup(gl)
             drawScene(gl)
         }) 
@@ -459,6 +499,25 @@ class Grid(rowCount: Int = 6,
         canvas.removeEventListener("click", onClickHandler) 
         this.onClickHandler = null
     }
+
+    /**
+     * setup game over modal
+     */
+    private fun setupGameOverModal() {
+        onHiddenGameOverModalHandler = { 
+            event, args -> 
+            this.handleHiddenGameOverModal(event, args)
+        }
+        onClickToPlayAgainHandler = {
+            event, args ->
+            this.handleClickToPlayAgain(event, args)
+        }
+        jQuery(gameOverModalId!!).on("hidden.bs.modal", 
+            onHiddenGameOverModalHandler!!)
+        jQuery(".btn-primary", gameOverModalId!!).on("click",
+            onClickToPlayAgainHandler!!)
+    }
+
     private fun postStartAnimation(gl: WebGLRenderingContext,
         animationFinishedListener: (()->Unit)) {
         window.setTimeout({ 
@@ -988,6 +1047,72 @@ class Grid(rowCount: Int = 6,
             || portNew[2] != curPort[2] || portNew[3] != curPort[3]) {
             gl.viewport(portNew[0], portNew[1], portNew[2], portNew[3])
         } 
+    }
+    /**
+     * display game over modal
+     */
+    private fun postDisplayGameOverModal() {
+        window.setTimeout({
+            displayGameOverModal()
+        }, 100) 
+    }
+
+    /**
+     * display game over modal
+     */
+    private fun displayGameOverModal() {
+        jQuery(gameOverModalId!!).asDynamic().modal()
+    }
+
+
+    /**
+     * modal hidden event handler
+     */
+    private fun handleHiddenGameOverModal(e : JQueryEventObject,
+        args: Any) : Any {
+        if (nextGameOperation != null) {
+            nextGameOperation!!()
+        }
+        return true 
+    }
+
+    /**
+     * play again button handler
+     */
+    private fun handleClickToPlayAgain(e : JQueryEventObject, 
+        args: Any): Any {
+        this.nextGameOperation = {
+            postResetGame() 
+            this.nextGameOperation = null 
+        } 
+        return true 
+    }
+  
+    /**
+     * reset game lately
+     */
+    private fun postResetGame() {
+        window.setTimeout({
+            resetGame()
+        }, 100)
+    }
+    /**
+     * reset game
+     */
+    private fun resetGame() {
+        val model = this.model!!
+        val status = model.logic.status 
+        if (status != null) {
+            status.clearOpenedButtons()
+            val buttonIndices = Array<IntArray>(0) { intArrayOf(0,0) }
+            Animation.setupButtons(buttons, 
+                status.getOpenedIndices(),
+                buttonIndices, renderingCtx)
+            while (Animation.hasNextFrame(renderingCtx)) {
+                Animation.doAnimate(renderingCtx)
+            }  
+            drawScene()             
+        }
     }
 }
 
