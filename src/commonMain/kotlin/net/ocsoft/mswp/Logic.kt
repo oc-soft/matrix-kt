@@ -26,6 +26,13 @@ class Logic(rowSize: Int,
     var columnSize : Int = columnSize 
     
     /**
+     * you get the number of buttons
+     */
+    val cellsCount : Int
+        get() {
+            return rowSize * columnSize
+        }
+    /**
      * number of hit locations
      */
     var hitCount : Int = hitCount 
@@ -64,17 +71,44 @@ class Logic(rowSize: Int,
     val isOver: Boolean
         get() {
             var result = false
+            val gameOverStatus = HashSet<GamingStatus>(
+                arrayOf(GamingStatus.LOST,
+                    GamingStatus.WON).toList())
+            result = gamingStatus in gameOverStatus
+             
+            return result 
+        }
+    /**
+     * gaming status
+     */
+    val gamingStatus : GamingStatus
+        get() {
+            var result = GamingStatus.NOT_PLAYING
             val mineLocations = this.mineLocations
             val status = this.status
-            if (status != null && mineLocations != null) {
+            if (status != null && mineLocations.size > 0) {
                 val openingCells = status.openingButtons
 
                 if (openingCells != null) {
-                    result = (openingCells intersect mineLocations).size > 0
+                    if ((openingCells intersect mineLocations).size > 0) {
+                        result = GamingStatus.LOST
+                    }
                 }
-                if (!result) {
+                if (result != GamingStatus.LOST) {
                     val openedCells = status.openedButtons
-                    result = (openedCells intersect mineLocations).size > 0
+                    if ((openedCells intersect mineLocations).size > 0) {
+                        result = GamingStatus.LOST
+                    }
+                    if (result != GamingStatus.LOST) {
+                        var totalOpenedCellsCount =  openedCells.size 
+                        if (openingCells != null) {
+                            totalOpenedCellsCount += openingCells.size
+                        }
+                        val restCount = cellsCount - totalOpenedCellsCount
+                        if (restCount == mineLocations.size) {
+                            result = GamingStatus.WON
+                        } 
+                    }
                 }
             }
             return result 

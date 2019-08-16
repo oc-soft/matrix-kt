@@ -149,6 +149,11 @@ class Grid(rowCount: Int = 6,
     var gameOverModalId : String? = null
 
     /**
+     * player won the game daialog
+     */
+    var playerWonModalId : String? = null
+
+    /**
      * event handler
      */
     var onClickHandler : ((Event) -> Unit) ? = null
@@ -158,6 +163,12 @@ class Grid(rowCount: Int = 6,
      * game over modal hidden handler
      */
     var onHiddenGameOverModalHandler: ((JQueryEventObject, Any) -> Any)? = null
+
+    /**
+     * game over modal hidden handler
+     */
+    var onHiddenPlayerWonModalHandler: ((JQueryEventObject, Any) -> Any)? = null
+ 
 
     /**
      * play again button handler
@@ -447,9 +458,12 @@ class Grid(rowCount: Int = 6,
                 model.logic.registerOpened(it.row, it.column)
             })
         }
-        
         if (model.logic.isOver) {
-            postDisplayGameOverModal()    
+            if (model.logic.gamingStatus == GamingStatus.LOST) {
+                postDisplayGameOverModal()    
+            } else {
+                postDisplayPlayerWonModal()    
+            }
         }
      }
     
@@ -480,12 +494,19 @@ class Grid(rowCount: Int = 6,
         this.shaderPrograms = shaderPrograms
         this.canvasId = idSettings.canvasId 
         this.gameOverModalId = idSettings.gameOverModalId
+        this.playerWonModalId = idSettings.playerWonModalId
         jQuery({
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
             onClickHandler = { event -> this.onClick(event) }
+            onClickToPlayAgainHandler = {
+                event, args ->
+                this.handleClickToPlayAgain(event, args)
+            }
+
             setupGameOverModal()
+            setupPlayerWonModal()
             syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
             canvas.addEventListener("click", onClickHandler)
             glyph.bind(idSettings.glyphCanvasId, mineImage)
@@ -508,13 +529,22 @@ class Grid(rowCount: Int = 6,
             event, args -> 
             this.handleHiddenGameOverModal(event, args)
         }
-        onClickToPlayAgainHandler = {
-            event, args ->
-            this.handleClickToPlayAgain(event, args)
-        }
         jQuery(gameOverModalId!!).on("hidden.bs.modal", 
             onHiddenGameOverModalHandler!!)
         jQuery(".btn-primary", gameOverModalId!!).on("click",
+            onClickToPlayAgainHandler!!)
+    }
+    /**
+     * setup player won the game modal
+     */
+    private fun setupPlayerWonModal() {
+        onHiddenPlayerWonModalHandler = { 
+            event, args -> 
+            this.handleHiddenPlayerWonModal(event, args)
+        }
+        jQuery(playerWonModalId!!).on("hidden.bs.modal", 
+            onHiddenPlayerWonModalHandler!!)
+        jQuery(".btn-primary", playerWonModalId!!).on("click",
             onClickToPlayAgainHandler!!)
     }
 
@@ -1056,19 +1086,46 @@ class Grid(rowCount: Int = 6,
             displayGameOverModal()
         }, 100) 
     }
+    /**
+     * display player won modal
+     */
+    private fun postDisplayPlayerWonModal() {
+        window.setTimeout({
+            displayPlayerWonModal()
+        }, 100) 
+    }
+
 
     /**
-     * display game over modal
+     * display player won modal
+     */
+    private fun displayPlayerWonModal() {
+        jQuery(playerWonModalId!!).asDynamic().modal()
+    }
+
+    /**
+     * display won modal
      */
     private fun displayGameOverModal() {
         jQuery(gameOverModalId!!).asDynamic().modal()
     }
 
 
+
     /**
      * modal hidden event handler
      */
     private fun handleHiddenGameOverModal(e : JQueryEventObject,
+        args: Any) : Any {
+        if (nextGameOperation != null) {
+            nextGameOperation!!()
+        }
+        return true 
+    }
+    /**
+     * modal hidden event handler
+     */
+    private fun handleHiddenPlayerWonModal(e : JQueryEventObject,
         args: Any) : Any {
         if (nextGameOperation != null) {
             nextGameOperation!!()

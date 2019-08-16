@@ -127,7 +127,8 @@ actual class MainPage {
                     responses[1] as String)
                 val idSettings = GridSettings("#game_grid", 
                     "#font_test",
-                    "#game_over_modal")
+                    "#game_over_modal",
+                    "#player_won_modal")
                 grid.bind(idSettings,
                     model, camera, 
                     pointLight, shaderPrograms,

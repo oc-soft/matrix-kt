@@ -54,6 +54,20 @@ include 'config.php';
     </div>
   </div>
 </div>
+<div id="player_won_modal" class="modal" tabindx="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-body">
+          <p>You won the game</p>
+	  <a href="./about.php" class="badge badge-primary">About this Project</a>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary"
+            data-dismiss="modal">Play again</button>
+        </div>
+    </div>
+  </div>
+</div>
 </body>
 
 </html>

@@ -9,6 +9,7 @@ import kotlin.collections.HashSet
  */
 class Status {
 
+
     /**
      * the game is in animating status
      */
