@@ -1,7 +1,7 @@
 package net.ocsoft.mswp
 
 
-class PointLight(point: FloatArray = floatArrayOf(-1f, 1f, 2f)) {
+class PointLight(point: FloatArray = floatArrayOf(-1f, 1f, 2.5f)) {
     /**
      * light origin
      */
