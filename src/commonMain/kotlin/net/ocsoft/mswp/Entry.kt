@@ -9,6 +9,7 @@ fun main(args: Array<String>) {
 	val boardCam = Camera()
     val pointLight = PointLight()
     mainPage.setupBody(model, boardCam, pointLight)
+    mainPage.setup(Settings())
     Context.mainPage = mainPage 
 }
 

@@ -50,25 +50,45 @@ actual class MainPage {
      */ 
     actual fun setupBody(model : Model, camera: Camera, 
         pointLight: PointLight) {
-        
-        attachMutationToHtml({ setupBodyI(model, camera, pointLight) })
+        this.model = model
+        this.camera = camera
+        this.pointLight = pointLight        
     }
     /**
      * setup for html page
      */
     actual fun setup(settings: Settings) {
     }     
-   
-    fun setupBodyI(model : Model, camera: Camera, 
-        pointLight: PointLight) {
+    /**
+     * run program
+     */ 
+    @JsName("run")
+    fun run(settings: String?) {
+        var settingObj : Settings? = null
+        if (settings != null) {
+            settingObj = JSON.parse<Settings>(settings)
+        } else {
+            settingObj = Settings()
+        }
+        attachMutationToHtml({ 
+            setupBodyI(model!!, 
+            camera!!, 
+            pointLight!!,
+            settingObj!!.rootDir) 
+        })
+     }
+    fun setupBodyI(model : Model, 
+        camera: Camera, 
+        pointLight: PointLight,
+        rootDir: String) {
         // WebFont.load(getWebfontConfig())
         jQuery({ 
             val grid = Grid()
             val shaders = arrayOf(
-                "/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
-                "/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
             val imgs = arrayOf(
-                "/img/skull-solid.svg")
+                "${rootDir}/img/skull-solid.svg")
 
             val shaderPromises = Array<Promise<Response>>(shaders.size) {
                 window.fetch(shaders[it])
