@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Mine sweeper One day</title>
+  <meta name="viewport" content="width=device-width initial-scale=1">
   <link rel="stylesheet" type="text/css" href="entry.css">
   <script
     src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -24,7 +25,7 @@
 ?>
 
 <body>
-<canvas id="game_grid" width="640" height="480" ></canvas>
+<canvas id="game_grid"></canvas>
 <canvas id="font_test" width="256" height="256"></canvas>
 </body>
 

@@ -313,7 +313,9 @@ class Grid(rowCount: Int = 6,
             }
         }
     }
-    
+    /**
+     * on clik event
+     */ 
     fun onClick(event: Event) {
         if (event is MouseEvent) {
             val mouseEvent = event as MouseEvent
@@ -326,12 +328,23 @@ class Grid(rowCount: Int = 6,
         }
 
     }
-    
+    /**
+     * on resizing event
+     */
+    fun onResize(event: Event) {
+        
+    }
+    /**
+     * handle user input
+     */ 
     fun postHandleUserInput(x : Double, y: Double) {
         window.setTimeout({
            handleUserInput(x, y)  
         }, 100)
     }
+    /**
+     * handle user input
+     */
     fun handleUserInput(x : Double, y: Double) {
         val canvas = document.querySelector(
             canvasId!!) as HTMLCanvasElement
@@ -433,6 +446,7 @@ class Grid(rowCount: Int = 6,
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
             onClickHandler = { event -> this.onClick(event) }
+            syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
             canvas.addEventListener("click", onClickHandler)
             glyph.bind(glyphCanvasId, mineImage)
             setup(gl)
@@ -934,4 +948,46 @@ class Grid(rowCount: Int = 6,
     }
     private fun onCameraChanged(eventName : String, camera : Camera) {
     }
+
+    /**
+     * synchronize canvas size with client size.
+     */
+    private fun syncCanvasWithClientSize(resized: (()->Unit)?) {
+        val nodeId = this.canvasId
+        if (nodeId != null) {
+            val canvas = document.querySelector(
+                canvasId!!) as HTMLCanvasElement
+            var doResize = false
+            doResize = canvas.width != canvas.clientWidth
+            if (!doResize) {
+                doResize = canvas.height != canvas.clientHeight
+            }
+            if (doResize) {
+                canvas.width = canvas.clientWidth
+                canvas.height = canvas.clientHeight
+                if (resized != null) {
+                    resized()
+                }
+            } 
+            
+        }  
+    }
+    /**
+     * sync gl viewport with canvas size
+     */
+    private fun syncViewportWithCanvasSize() {
+
+        val canvas = document.querySelector(
+            canvasId!!) as HTMLCanvasElement
+        var gl = canvas.getContext("webgl") as WebGLRenderingContext
+        val curPort = gl.getParameter(
+            WebGLRenderingContext.VIEWPORT) as Int32Array
+        
+        val portNew = intArrayOf(0, 0, canvas.width, canvas.height)
+        if (portNew[0] != curPort[0] || portNew[1] != curPort[1]
+            || portNew[2] != curPort[2] || portNew[3] != curPort[3]) {
+            gl.viewport(portNew[0], portNew[1], portNew[2], portNew[3])
+        } 
+    }
 }
+
