@@ -11,17 +11,20 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="about.css">
 
 </head> 
 <body>
+<div class="main">
 <h1>動機</h1>
-<p>2019の子供の夏休みの課題に則って開発をしました。子供と共に夏休みを過ごしてみようとの思い付きです。欲張って、以下の課題をクリアしたいと始めました。</p>
+<p>2019の子供の夏休みの課題に則ってMine sweeperの開発をしました。子供と共に夏休みを過ごしてみようとの思い付きです。欲張って、以下の課題をクリアしたいと始めました。</p>
 <ol>
 <li>androidの開発を見据えてkotlinを使いならすこと。</li>
 <li>gradleによる開発サイクルに慣れること。</li>
 <li>groogyでgradleのスクリプトを拡張して、自分の望んだjavascriptアプリを作成する。</li>
 <li>webglによるUIの可能性を調べること。</li>
 <li>open glのレンダリングの詳細を理解すること。</li>
+</ol>
 <h1>課題の達成方法</h1>
 <p>実践的な小さいプログラムを作成する。プログラムの作成中に、仕様を実現する方法を模索することで、課題をクリアする。</p>
 <h1>予想</h1>
@@ -29,7 +32,7 @@
 <h1>開発の経過</h1>
 <p>以下の表のように開発が進んだ。</p>
 <table class=table>
-<thead><tr><th scope="col">期間始め</th><th scope="col">期間終わり</th><th scope="col">作業と感想</th></tr></thead>
+<thead><tr><th scope="col" colspan="2">期間</th><th scope="col">作業と感想</th></tr></thead>
 <tbody>
 <tr scope="row"><td>2019/7/14</td><td>2019/7/16</td><td>gradleの仕組みと、groovyの関係を理解した。java環境でも使いやすいスクリプト言語があると思った。</td></tr>
 <tr scope="row"><td>2019/7/17</td><td>2019/7/25</td><td>webglのサンプルコードを参考に仕様に合致するように簡単なuiパーツを作成した。domノードによるguiは、十分に汎用性が高いことを再認識した。</td></tr>
@@ -38,6 +41,7 @@
 <tr scope="row"><td>2019/8/4</td><td>2019/8/14</td><td>ボタンに番号を表示するためのテクスチャを組み込む。Webfontを利用して、テクスチャを生成しようとしたが、fontデータがクライアントに届く前に、テクスチャの生成が始まってしまう。fontデータが確実に読み込まれた後にテクスチャを生成する方法を検討したが、保留とした。htmlは、情報を確実に届けるという本来的な思想があると考えると、fontが読み込まれるまで情報を表示しないというのは、優先度の低い開発案件であると理解した。</td></tr>
 <tr scope="row"><td>2019/8/15</td><td>2019/8/16</td><td>ゲームロジックを完成させる。responsiveの対応を行う。子供たちに動作をみてもらうと、いろいろな提案があった。拡張案件として対応していく約束をした。</td></tr>
 </tbody>
+</table>
 <h1>開発の結果</h1>
 <p>kotlinはコンパイルが通ると、実行時のエラーがほとんど出ない。マルチプラットフォーム用のbuild.gradleは、拡張の余地が残っている。chrome、safariはともにwebkitがベースであったが、webglでは、対応状況が異なっていた。子供たちにはプログラムについて、身近に感じてもらいたいと思ったが、プログラムに主体的にかかわるほどの魅力を発揮することが出来なかった。</p>
 <h1>考察</h1>
@@ -46,6 +50,6 @@
 <p>静的型志向言語は、言語習得レベルが異なる開発者が多数集まるような大規模開発に向いているといえる。開発後半になって、プログラムが具体的になるほど、子供たちから拡張の提案でてくるようになってきた。</p>
 <h1>感想</h1>
 <p>タイムを計ったり、ゲームの難易度を設定したり、子供たちからのアイディアを反映させていきたい。</p>
-</table>
+</div>
 </body>
 </html>

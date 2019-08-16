@@ -41,6 +41,7 @@ include 'config.php';
     <div class="modal-content">
         <div class="modal-body">
           <p>Game over</p>
+	  <a href="./about.php" class="badge badge-primary">About this Project</a>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary"

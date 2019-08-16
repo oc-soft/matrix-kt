@@ -5,3 +5,5 @@ gradle-app.setting
 .gradletasknamecache
 *.swp
 prg/
+config.php
+.htaccess
