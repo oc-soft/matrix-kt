@@ -1,6 +1,8 @@
 #game_grid {
   width: 480px;
   height: 480px;
+  margin: auto;
+  display: block;
 }
 
 
@@ -86,7 +88,7 @@
 
 
 body {
-    /* background-color: black;*/
+    background-color: black;
 }
 
 #font_test {
