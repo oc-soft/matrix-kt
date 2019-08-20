@@ -2,7 +2,6 @@
   width: 480px;
   height: 480px;
   margin: auto;
-  display: block;
 }
 
 
@@ -88,7 +87,7 @@
 
 
 body {
-    background-color: black;
+    background-color: white;
 }
 
 #font_test {
@@ -97,7 +96,32 @@ body {
     font-size: 12px;
     display: none;
 }
+/*
+.wf-droidsans {
+    font-family: "Droid Sans";
+}
+*/
+.wf-mplusrounded1c {
+    font-family: "M PLUS Rounded 1c"; 
+}
+
+.splash {
+    display: block;
+}
+
+.wf-active .splash {
+    display: none;
+}
+
+.play-ground {
+    display: none;
+}
+
+.wf-active .play-ground {
+    display: block;
+}
 
 .resource {
     display: none; 
 }
+

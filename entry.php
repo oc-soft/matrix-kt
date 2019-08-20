@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>Mine sweeper</title>
   <meta name="viewport" content="width=device-width initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+
+
 <!--
   <script
     src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -17,6 +20,9 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js">
   </script>
 
+  <script
+    src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js">
+  </script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="entry.css">
@@ -38,7 +44,8 @@ include 'config.php';
 ?>
 
 <body>
-<canvas id="game_grid"></canvas>
+<img src="img/splash.png" class="splash"></img>
+<canvas id="game_grid" class=play-ground></canvas>
 <canvas id="font_test" width="256" height="256"></canvas>
 <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
   <div class="modal-dialog" role="document">

@@ -53,6 +53,7 @@ actual class MainPage {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight        
+        loadFont()
     }
     /**
      * setup for html page
@@ -198,5 +199,61 @@ actual class MainPage {
                 override var attributes: Boolean? = true 
         })
         
+    }
+    /**
+     * load font
+     */
+    fun loadFont() {
+        val config : dynamic = object {}
+        val confGoogle : dynamic = object{}
+ 
+        confGoogle.families = arrayOf("M PLUS Rounded 1c")
+
+        config.loading = {
+            println("loading")
+        }
+        config.active = {
+            println("active")
+        }
+        config.inactive = {
+            println("inactive")
+        }
+        config.fontloading = {
+            familyName : String, fvd : String ->
+            println("loading ${familyName}, ${fvd}")
+        }
+        config.fontactive = {
+            familyName : String, fvd : String ->
+            println("active ${familyName}, ${fvd}")
+        }
+        config.fontinactive = {
+            familyName : String, fvd : String ->
+            println("inactive ${familyName}, ${fvd}")
+        }
+ 
+        config.google = confGoogle
+
+        WebFont.load(config);
+    }
+    /**
+     * load font
+     */
+    fun loadFont1() {
+
+        val config = object : WebFont.Config {
+            override val loading: (()->Unit)? = {
+                println("loading")
+            }
+            override val fontloading : ((String, String)->Unit)? = {
+                familyName, fvd ->
+                println("${familyName}, ${fvd}") 
+            }
+            override var google: WebFont.Google?  = null
+        }
+        config.google = object : WebFont.Google {
+            override var families: Array<String> = arrayOf(
+                "M PLUS Rounded 1c")
+        } 
+        WebFont.load(config);
     }
 }
