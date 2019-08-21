@@ -2,6 +2,7 @@
   width: 480px;
   height: 480px;
   margin: auto;
+  display: block;
 }
 
 
@@ -56,7 +57,7 @@
 
 @media (orientation: landscape) 
     and (min-width: 479px) 
-    and (max-widht: 639px)
+    and (max-width: 639px)
     and (min-height: 479px)
     and (max-height: 639px) {
 #game_grid {
@@ -91,9 +92,9 @@ body {
 }
 
 #font_test {
-    border: solid; 
-    font-family: "M PLUS Rounded 1c, sans-serif"; 
-    font-size: 12px;
+/*    border: solid;  */
+/*    font-family: "M PLUS Rounded 1c, sans-serif";  */
+/*    font-size: 12px; */
     display: none;
 }
 /*
@@ -105,23 +106,18 @@ body {
     font-family: "M PLUS Rounded 1c"; 
 }
 
-.splash {
-    display: block;
-}
-
-.wf-active .splash {
-    display: none;
-}
-
-.play-ground {
-    display: none;
-}
-
-.wf-active .play-ground {
-    display: block;
-}
-
 .resource {
     display: none; 
+}
+
+.overlay {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.9); 
+    overflow: hidden;
 }
 

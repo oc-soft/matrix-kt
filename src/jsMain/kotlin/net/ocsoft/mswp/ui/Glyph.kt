@@ -95,7 +95,7 @@ class Glyph(
         }
         var colorStr = numberColor.toRgba()
         ctx.textBaseline = CanvasTextBaseline.MIDDLE
-        ctx.font = "${fontSize}px sans-serif"
+        ctx.font = "${fontSize}px 'M PLUS Rounded 1c'"
         ctx.fillStyle = colorStr 
         val numberImageMap = HashMap<Int, ImageData>()
 

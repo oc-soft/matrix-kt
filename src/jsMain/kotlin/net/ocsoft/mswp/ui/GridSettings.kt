@@ -1,5 +1,5 @@
 
-package net.ocsoft.mswp
+package net.ocsoft.mswp.ui
 
 data class GridSettings(val canvasId : String,
     val glyphCanvasId : String,

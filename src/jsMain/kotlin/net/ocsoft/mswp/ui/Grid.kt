@@ -279,7 +279,7 @@ class Grid(rowCount: Int = 6,
     fun endDrawing(gl: WebGLRenderingContext) {
     } 
      
-    fun setup(gl: WebGLRenderingContext) {
+    fun setup(gl: WebGLRenderingContext)  {
         setupSceneBuffer(gl)
         setupShaderProgram(gl)
         setupBuffer(gl)
@@ -287,6 +287,7 @@ class Grid(rowCount: Int = 6,
         setupWorkingFrameBuffer(gl)
         setupTextures(gl)
         setupMatrices()
+        
     }
     fun teardown(gl: WebGLRenderingContext) {
         renderingCtx.tearDown(gl)

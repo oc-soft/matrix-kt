@@ -14,6 +14,8 @@ import org.w3c.dom.Image
 import kotlin.browser.window
 import kotlin.collections.Set
 import kotlin.collections.HashSet
+import net.ocsoft.mswp.ui.GridSettings
+
 
 /**
  * main page display
@@ -25,6 +27,11 @@ actual class MainPage {
             "wf-active"
         ).toList())
     }
+    /**
+     * configuration
+     */
+    val config: MainPageConfig  = MainPageConfig()
+
     /**
      * game grid
      */
@@ -43,8 +50,16 @@ actual class MainPage {
      * light
      */
     var pointLight: PointLight? = null
-    
+   
+    /**
+     * start gaming
+     */
+    var runPlayground : (()->Unit)? = null
 
+    /**
+     * font loading promise
+     */
+    var fontLoadingPromise : Promise<Unit>? = null
     /**
      * setup body
      */ 
@@ -53,7 +68,7 @@ actual class MainPage {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight        
-        loadFont()
+        fontLoadingPromise = loadFont()
     }
     /**
      * setup for html page
@@ -71,13 +86,14 @@ actual class MainPage {
         } else {
             settingObj = Settings()
         }
-        attachMutationToHtml({ 
+         
+        fontLoadedThen({ 
             setupBodyI(model!!, 
             camera!!, 
             pointLight!!,
             settingObj!!.rootDir) 
         })
-     }
+    }
     fun setupBodyI(model : Model, 
         camera: Camera, 
         pointLight: PointLight,
@@ -126,14 +142,11 @@ actual class MainPage {
                 var shaderPrograms = ShaderPrograms(
                     responses[0] as String, 
                     responses[1] as String)
-                val idSettings = GridSettings("#game_grid", 
-                    "#font_test",
-                    "#game_over_modal",
-                    "#player_won_modal")
-                grid.bind(idSettings,
+                grid.bind(config.gridSettings,
                     model, camera, 
                     pointLight, shaderPrograms,
                     responses[2] as Image)
+                readyToPlay() 
  
             })
         })
@@ -142,8 +155,16 @@ actual class MainPage {
     /**
      * attach mutation observer int html 
      */
-    fun attachMutationToHtml(loadFinished:(()->Unit)) {
-        loadFinished()
+    fun fontLoadedThen(loadFinished:(()->Unit)) {
+        val flPromise = this.fontLoadingPromise
+        if (flPromise != null) {
+            flPromise.then({
+                loadFinished()
+            })
+            fontLoadingPromise = null
+        } else {
+            loadFinished()
+        }
     }
      /**
      * attach mutation observer int html 
@@ -201,39 +222,51 @@ actual class MainPage {
         
     }
     /**
+     * the program is ready to play now
+     */
+    fun readyToPlay() {
+       jQuery(config.splashPaneId).height(0)
+    }
+    /**
      * load font
      */
-    fun loadFont() {
-        val config : dynamic = object {
-            val google : dynamic = object {
-                val families = arrayOf("M PLUS Rounded 1c")
-            } 
-        }
+    fun loadFont() : Promise<Unit> {
+          
+        val result = Promise<Unit>({
+            resolve, reject -> Unit  
 
+            val config : dynamic = object {
+                val google : dynamic = object {
+                    val families = arrayOf("M PLUS Rounded 1c")
+                    val text = "0123456789"
+                } 
+            }
 
-        config.loading = {
-            println("loading")
-        }
-        config.active = {
-            println("active")
-        }
-        config.inactive = {
-            println("inactive")
-        }
-        config.fontloading = {
-            familyName : String, fvd : String ->
-            println("loading ${familyName}, ${fvd}")
-        }
-        config.fontactive = {
-            familyName : String, fvd : String ->
-            println("active ${familyName}, ${fvd}")
-        }
-        config.fontinactive = {
-            familyName : String, fvd : String ->
-            println("inactive ${familyName}, ${fvd}")
-        }
- 
-
-        WebFont.load(config);
+            config.loading = {
+                println("loading")
+            }
+            config.active = {
+                println("active")
+                resolve(Unit)
+            }
+            config.inactive = {
+                println("inactive")
+                reject(Error("failed"))
+            }
+            config.fontloading = {
+                familyName : String, fvd : String ->
+                println("loading ${familyName}, ${fvd}")
+            }
+            config.fontactive = {
+                familyName : String, fvd : String ->
+                println("active ${familyName}, ${fvd}")
+            }
+            config.fontinactive = {
+                familyName : String, fvd : String ->
+                println("inactive ${familyName}, ${fvd}")
+            }
+            WebFont.load(config);
+        })
+        return result
     }
 }
