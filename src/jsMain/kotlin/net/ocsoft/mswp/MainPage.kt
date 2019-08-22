@@ -57,10 +57,6 @@ actual class MainPage {
     var runPlayground : (()->Unit)? = null
 
     /**
-     * font loading promise
-     */
-    var fontLoadingPromise : Promise<Unit>? = null
-    /**
      * setup body
      */ 
     actual fun setupBody(model : Model, camera: Camera, 
@@ -68,7 +64,6 @@ actual class MainPage {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight        
-        fontLoadingPromise = loadFont()
     }
     /**
      * setup for html page
@@ -79,15 +74,15 @@ actual class MainPage {
      * run program
      */ 
     @JsName("run")
-    fun run(settings: String?) {
-        var settingObj : Settings? = null
+    fun run(settings: Any) {
+        var settingObj : dynamic? = null 
         if (settings != null) {
-            settingObj = JSON.parse<Settings>(settings)
+            settingObj = settings
         } else {
             settingObj = Settings()
         }
-         
-        fontLoadedThen({ 
+        val promise = loadFont(settingObj.textureText)
+        promise.then({ 
             setupBodyI(model!!, 
             camera!!, 
             pointLight!!,
@@ -152,21 +147,8 @@ actual class MainPage {
         })
     }
 
+
     /**
-     * attach mutation observer int html 
-     */
-    fun fontLoadedThen(loadFinished:(()->Unit)) {
-        val flPromise = this.fontLoadingPromise
-        if (flPromise != null) {
-            flPromise.then({
-                loadFinished()
-            })
-            fontLoadingPromise = null
-        } else {
-            loadFinished()
-        }
-    }
-     /**
      * attach mutation observer int html 
      */
     fun attachMutationToHtmlForFutureReleaase(loadFinished:(()->Unit)) {
@@ -230,42 +212,19 @@ actual class MainPage {
     /**
      * load font
      */
-    fun loadFont() : Promise<Unit> {
-          
+    fun loadFont(textToLoad : String) : Promise<Unit> {
         val result = Promise<Unit>({
             resolve, reject -> Unit  
-
-            val config : dynamic = object {
-                val google : dynamic = object {
-                    val families = arrayOf("M PLUS Rounded 1c")
-                    val text = "0123456789"
-                } 
+            val activeCallback = {
+                resolve(Unit) 
             }
-
-            config.loading = {
-                println("loading")
-            }
-            config.active = {
-                println("active")
-                resolve(Unit)
-            }
-            config.inactive = {
-                println("inactive")
+            val inactiveCallback = {
                 reject(Error("failed"))
             }
-            config.fontloading = {
-                familyName : String, fvd : String ->
-                println("loading ${familyName}, ${fvd}")
-            }
-            config.fontactive = {
-                familyName : String, fvd : String ->
-                println("active ${familyName}, ${fvd}")
-            }
-            config.fontinactive = {
-                familyName : String, fvd : String ->
-                println("inactive ${familyName}, ${fvd}")
-            }
-            WebFont.load(config);
+            val config : dynamic = WebFontConfig(activeCallback, 
+                inactiveCallback,
+                textToLoad)
+            WebFont.load(config)
         })
         return result
     }

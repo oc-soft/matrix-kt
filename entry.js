@@ -8,6 +8,6 @@ requirejs.config({
 });
 
 requirejs(['mswp'], function(mswpLib) {
-    mswpLib.net.ocsoft.mswp.Context.mainPage.run(JSON.stringify(mswpSettings));    
+    mswpLib.net.ocsoft.mswp.Context.mainPage.run(mswpSettings);    
 });
 

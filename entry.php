@@ -30,6 +30,9 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <?php
 include 'config.php';
+$texture_text = file('TextureText.txt', 
+    FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$mswp_settings['textureText'] = implode('', $texture_text);
 ?>
   <script>
     var mswpSettings = <?php echo json_encode($mswp_settings) ?>;
