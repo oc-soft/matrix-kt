@@ -1,8 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html prefix="og: http://ogp.me/ns#">
 <head>
+<?php
+include 'config.php';
+$texture_text = file('TextureText.txt', 
+    FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$mswp_settings['textureText'] = implode('', $texture_text);
+?>
   <meta charset="UTF-8">
   <title>Mine sweeper</title>
+  <meta property="og:title" content="Mine sweeper"/>
+  <meta property="og:image" 
+    content="<?php echo $mswp_settings['siteUrl']; ?>/img/game-image.png"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url"
+    content="<?php echo $mswp_settings['siteUrl']; ?>/entry.php"/>
   <meta name="viewport" content="width=device-width initial-scale=1">
 <!--
   <link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
@@ -28,13 +40,7 @@
   <link rel="stylesheet" type="text/css" href="entry.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-<?php
-include 'config.php';
-$texture_text = file('TextureText.txt', 
-    FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-$mswp_settings['textureText'] = implode('', $texture_text);
-?>
-  <script>
+ <script>
     var mswpSettings = <?php echo json_encode($mswp_settings) ?>;
   </script>  
   <script data-main="entry"
@@ -45,7 +51,7 @@ $mswp_settings['textureText'] = implode('', $texture_text);
 
 <body>
 <div id="splash_pane" class="overlay">
-    <img src="img/splash.png" class="splash"></img>
+<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div>
 </div>
 <canvas id="game_grid" class=play-ground></canvas>
 <canvas id="font_test" width="256" height="256"></canvas>
