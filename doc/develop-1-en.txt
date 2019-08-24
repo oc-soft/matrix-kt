@@ -1,0 +1,7 @@
+Loading web font
+================
+
+I used [webfontloader] to render text in game. It did not work well at first time. The code was waiting for active event which is fired when the font is ready to use in page. But the text I use is not rendered with the font I request. I noticed that the font was composed two woff files. I suspected that the ative event is fired when one file arrived the browser. I added a [text parameter] for webfontloader. I could have text with webfont.
+
+[webfontloader]: https://github.com/typekit/webfontloader
+[text parameter]: https://rs-app.oc-soft.net/git/?p=rs-app/mswp.git;a=blob_plain;f=src/jsMain/kotlin/net/ocsoft/mswp/WebFontConfig.kt;hb=678ff1ff31bed2b224257fdd60572f1a6a407947

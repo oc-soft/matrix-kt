@@ -1,0 +1,10 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/webfontloader-1.png",
+            "title": "Render Text with webfontloader",
+            "type": "website"
+        },
+        "title": "Render Text with webfontloader"
+    }
+}

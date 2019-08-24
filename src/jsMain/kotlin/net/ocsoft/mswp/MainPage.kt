@@ -207,7 +207,8 @@ actual class MainPage {
      * the program is ready to play now
      */
     fun readyToPlay() {
-       jQuery(config.splashPaneId).height(0)
+        jQuery(".loading", config.splashPaneId).hide()   
+        jQuery(config.splashPaneId).height(0)
     }
     /**
      * load font

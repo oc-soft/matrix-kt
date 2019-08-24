@@ -16,16 +16,6 @@ $mswp_settings['textureText'] = implode('', $texture_text);
   <meta property="og:url"
     content="<?php echo $mswp_settings['siteUrl']; ?>/entry.php"/>
   <meta name="viewport" content="width=device-width initial-scale=1">
-<!--
-  <link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
--->
-
-<!--
-  <script
-    src="https://code.jquery.com/jquery-3.4.1.min.js"
-    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-    crossorigin="anonymous"></script>
--->
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js">
   </script>
@@ -51,7 +41,9 @@ $mswp_settings['textureText'] = implode('', $texture_text);
 
 <body>
 <div id="splash_pane" class="overlay">
-<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div>
+<div class="loading text-white"><span>Loading...
+<div class="spinner-grow text-white" role="status"<span class="sr-only"></span></div></span>
+</div>
 </div>
 <canvas id="game_grid" class=play-ground></canvas>
 <canvas id="font_test" width="256" height="256"></canvas>

@@ -111,6 +111,13 @@ body {
     transition: 0.5s;
 }
 
+
 .splash_text {
     color: #ffffff;
+}
+
+.loading {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
 }
