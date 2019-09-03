@@ -510,7 +510,8 @@ class Grid(rowCount: Int = 6,
             setupPlayerWonModal()
             syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
             canvas.addEventListener("click", onClickHandler)
-            glyph.bind(idSettings.glyphCanvasId, mineImage)
+            glyph.bind(idSettings.glyphCanvasId, mineImage,
+                glyph.createFontawesomeIconDef("fas", "check"))
             setup(gl)
             drawScene(gl)
         }) 

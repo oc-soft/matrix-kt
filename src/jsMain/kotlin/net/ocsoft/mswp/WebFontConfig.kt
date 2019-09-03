@@ -6,13 +6,13 @@ package net.ocsoft.mswp
  */
 class WebFontConfig(val activeCallBack: (()->Unit),
     val inactiveCallBack: (()->Unit),
-    val textToLoad : String) {
+    val textGlyphs : String) {
     @JsName("google")
     var google : dynamic = object {
         val families = arrayOf("M PLUS Rounded 1c")
-        val text = textToLoad
- 
+        val text = textGlyphs
     } 
+
     @JsName("loading")
     val loading : (()->Unit) = {
         println("loading")

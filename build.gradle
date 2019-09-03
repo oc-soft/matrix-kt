@@ -9,6 +9,7 @@ import org.apache.commons.codec.binary.Base64
 
 plugins {
     id 'org.jetbrains.kotlin.multiplatform' version '1.3.41'
+    id 'com.moowork.node' version '1.3.1'
 }
 
 ext.web_dir = 'prg'
@@ -79,9 +80,22 @@ build.doLast {
         from 'build/processedResources/js/main/'
         into "${web_dir}/mswp"
  
-     }
+    }
+    copy {
+        includeEmptyDirs false
+        from 'node_modules/@fortawesome/fontawesome-free/css'
+        into './css'
+    }
+    copy {
+        includeEmptyDirs false     
+        from 'node_modules/@fortawesome/fontawesome-free/webfonts'
+        into "./webfonts"
+    }
+	
 }
 
 clean.doFirst {
     delete "${web_dir}/"
+    delete "./webfonts"
+    delete "./css"
 }

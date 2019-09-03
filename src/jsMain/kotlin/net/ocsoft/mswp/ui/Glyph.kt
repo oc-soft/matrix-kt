@@ -1,12 +1,14 @@
 package net.ocsoft.mswp.ui
 
 import kotlin.browser.document
+import kotlin.browser.window
 import kotlin.collections.Map
 import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.Image
+import org.w3c.dom.Path2D
 import org.w3c.dom.*
 import org.w3c.dom.svg.*
 
@@ -54,28 +56,41 @@ class Glyph(
     /**
      * connect nodeid into this class
      */
-    fun bind(nodeId: String, mineImage : Image) {
+    fun bind(nodeId: String, 
+        mineImage : Image,
+        mineIconDef : fontawesome.IconDefinition) {
         this.nodeId = nodeId     
         val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-        setup(ctx, mineImage)
+        setup(ctx, mineImage, mineIconDef)
     }
     
 
-    fun setup(ctx : CanvasRenderingContext2D, mineImage : Image) {
-        setupNumbers(ctx, mineImage)
+    fun setup(ctx : CanvasRenderingContext2D, 
+        mineImage : Image,
+        mineIconDef : fontawesome.IconDefinition) {
+        setupNumbers(ctx)
+        setupMineImages(ctx, mineImage, mineIconDef)
     }
     /**
      * setup numbers
      */
-    fun setupNumbers(ctx: CanvasRenderingContext2D,
-        mineImage: Image) {
+    fun setupNumbers(ctx: CanvasRenderingContext2D) {
         setupNumbers0(ctx)
-        setupMineImage(ctx, mineImage)
         setupNumbers1()
+    }
+    /**
+     * setup mine image
+     */
+    fun setupMineImages(ctx: CanvasRenderingContext2D,
+        mineImage: Image,
+        mineIconDef: fontawesome.IconDefinition) {
+        setupMineImage(ctx, mineImage)
+        setupMineImage(ctx, mineIconDef)
         setupMineImage1()
         // drawScal()
     }
+
     /**
      * setup numbers
      */
@@ -178,8 +193,63 @@ class Glyph(
             this.mineImageBlank = ImageData(arr, mineImage.width)
         } 
     }
+    /**
+     * create image with font awesome icon
+     */
+    fun createFontawesomeIconDef(prefix: String,
+        iconName : String) : fontawesome.IconDefinition {
+        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        var fa = window.get("FontAwesome")
+        val result : fontawesome.IconDefinition = fa.findIconDefinition(
+            object {
+                val prefix : String = prefix
+                val iconName : String = iconName 
+            })
+        return result 
+    }   
 
+     
+    /**
+     * create image with font awesome icon
+     */
+    fun setupMineImage(ctx: CanvasRenderingContext2D,
+        iconDef : fontawesome.IconDefinition) {
+        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        var fa = window.get("FontAwesome")
+        var icon : fontawesome.Icon = fa.icon(iconDef, object {
+            val size = imgSize
+        })
+        if (icon != null) {
+            val abstract = icon.abstract
+            if (abstract != null) {
+                val svgElem = abstract.find( { it.tag == "svg" } )
+                if (svgElem != null) {
+                    val children = svgElem.children
+                    val pathElem = children?.find( { it.tag == "path" })
+                    if (pathElem != null) {
+                        val canvas = ctx.canvas
+                        val width = canvas.width
+                        val height = canvas.height
  
+                        val attr : fontawesome.Attributes
+                            = pathElem.attributes as fontawesome.Attributes 
+                        val dStr = attr["d"] as String
+                        val path = Path2D(dStr)
+                        ctx.fill(path)
+                        val img = ctx.getImageData(0.0, 0.0,
+                            buttonTextureSize.toDouble(),
+                            buttonTextureSize.toDouble())
+                        ctx.clearRect(0.0, 0.0, 
+                            width.toDouble(),
+                            height.toDouble())
+ 
+                        this.mineImage = img
+                    }
+                }
+            }
+        }
+    }   
+
     /**
      * setup mine image
      */

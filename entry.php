@@ -22,6 +22,8 @@ $mswp_settings['textureText'] = implode('', $texture_text);
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js">
   </script>
+
+  <script src="https://kit.fontawesome.com/a7443310ec.js"></script>
   <script
     src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js">
   </script>
