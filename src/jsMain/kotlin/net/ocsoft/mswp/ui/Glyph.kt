@@ -15,6 +15,7 @@ import org.w3c.dom.svg.*
 import jQuery
 import kotlin.math.*
 import net.ocsoft.mswp.ColorScheme
+import fontawesome.SvgCore;
 
 class Glyph(
     val numberColor: FloatArray = ColorScheme.colors[0].copyOf(),
@@ -208,17 +209,55 @@ class Glyph(
         return result 
     }   
 
-     
+    /**
+     * create scale matrix
+     */
+    fun createScaleMatrix(scale: Double): DOMMatrix  {
+        val svgElem = document.createElementNS("http://www.w3.org/2000/svg", 
+            "svg") as SVGSVGElement
+        val result = svgElem.createSVGMatrix()
+        result.a = scale
+        result.b = 0.0
+        result.c = 0.0
+        result.d = scale
+        result.e = 0.0
+        result.f = 0.0
+        return result
+    }
     /**
      * create image with font awesome icon
      */
     fun setupMineImage(ctx: CanvasRenderingContext2D,
         iconDef : fontawesome.IconDefinition) {
         val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        val iconWidth = iconDef.icon[0] as Int
+        val iconHeight = iconDef.icon[1] as Int
+        val scale = imgSize.toDouble() / max(iconWidth, iconHeight)
+        val m = createScaleMatrix(scale)
+        val pathSrc = Path2D(iconDef.icon[4] as String)
+        val path = Path2D()
+        path.addPath(pathSrc, m)
+        val canvas = ctx.canvas
+        val width = canvas.width
+        val height = canvas.height
+        ctx.fill(path)
+        val img = ctx.getImageData(0.0, 0.0,
+            buttonTextureSize.toDouble(),
+            buttonTextureSize.toDouble())
+        ctx.clearRect(0.0, 0.0, width.toDouble(), height.toDouble())
+ 
+        this.mineImage = img
+    }   
+
+     
+    /**
+     * create image with font awesome icon
+     */
+    fun setupMineImage1(ctx: CanvasRenderingContext2D,
+        iconDef : fontawesome.IconDefinition) {
+        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
         var fa = window.get("FontAwesome")
-        var icon : fontawesome.Icon = fa.icon(iconDef, object {
-            val size = imgSize
-        })
+        var icon : fontawesome.Icon = fa.icon(iconDef)
         if (icon != null) {
             val abstract = icon.abstract
             if (abstract != null) {
@@ -234,7 +273,8 @@ class Glyph(
                         val attr : fontawesome.Attributes
                             = pathElem.attributes as fontawesome.Attributes 
                         val dStr = attr["d"] as String
-                        val path = Path2D(dStr)
+                        val pathSrc = Path2D(dStr)
+                        val path = Path2D()
                         ctx.fill(path)
                         val img = ctx.getImageData(0.0, 0.0,
                             buttonTextureSize.toDouble(),

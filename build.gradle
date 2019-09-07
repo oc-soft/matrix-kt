@@ -79,19 +79,22 @@ build.doLast {
         includeEmptyDirs false
         from 'build/processedResources/js/main/'
         into "${web_dir}/mswp"
- 
     }
     copy {
         includeEmptyDirs false
-        from 'node_modules/@fortawesome/fontawesome-free/css'
-        into './css'
+        from 'node_modules/@fortawesome/fontawesome-free/js/fontawesome.js'
+        into "${web_dir}/fontawesome-free/js"
+    }
+    copy {
+        includeEmptyDirs false     
+        from 'node_modules/@fortawesome/fontawesome-free/js/solid.js'
+        into "${web_dir}/fontawesome-free/js"           
     }
     copy {
         includeEmptyDirs false     
         from 'node_modules/@fortawesome/fontawesome-free/webfonts'
         into "./webfonts"
     }
-	
 }
 
 clean.doFirst {
