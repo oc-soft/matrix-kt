@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": ">=1.0.0",
+    "ts2kt": ">=0.1.3"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.10.2"
+  }
+}
