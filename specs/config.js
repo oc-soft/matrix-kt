@@ -1,0 +1,8 @@
+{
+    "iconData": [
+        {
+            "prefix": "",
+            "iconName": ""
+        }
+    ]
+}

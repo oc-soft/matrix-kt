@@ -15,7 +15,7 @@ import kotlin.browser.window
 import kotlin.collections.Set
 import kotlin.collections.HashSet
 import net.ocsoft.mswp.ui.GridSettings
-
+import net.ocsoft.mswp.ui.AppSettings
 
 /**
  * main page display
@@ -30,7 +30,7 @@ actual class MainPage {
     /**
      * configuration
      */
-    val config: MainPageConfig  = MainPageConfig()
+    val config: MainPageConfig = MainPageConfig()
 
     /**
      * game grid
@@ -55,6 +55,12 @@ actual class MainPage {
      * start gaming
      */
     var runPlayground : (()->Unit)? = null
+
+
+    /**
+     * setting
+     */
+    var appSettings: AppSettings = AppSettings(config.appSettings)
 
     /**
      * setup body
@@ -141,6 +147,7 @@ actual class MainPage {
                     model, camera, 
                     pointLight, shaderPrograms,
                     responses[2] as Image)
+                appSettings.bind()
                 readyToPlay() 
  
             })

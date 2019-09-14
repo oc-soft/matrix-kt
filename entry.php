@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?php 
+    require_once(implode('/', array(__DIR__, 'lib', 'begin0.php')));  
+    Session::$instance->start();
+?><!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
 <?php
@@ -47,6 +50,7 @@ $mswp_settings['textureText'] = implode('', $texture_text);
 <div class="spinner-grow text-white" role="status"<span class="sr-only"></span></div></span>
 </div>
 </div>
+<div class="setting menu"><i class="fas fa-wrench"></i></div>
 <canvas id="game_grid" class=play-ground></canvas>
 <canvas id="font_test" width="256" height="256"></canvas>
 <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
@@ -68,7 +72,7 @@ $mswp_settings['textureText'] = implode('', $texture_text);
     <div class="modal-content">
         <div class="modal-body">
           <p>You won the game</p>
-	  <a href="./about.php" class="badge badge-primary">About this Project</a>
+          <a href="./about.php" class="badge badge-primary">About this Project</a>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary"
@@ -77,6 +81,17 @@ $mswp_settings['textureText'] = implode('', $texture_text);
     </div>
   </div>
 </div>
+
+<div id="icon_list" class="modal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <ul class="icon grid">
+    </ul>
+  </div>
+</div>
+
+<template id="icon_item_tmpl">
+  <li></li>
+</template>
 </body>
 
 </html>
