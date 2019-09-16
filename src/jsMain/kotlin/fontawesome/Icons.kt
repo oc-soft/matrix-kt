@@ -20,11 +20,11 @@ class Icons {
         fun getAllIdentifiers() : Set<Identifier> {
             val result = HashSet<Identifier>()
 
-            val fa = window.get("__FONT_AWESOME__")
+            val fa = window.get("___FONT_AWESOME___")
             val styles = js("fa.styles")
 
             val prefixes = js("Object.keys(styles)") 
-            for (i0 in 0..prefixes.lenght - 1) {
+            for (i0 in 0..prefixes.length - 1) {
                 val prefix = prefixes[i0]
                 val icons = styles[prefix]
                 val names = js("Object.keys(icons)")

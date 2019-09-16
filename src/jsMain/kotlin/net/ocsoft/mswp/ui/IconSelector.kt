@@ -20,7 +20,7 @@ class IconSelector(val option : Option) {
      */
     fun bind() {
         var ids = Icons.getAllIdentifiers() 
-        ids.forEach { appendItem(it) }
+        ids.forEach({ appendItem(it) })
     }
 
     /**

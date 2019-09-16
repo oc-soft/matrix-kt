@@ -40,7 +40,10 @@ class AppSettings(val option : Option) {
      */
     fun unbind() {
         val settingItem = jQuery(option.settingItemNode)
-        settingItem.off("click", settingItemHandler!!)
+        if (settingItemHandler != null) {
+            settingItem.off("click", settingItemHandler!!)
+            settingItemHandler = null
+        }
         if (iconSelector != null) {
             iconSelector!!.unbind()
             iconSelector = null 
