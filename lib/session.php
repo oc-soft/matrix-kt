@@ -56,7 +56,7 @@ class Session {
         global $session_setting;
         $option = $session_setting['option'];
         $option['expires'] += time();
-        setcookie($session_setting['cookieName'], $id, $option);
+        setcookie($session_setting['cookieName'], $id, $option['expires']);
     }
 }
 

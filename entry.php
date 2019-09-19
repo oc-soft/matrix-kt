@@ -84,8 +84,12 @@ $mswp_settings['textureText'] = implode('', $texture_text);
 
 <div id="icon_list" class="modal" role="dialog">
   <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    <div class="modal-body">
     <ul class="icon grid">
     </ul>
+    </div>
+    </div>
   </div>
 </div>
 
