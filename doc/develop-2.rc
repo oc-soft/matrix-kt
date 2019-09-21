@@ -1,0 +1,10 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/webfontloader-1.png",
+            "title": "Using npm with gradle",
+            "type": "website"
+        },
+        "title": "Using npm with gradle"
+    }
+}

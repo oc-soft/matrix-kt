@@ -1,0 +1,61 @@
+@import "config";
+@import "responsive";
+
+#game_grid {
+  width: 480px;
+  height: 480px;
+  margin: auto;
+  display: block;
+}
+
+.icon-item {
+  width: calc(100% / 9);
+}
+
+
+body {
+  background-color: black;
+}
+
+#font_test {
+    display: none;
+}
+
+.resource {
+    display: none; 
+}
+
+.overlay {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.9); 
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+
+.splash_text {
+    color: @text-color;
+}
+
+.loading {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+
+
+.setting.menu {
+    color: @text-color;
+}
+
+.icons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+

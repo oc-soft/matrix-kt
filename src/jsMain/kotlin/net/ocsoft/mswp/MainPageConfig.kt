@@ -17,6 +17,6 @@ data class MainPageConfig(
     val appSettings : AppSettings.Option = AppSettings.Option(
         ".setting.menu",
         IconSelector.Option("#icon_list",
-            "#icon_list .icon.grid", 
+            "#icon_list .icons", 
             "#icon_item_tmpl"))) {
 }
