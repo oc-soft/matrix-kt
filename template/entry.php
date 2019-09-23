@@ -71,6 +71,7 @@
         <div class="modal-body">
           <ul class="icons list">
           </ul>
+          <div class="pagination container"></div>
         </div>
       </div>
     </div>
@@ -82,16 +83,38 @@
   <template id="blank_icon_item_tmpl">
     <li class="icon-item"><div><div></div></div></li>  
   </template>
-  <template id="icons_paginating_tmpl">
-    <ul class="pagination">
-      <li class="page-item"><i class="fas fa-angle-double-left first"></i></li>
-      <li class="page-item"><i class="fas fa-angle-left next"></i></li>
-      <li class="page-item"><i class="fas fa-angle-right prev"></i></li>
-      <li class="page-item"><i class="fas fa-angle-double-right last"></i></li>
+  <template id="icons_paginating_full_tmpl">
+    <div class="btn-group full" role="group">
+      <button class="btn btn-secondary">
+        <i class="fas fa-angle-double-left first"></i>
+      </button>
+      <button class="btn btn-secondary">
+        <i class="fas fa-angle-left next"></i>
+      </button>
+      <button class="btn btn-secondary">
+        <i class="fas fa-angle-right prev"></i>
+      </button>
+      <button class="btn btn-secondary">
+        <i class="fas fa-angle-double-right last"></i>
+      </button>
+    </div>
+  </template>
+  <template id="icons_paginating_medium_tmpl">
+    <div class="btn-group medium">
+      <button class="btn btn-secondary">
+        <i class="fas fa-angle-left next"></i>
+      </button>
+      <button class="page-item">
+        <i class="fas fa-angle-right prev"></i>
+      </button>
+    </div>
+  </template>
+  <template id="icons_paginating_simple_tmpl">
+    <ul class="pagination simple">
     </ul>
   </template>
-  <template>
-    <li class="page-item"></li>
+  <template id="icons_paginating_item_tmpl">
+    <button class="btn btn-secondary"></button>
   </template>
 </body>
 

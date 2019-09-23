@@ -14,6 +14,32 @@ class Responsive {
      */
     companion object {
         /**
+         * find count from setting
+         */
+        fun findXCount(
+            setting: dynamic,
+            minKeyword: String,
+            maxKeyword: String,
+            countKeyword: String = "count"): Int? {
+            return findCount(setting,
+                window.innerWidth,
+                minKeyword, maxKeyword, countKeyword) 
+        }
+ 
+        /**
+         * find count from setting
+         */
+        fun findYCount(
+            setting: dynamic,
+            minKeyword: String,
+            maxKeyword: String,
+            countKeyword: String = "count"): Int? {
+            return findCount(setting,
+                window.innerHeight,
+                minKeyword, maxKeyword, countKeyword) 
+        }
+ 
+        /**
          * find row count from setting
          */
         fun findRowCount(
@@ -21,8 +47,7 @@ class Responsive {
             minKeyword: String,
             maxKeyword: String,
             countKeyword: String = "count"): Int? {
-            return findCount(setting,
-                window.innerHeight,
+            return findYCount(setting,
                 minKeyword, maxKeyword, countKeyword) 
         }
         /**
@@ -33,8 +58,7 @@ class Responsive {
             minKeyword: String,
             maxKeyword: String,
             countKeyword: String = "count"): Int? {
-            return findCount(setting,
-                window.innerWidth,
+            return findXCount(setting,
                 minKeyword, maxKeyword, countKeyword) 
         }
      

@@ -20,5 +20,10 @@ data class MainPageConfig(
             "#icon_list .icons", 
             "#icon_list .icons li",
             "#icon_item_tmpl",
-            "#blank_icon_item_tmpl"))) {
+            "#blank_icon_item_tmpl",
+            "#icon_list .pagination.container",
+            "#icons_paginating_full_tmpl",
+            "#icons_paginating_middle_tmpl",
+            "#icons_paginating_simple_tmpl",
+            "#icons_paginating_item_tmpl"))) {
 }

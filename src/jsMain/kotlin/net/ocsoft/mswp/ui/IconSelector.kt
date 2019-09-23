@@ -20,7 +20,12 @@ class IconSelector(val option : Option) {
         val itemListQuery: String,
         val itemsQuery: String,
         val itemTemplateQuery: String,
-        val blankItemTemplateQuery: String)
+        val blankItemTemplateQuery: String,
+        val pagingContainerQuery: String,
+        val pagingCtrlFullTemplateQuery: String,
+        val pagingCtrlMediumTemplateQuery: String,
+        val pagingCtrlSimpleTemplateQuery: String,
+        val pagingItemTemplateQuery: String)
 
     /**
      * icon page contents meta infomation
@@ -89,11 +94,72 @@ class IconSelector(val option : Option) {
             if (colSize != null && rowSize != null) {
                 contentsMeta = ContentsMeta(colSize, rowSize, ids)
                 updatePage(0, contentsMeta!!)
+                setupPagination()
             }
         }
     }
     
 
+    /**
+     * setup pagination ui
+     */
+    fun setupPagination() {
+        var ctMeta = contentsMeta
+        if (ctMeta != null) {
+            val pageCount = calcCountOfPages(ctMeta)       
+            if (pageCount > 1) {
+                val pagingSize = findPagingSize()
+                if (pagingSize != null) {
+                    var templateQuery = option.pagingCtrlSimpleTemplateQuery
+
+                    if (pageCount > pagingSize) {
+                        val pagingCount = pageCount / pagingSize
+                        if (pagingCount > 2) {
+                            templateQuery = option.pagingCtrlFullTemplateQuery 
+                        } else {
+                            templateQuery = 
+                                option.pagingCtrlMediumTemplateQuery 
+                        } 
+                    } 
+                    setupPagingCtrl(templateQuery, Pair(0, pagingSize))
+                } 
+            }
+        } 
+    }
+
+    /**
+     * update pagination ui
+     */
+    fun updatePagination(
+        pageIndex: Int) {
+    }
+
+    /**
+     * create paging control
+     */
+    fun setupPagingCtrl(templateQuery: String,
+        page: Pair<Int, Int>) {
+        val (startIndex, size) = page
+        
+        val pagingCtrlStr = jQuery(templateQuery).html()
+        val pagingCtrl = jQuery(pagingCtrlStr)
+        val insertEndIdx = pagingCtrl.children().length.toInt() / 2 
+        for (i in startIndex..startIndex + size - 1) {
+            val pagingItemStr = jQuery(option.pagingItemTemplateQuery).html()
+            val pagingItem = jQuery(pagingItemStr)
+            pagingItem.html("${i + 1}")
+            val insertIdx = pagingCtrl.children().length.toInt() - insertEndIdx
+            pagingCtrl.children().eq(insertIdx).before(pagingItem) 
+        }
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        if (pagingContainer.children().length.toInt() > 0) {
+            pagingContainer.children().eq(0).replaceWith(pagingCtrl)
+        } else {
+            pagingContainer.append(pagingCtrl)
+        }
+    }
+
+    
     /**
      * update icon  page
      */
@@ -121,13 +187,23 @@ class IconSelector(val option : Option) {
             }
         }
     } 
-
+    /**
+     * calculate count of pages
+     */
+    fun calcCountOfPages(contentsMeta: ContentsMeta): Int {
+        val ids = contentsMeta.iconIdentifiers
+        val iconCount = contentsMeta.colSize * contentsMeta.rowSize
+        val result = (ids.size + iconCount - 1) / iconCount
+        return result
+    }
     /**
      * tear down user interface contents
      */
     fun destroyContents() {
         val items = jQuery(option.itemListQuery)
         items.empty()
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        pagingContainer.empty() 
     } 
 
     /**
@@ -161,6 +237,27 @@ class IconSelector(val option : Option) {
 
         return result 
     }
+
+    /**
+     * find paging size from runtime configuration
+     */
+    fun findPagingSize(): Int? {
+        var result : Int? = null
+        val rc = runtimeConfig["icon_list"]
+        if (rc != null) {
+            if (rc.pagingSize != null) {
+                result = Responsive.findXCount(
+                    rc.pagingSize,
+                    "minWidth", "maxWidth")
+            }
+            if (result == null) {
+                result = rc.pagingSizeDefault
+            }
+        }
+        return result
+    }
+
+ 
     /**
      * append item
      */

@@ -35,5 +35,7 @@
       "count": 6 
     }
   ],
-  "colSizeDefault": 6
+  "colSizeDefault": 6,
+  "pagingSizeDefault": 6,
+  "pagingSize" : []
 }
