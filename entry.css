@@ -53,7 +53,7 @@
   display: block;
 }
 .icon-item {
-  width: calc(100% / 9);
+  width: calc(100% / 6);
 }
 body {
   background-color: black;
@@ -90,4 +90,31 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+}
+ul.list.icons {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+li.icon-item div {
+  display: flex;
+  justify-content: center;
+  border-radius: 0.25em;
+  padding: 4px;
+  border: solid #ffffff;
+}
+li.icon-item div:hover {
+  border: solid #0f0f0f;
+}
+li.icon-item div i {
+  font-size: 36px;
+}
+li.icon-itme div div {
+  height: 36px;
+}
+li.icon-item svg.svg-inline--fa {
+  font-size: 36px;
+}
+li.icon-item svg.svg-inline--fa path {
+  fill: blue;
 }

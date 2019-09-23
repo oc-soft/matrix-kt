@@ -18,5 +18,7 @@ data class MainPageConfig(
         ".setting.menu",
         IconSelector.Option("#icon_list",
             "#icon_list .icons", 
-            "#icon_item_tmpl"))) {
+            "#icon_list .icons li",
+            "#icon_item_tmpl",
+            "#blank_icon_item_tmpl"))) {
 }

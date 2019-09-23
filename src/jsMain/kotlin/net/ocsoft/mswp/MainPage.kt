@@ -4,6 +4,7 @@ import jQuery
 import net.ocsoft.mswp.ui.Grid
 import net.ocsoft.mswp.ui.ShaderPrograms
 import kotlin.js.Promise
+import kotlin.js.Json
 import org.w3c.fetch.*
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
@@ -92,14 +93,17 @@ actual class MainPage {
             setupBodyI(model!!, 
             camera!!, 
             pointLight!!,
-            settingObj!!.rootDir) 
+            settingObj!!.rootDir,
+            settingObj!!.ui) 
         })
     }
     fun setupBodyI(model : Model, 
         camera: Camera, 
         pointLight: PointLight,
-        rootDir: String) {
+        rootDir: String,
+        uiSetting: Json) {
         // WebFont.load(getWebfontConfig())
+        appSettings.runtimeConfig = uiSetting
         jQuery({ 
             val grid = Grid()
             val shaders = arrayOf(

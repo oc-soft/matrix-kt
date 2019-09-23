@@ -69,7 +69,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-body">
-          <ul class="icons">
+          <ul class="icons list">
           </ul>
         </div>
       </div>
@@ -77,7 +77,21 @@
   </div>
 
   <template id="icon_item_tmpl">
-    <li class="icon-item"></li>
+    <li class="icon-item"><div><i></i></div></li>
+  </template>
+  <template id="blank_icon_item_tmpl">
+    <li class="icon-item"><div><div></div></div></li>  
+  </template>
+  <template id="icons_paginating_tmpl">
+    <ul class="pagination">
+      <li class="page-item"><i class="fas fa-angle-double-left first"></i></li>
+      <li class="page-item"><i class="fas fa-angle-left next"></i></li>
+      <li class="page-item"><i class="fas fa-angle-right prev"></i></li>
+      <li class="page-item"><i class="fas fa-angle-double-right last"></i></li>
+    </ul>
+  </template>
+  <template>
+    <li class="page-item"></li>
   </template>
 </body>
 

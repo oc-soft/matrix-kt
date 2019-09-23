@@ -2,6 +2,7 @@ package net.ocsoft.mswp.ui
 
 import jQuery
 import JQueryEventObject
+import kotlin.js.Json
 
 /**
  * setting user interface
@@ -19,6 +20,11 @@ class AppSettings(val option : Option) {
     var settingItemHandler : ((JQueryEventObject, Any) -> Any)? = null
 
     /**
+     * runtime configuration
+     */
+    var runtimeConfig : dynamic? = null;
+
+    /**
      * icon selector
      */
     var iconSelector : IconSelector? = null
@@ -32,6 +38,7 @@ class AppSettings(val option : Option) {
         settingItemHandler = { evt, args -> onClickOnSettingItem(evt, args) }
         settingItem.on("click", settingItemHandler!!)
         iconSelector = IconSelector(option.iconOption)
+        iconSelector?.runtimeConfig = runtimeConfig
         iconSelector?.bind()
     }
 
