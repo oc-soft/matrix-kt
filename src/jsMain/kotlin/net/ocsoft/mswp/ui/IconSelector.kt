@@ -7,7 +7,10 @@ import JQueryStatic
 import JQuery
 import fontawesome.Icons
 
+import kotlin.text.toIntOrNull
+import kotlin.browser.window
 import kotlin.collections.List
+import kotlin.collections.HashSet
 
 /**
  * icon selector
@@ -56,6 +59,31 @@ class IconSelector(val option : Option) {
         }
 
     /**
+     * handle number control event
+     */
+    var numberCtrlHdlr: ((JQueryEventObject, Any?)->Any)? = null
+    
+    /**
+     * handle go to fist page event
+     */
+    var firstPageHdlr: ((JQueryEventObject, Any?)->Any)? = null
+     
+    /**
+     * handle go to last page
+     */
+    var lastPageHdlr: ((JQueryEventObject, Any?)->Any)? = null 
+
+    /**
+     * handle previous pages ui event 
+     */
+    var prevPageHdlr: ((JQueryEventObject, Any?)->Any)? = null
+
+    /**
+     * handle next pages ui event 
+     */
+    var nextPageHdlr: ((JQueryEventObject, Any?)->Any)?  = null
+ 
+    /**
      * bind into html
      */
     fun bind() {
@@ -87,7 +115,7 @@ class IconSelector(val option : Option) {
      * set up user interface contents
      */
     fun setupContents() {
-        var ids = Icons.getAllIdentifiersCodeOrder() 
+        var ids = readIconIdentfiers() 
         var tableSize = findTableSize()
         if (tableSize != null) {
             var (colSize, rowSize) = tableSize
@@ -100,6 +128,29 @@ class IconSelector(val option : Option) {
     }
     
 
+    /**
+     * read icon identifier list
+     */
+    fun readIconIdentfiers(): List<Icons.Identifier> {
+        var ids = Icons.getAllIdentifiersCodeOrder() 
+        val rc = runtimeConfig["icon_list"]
+        var result = ids
+        if (rc != null) {
+            if (rc.icons != null) {
+                if (rc.icons.exclude != null) {
+                    if (rc.icons.exclude["font-awesome"] != null) {
+                        val excCode = HashSet<String>() 
+                        val faEx = rc.icons.exclude["font-awesome"]
+                        for (i in 0..faEx.length - 1) {
+                            excCode.add(faEx[i].code) 
+                        }
+                        result = ids.filter({ it.code !in excCode })
+                    }
+                }
+            }
+        }
+        return result
+    }
     /**
      * setup pagination ui
      */
@@ -151,14 +202,195 @@ class IconSelector(val option : Option) {
             val insertIdx = pagingCtrl.children().length.toInt() - insertEndIdx
             pagingCtrl.children().eq(insertIdx).before(pagingItem) 
         }
+        unbindPagingCtrl()
         val pagingContainer = jQuery(option.pagingContainerQuery)
         if (pagingContainer.children().length.toInt() > 0) {
             pagingContainer.children().eq(0).replaceWith(pagingCtrl)
         } else {
             pagingContainer.append(pagingCtrl)
         }
+
+        bindPagingCtrl()
     }
 
+    /**
+     * bind paging user interface.
+     */
+    fun bindPagingCtrl() {
+        firstPageHdlr = { e, args -> onFirstPage(e, args) }
+        lastPageHdlr = { e, args -> onLastPage(e, args) }
+        prevPageHdlr = { e, args -> onPrevPage(e, args) }
+        nextPageHdlr = { e, args -> onNextPage(e, args) }
+        numberCtrlHdlr = { e, args -> onNumberUi(e, args) }
+ 
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl = pagingContainer.children().eq(0) as JQuery?
+
+        jQuery(".first", pagingCtrl).on("click", firstPageHdlr!!)
+        jQuery(".last", pagingCtrl).on("click", lastPageHdlr!!)
+        jQuery(".prev", pagingCtrl).on("click", prevPageHdlr!!)
+        jQuery(".next", pagingCtrl).on("click", nextPageHdlr!!)
+        jQuery(".page-number", pagingCtrl).on("click", numberCtrlHdlr!!)
+    }
+
+
+    /**
+     * unbind handler from paging control
+     */
+    fun unbindPagingCtrl() {
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl = pagingContainer.children().eq(0) as JQuery?
+
+        if (firstPageHdlr != null) {
+            jQuery(".first", pagingCtrl).off("click", firstPageHdlr!!)
+        }
+        if (lastPageHdlr != null) {
+            jQuery(".last", pagingCtrl).off("click", lastPageHdlr!!)
+        }
+        if (prevPageHdlr != null) {
+            jQuery(".prev", pagingCtrl).off("click", prevPageHdlr!!)
+        }
+        if (nextPageHdlr != null) {
+            jQuery(".next", pagingCtrl).off("click", nextPageHdlr!!)
+        }
+        if (numberCtrlHdlr != null) {
+            jQuery(".page-number", pagingCtrl).off("click", numberCtrlHdlr!!)
+        }
+
+        firstPageHdlr = null
+        lastPageHdlr = null 
+        prevPageHdlr = null
+        nextPageHdlr = null
+        numberCtrlHdlr = null
+ 
+     }
+
+
+    /**
+     * handle number control  
+     */
+    fun onNumberUi(e: JQueryEventObject, args: Any?): Any {
+        val ctMeta = contentsMeta
+        if (ctMeta != null) {
+            postUpdatePage(
+                jQuery(e.delegateTarget).text().toInt() - 1,
+                ctMeta!!)
+        }
+        return Unit
+    }
+
+    /**
+     * handle go to fist page event
+     */
+    fun onFirstPage(e :JQueryEventObject, args: Any?): Any {
+        postRenumberPageCtrl(0) 
+        return Unit
+    }
+     
+    /**
+     * handle go to last page
+     */
+    fun onLastPage(e :JQueryEventObject, args: Any?): Any {
+        val ctMeta = contentsMeta
+        if (ctMeta != null) {
+            val pageUiCount = calcCountOfPageNumUi()
+            val pageCount = calcCountOfPages(ctMeta)
+            val nextIndex = pageCount - pageUiCount - 1
+            postRenumberPageCtrl(nextIndex)
+        }
+        return Unit
+    }
+
+    /**
+     * handle previous pages ui event 
+     */
+    fun onPrevPage(e : JQueryEventObject, args: Any?): Any {
+        val pageRange = readPageNumbersFromUi()
+        if (pageRange != null) {
+            val pageUiCount = calcCountOfPageNumUi()
+            var prevIndex = pageRange.first - pageUiCount + 1
+            if (prevIndex < 0) {
+                prevIndex = 0
+            }
+            postRenumberPageCtrl(prevIndex)
+        }
+        return Unit
+    }
+
+    /**
+     * handle next pages ui event 
+     */
+    fun onNextPage(e : JQueryEventObject, args: Any?): Any {
+        val pageRange = readPageNumbersFromUi()
+        val ctMeta = contentsMeta
+        if (pageRange != null && ctMeta != null) {
+            val pageUiCount = calcCountOfPageNumUi()           
+            var nextIndex = pageRange.second 
+            val endIndex = nextIndex + pageUiCount - 1
+            val pageCount = calcCountOfPages(ctMeta)
+            if (endIndex > pageCount) {
+                nextIndex = pageCount - pageUiCount - 1
+            }
+            postRenumberPageCtrl(nextIndex)
+        }
+        return Unit
+    }
+
+
+    /**
+     * renumber page index
+     */    
+    fun postRenumberPageCtrl(pageIndex: Int) {
+        window.setTimeout({
+            renumberPageCtrl(pageIndex)
+        })    
+    } 
+
+    /**
+     * renumber page control interface
+     */
+    fun renumberPageCtrl(pageIndex: Int) {
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery?
+        val pageNumbers = jQuery(".page-number", pagingCtrl)
+        pageNumbers.each({ idx, elem -> 
+            val pageNumber = pageIndex + idx.toInt() + 1
+            jQuery(elem).text("${pageNumber}") 
+            true
+        })
+    } 
+
+    
+
+    /**
+     * read page numbers from user inteface
+     */
+    fun readPageNumbersFromUi(): Pair<Int, Int>? {
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery? 
+        val pageNumbers = jQuery(".page-number", pagingCtrl)
+        val firstNode = pageNumbers.eq(0)
+        val lastNode = pageNumbers.eq(pageNumbers.length.toInt() - 1)
+
+        var result : Pair<Int, Int>? = null
+        val firstNum = firstNode.text().toIntOrNull()
+        val lastNum = lastNode.text().toIntOrNull()
+        if (firstNum != null && lastNum != null) {
+            result = Pair(firstNum - 1, lastNum - 1)
+        }        
+        return result
+    }
+
+    /**
+     * update icon page later
+     */
+    fun postUpdatePage(pageIndex: Int,
+        contentsMeta: ContentsMeta,
+        selectionInPage: Int? = null) {
+        window.setTimeout({
+            updatePage(pageIndex, contentsMeta, selectionInPage)
+        }, 100)
+    } 
     
     /**
      * update icon  page
@@ -187,6 +419,17 @@ class IconSelector(val option : Option) {
             }
         }
     } 
+
+    /**
+     * calc count of page button ui
+     */
+    fun calcCountOfPageNumUi(): Int {
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery? 
+        val pageNumbers = jQuery(".page-number", pagingCtrl)
+        val result = pageNumbers.length.toInt()
+        return result 
+    }
     /**
      * calculate count of pages
      */

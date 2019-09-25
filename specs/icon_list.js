@@ -37,5 +37,15 @@
   ],
   "colSizeDefault": 6,
   "pagingSizeDefault": 6,
-  "pagingSize" : []
+  "pagingSize" : [],
+  "icons" : {
+    "exclude" : {
+      "font-awesome": [
+        {
+          "icon": "font-awesome-logo-full",
+          "code": "f4e6"
+        }
+      ]   
+    }
+  }
 }

@@ -73,6 +73,10 @@
           </ul>
           <div class="pagination container"></div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary">OK</button>
+          <button type="button" class="btn btn-secondary">Cacel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -85,27 +89,27 @@
   </template>
   <template id="icons_paginating_full_tmpl">
     <div class="btn-group full" role="group">
-      <button class="btn btn-secondary">
-        <i class="fas fa-angle-double-left first"></i>
+      <button class="btn btn-secondary first">
+        <i class="fas fa-angle-double-left"></i>
       </button>
-      <button class="btn btn-secondary">
-        <i class="fas fa-angle-left next"></i>
+      <button class="btn btn-secondary prev">
+        <i class="fas fa-angle-left"></i>
       </button>
-      <button class="btn btn-secondary">
-        <i class="fas fa-angle-right prev"></i>
+      <button class="btn btn-secondary next">
+        <i class="fas fa-angle-right"></i>
       </button>
-      <button class="btn btn-secondary">
-        <i class="fas fa-angle-double-right last"></i>
+      <button class="btn btn-secondary last">
+        <i class="fas fa-angle-double-right"></i>
       </button>
     </div>
   </template>
   <template id="icons_paginating_medium_tmpl">
     <div class="btn-group medium">
-      <button class="btn btn-secondary">
-        <i class="fas fa-angle-left next"></i>
+      <button class="btn btn-secondary prev">
+        <i class="fas fa-angle-left"></i>
       </button>
-      <button class="page-item">
-        <i class="fas fa-angle-right prev"></i>
+      <button class="page-item next">
+        <i class="fas fa-angle-right"></i>
       </button>
     </div>
   </template>
@@ -114,7 +118,7 @@
     </ul>
   </template>
   <template id="icons_paginating_item_tmpl">
-    <button class="btn btn-secondary"></button>
+    <button class="btn btn-secondary page-number"></button>
   </template>
 </body>
 
