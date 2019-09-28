@@ -4,6 +4,7 @@
  */
 require_once implode('/', array(__DIR__, 'lib', 'begin0.php')); 
 Session::$instance->start();
+Session::$instance->update_session();
 require 'config.php';
 $texture_text = file(
     'TextureText.txt', 

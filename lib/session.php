@@ -1,4 +1,5 @@
 <?php
+require_once implode('/', array(__DIR__, 'db.php'));
 
 /**
  * handle session
@@ -15,6 +16,12 @@ class Session {
     function __construct() {
     }
 
+    /**
+     *  get database object
+     */
+    function get_db() {
+        return DB::$instance;
+    }
 
     /**
      * you get true if this session has id(db key).
@@ -57,6 +64,33 @@ class Session {
         $option = $session_setting['option'];
         $option['expires'] += time();
         setcookie($session_setting['cookieName'], $id, $option['expires']);
+    }
+
+    /**
+     * update session
+     */
+    function update_session() {
+        $this->setcookie($this->get_id());
+        $this->update($this->get_id());
+    }
+    /**
+     * update session in db 
+     */
+    function update($id) {
+        global $db_access_update;
+        global $db_settings;
+        $result = FALSE;
+        if ($id) {
+            $stmt_str = sprintf($db_access_update['update']['query'], 
+                $db_settings['prefix']); 
+            $stmt = $this->get_db()->get_sql_client()->prepare($stmt_str);
+            $stmt->bind_param($db_access_update['update']['params'][0],
+               $id); 
+            $stmt->execute();
+            $stmt->close();
+            $result = TRUE;
+        } 
+        return $result;
     }
 }
 

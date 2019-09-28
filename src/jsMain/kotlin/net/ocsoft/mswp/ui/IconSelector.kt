@@ -10,7 +10,10 @@ import fontawesome.Icons
 import kotlin.text.toIntOrNull
 import kotlin.browser.window
 import kotlin.collections.List
+import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
+
+import net.ocsoft.mswp.Activity
 
 /**
  * icon selector
@@ -25,10 +28,12 @@ class IconSelector(val option : Option) {
         val itemTemplateQuery: String,
         val blankItemTemplateQuery: String,
         val pagingContainerQuery: String,
+        val okQuery: String,
         val pagingCtrlFullTemplateQuery: String,
         val pagingCtrlMediumTemplateQuery: String,
         val pagingCtrlSimpleTemplateQuery: String,
-        val pagingItemTemplateQuery: String)
+        val pagingItemTemplateQuery: String,
+        val syncIconTemplateQuery: String)
 
     /**
      * icon page contents meta infomation
@@ -84,6 +89,22 @@ class IconSelector(val option : Option) {
     var nextPageHdlr: ((JQueryEventObject, Any?)->Any)?  = null
  
     /**
+     * ok button handler
+     */
+    var okHdlr: ((JQueryEventObject, Any?)->Any)? = null
+
+
+    /**
+     * called when modal dialog is hidden.
+     */
+    var modalHiddenHdlr: ((JQueryEventObject, Any?)->Any)? = null
+    
+    /**
+     * contens of ok ui control, this list is keeping while ajax request. 
+     */
+    var okContents: MutableList<String>? = null 
+     
+    /**
      * bind into html
      */
     fun bind() {
@@ -100,10 +121,114 @@ class IconSelector(val option : Option) {
      * visible modal dialog
      */
     fun show() {
-        setupContents()
-        jQuery(option.modalQuery).asDynamic().modal() 
-        // destroyContents()
+        bindModal()
+        val modalObj = jQuery(option.modalQuery)
+        modalObj.asDynamic().modal("show") 
     }
+    /**
+     * connect functions into modal user interface.
+     */
+    fun bindModal() {
+        modalHiddenHdlr = { e, arg -> onModalHidden(e, arg) }
+        okHdlr = { e, arg -> onOk(e, arg) }
+
+        val modalQuery = jQuery(option.modalQuery) as JQuery
+        jQuery(option.okQuery).on("click", okHdlr!!)
+        modalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
+        setupContents()
+    }
+
+    /**
+     * disconnect functions from modal user interface
+     */
+    fun unbindModal() {
+        destroyContents()
+        if (modalHiddenHdlr != null) {
+            jQuery(option.modalQuery).off("hidden.bs.modal", modalHiddenHdlr!!)
+            modalHiddenHdlr = null
+        }
+
+        if (okHdlr != null) {
+            jQuery(option.okQuery).off("click", okHdlr!!)
+            okHdlr = null
+        }
+    }
+
+    /**
+     * handle modal hidden event
+     */
+    fun onModalHidden(e: JQueryEventObject, a: Any?): Any {
+        unbindModal() 
+        return Unit
+    }
+
+    /**
+     * handle ok
+     */
+    fun onOk(e: JQueryEventObject, args: Any?): Any {
+                
+        postSave()
+        return Unit
+    }
+
+    /**
+     * save data into host 
+     */
+    fun postSave() {
+        window.setTimeout({
+            doSave()
+        }, 100)
+    }
+
+    /**
+     * save setting into server
+     */
+    fun doSave() {
+        changeUiOkToSync()
+        Persistence.saveIcon(getSelectedIcon()).then({
+            jQuery(option.modalQuery).asDynamic().modal("hide")
+            restoreOkFromSync()   
+        }, {
+            // todo: you have to display waring 
+            restoreOkFromSync()   
+        })
+   } 
+
+    /**
+     * get selected icon
+     */
+    fun getSelectedIcon(): Persistence.Icon {
+        return Persistence.Icon("fas", "skull")
+    }
+    
+    /**
+     * change ok to synchronizing icon
+     */
+    fun changeUiOkToSync() {
+        val syncHtml = jQuery(option.syncIconTemplateQuery).html()
+
+        okContents = ArrayList<String>()
+        jQuery(option.okQuery).html({
+            index, oldHtml ->
+            okContents?.add(oldHtml) 
+            syncHtml
+        })
+    }
+    /**
+     * restore ok from synchronizing icon
+     */
+    fun restoreOkFromSync() {
+        val okContents = this.okContents
+        if (okContents != null) {
+            jQuery(option.okQuery).html({
+                index, oldHtml ->
+                okContents[index.toInt()]
+            })
+            this.okContents = null
+        } 
+    }
+       
+
     /**
      * set up user interface contents
      */
@@ -275,6 +400,7 @@ class IconSelector(val option : Option) {
             postUpdatePage(
                 jQuery(e.delegateTarget).text().toInt() - 1,
                 ctMeta!!)
+            Activity.record()
         }
         return Unit
     }
@@ -284,6 +410,7 @@ class IconSelector(val option : Option) {
      */
     fun onFirstPage(e :JQueryEventObject, args: Any?): Any {
         postRenumberPageCtrl(0) 
+        Activity.record()
         return Unit
     }
      
@@ -297,6 +424,7 @@ class IconSelector(val option : Option) {
             val pageCount = calcCountOfPages(ctMeta)
             val nextIndex = pageCount - pageUiCount - 1
             postRenumberPageCtrl(nextIndex)
+            Activity.record()
         }
         return Unit
     }
@@ -313,6 +441,7 @@ class IconSelector(val option : Option) {
                 prevIndex = 0
             }
             postRenumberPageCtrl(prevIndex)
+            Activity.record()
         }
         return Unit
     }
@@ -332,6 +461,7 @@ class IconSelector(val option : Option) {
                 nextIndex = pageCount - pageUiCount - 1
             }
             postRenumberPageCtrl(nextIndex)
+            Activity.record()
         }
         return Unit
     }

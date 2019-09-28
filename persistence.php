@@ -1,5 +1,8 @@
 <?php
-class Request() {
+require_once implode('/', array(__DIR__, 'lib', 'begin0.php')); 
+require_once implode('/', array(__DIR__, 'lib', 'icon.php'));
+
+class Persistence {
     /**
      * request handler insntace
      */
@@ -26,31 +29,31 @@ class Request() {
      */ 
     function icon()
     {
-        require_once(implode('/', array(__DIR__, 'lib', 'begin0.php'))); 
+        Session::$instance->start();
         $id = Session::$instance->get_id();
         if ($id) {
-            require_once(implode('/', array(__DIR__, 'lib', 'icon.php')));
-            $command = $_REQUEST['icon']
-            $response = NULL;
+            $command = $_REQUEST['icon'];
+            $resp = NULL;
             if ($command == 'write') {
                 $res = FALSE;
                 if (isset($_REQUEST['data'])) {
-                    $iconData = json_decode($_REQUEST['data']);
+                    $iconData = json_decode($_REQUEST['data'], TRUE);
                     $res = Icon::$instance->write($id, $iconData);
+                    Session::$instance->update_session();
                 }
-                $response = array('status' => $res);
+                $resp = array('status' => $res);
             } else if ($command == 'read') {
                 $iconData = Icon::$instance->read($id);
                 if ($iconData) {
-                    $response = array('status' => TRUE,
+                    $resp = array('status' => TRUE,
                         'data' => $iconData);
                 } else {
-                    $response = array('status' => FALSE);
+                    $resp = array('status' => FALSE);
                 }
             } else {
-                $response = array('status' => FALSE);
+                $resp = array('status' => FALSE);
             }
-            $this->response_as_json($id, $response);
+            $this->response_as_json($id, $resp);
         }
     }
 
@@ -59,12 +62,11 @@ class Request() {
      * echo data as json back to client.
      */
     function response_as_json($id, $response) {
-        require_once(implode('/', array(__DIR__, 'lib', 'begin0.php'))); 
         Session::$instance->setcookie($id);
         echo json_encode($response);
     }
 }
 
-Request::$instance = new Request();
-Request::$instance->start();
+Persistence::$instance = new Persistence();
+Persistence::$instance->start();
 ?>

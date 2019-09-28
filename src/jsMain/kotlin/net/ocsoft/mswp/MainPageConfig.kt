@@ -22,8 +22,10 @@ data class MainPageConfig(
             "#icon_item_tmpl",
             "#blank_icon_item_tmpl",
             "#icon_list .pagination.container",
+            "#icon_list .ok",
             "#icons_paginating_full_tmpl",
             "#icons_paginating_middle_tmpl",
             "#icons_paginating_simple_tmpl",
-            "#icons_paginating_item_tmpl"))) {
+            "#icons_paginating_item_tmpl",
+            "#synchronizing_icon"))) {
 }

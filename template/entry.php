@@ -74,13 +74,15 @@
           <div class="pagination container"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary">OK</button>
-          <button type="button" class="btn btn-secondary">Cacel</button>
+          <button type="button" class="btn btn-primary ok">OK</button>
+          <button type="button" data-dismiss="modal" class="btn btn-secondary">Cacel</button>
         </div>
       </div>
     </div>
   </div>
-
+  <template id="synchronizing_icon">
+    <i class="fa fa-sync-alt fa-spin"></i>
+  </template>
   <template id="icon_item_tmpl">
     <li class="icon-item"><div><i></i></div></li>
   </template>

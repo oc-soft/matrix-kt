@@ -430,6 +430,8 @@ class Grid(rowCount: Int = 6,
                         model.logic.status!!.getOpenedIndices(),
                         buttonIndices, renderingCtx)
                     postStartAnimation(gl, { finishAnimation(cells) })
+                    // update session
+                    Activity.record()
                 } 
             }
         }
@@ -504,6 +506,7 @@ class Grid(rowCount: Int = 6,
             onClickToPlayAgainHandler = {
                 event, args ->
                 this.handleClickToPlayAgain(event, args)
+                Activity.record()
             }
 
             setupGameOverModal()

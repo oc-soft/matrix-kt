@@ -16,7 +16,11 @@ $db_table_creation = array(
 );
 
 $db_access_update = array(
-    'update' => 'UPDATE  %ssession set ACCESS = NULL'
+    'update' => array(
+        'query' => 'INSERT INTO %ssession (ID) VALUES(?) '
+        . 'ON DUPLICATE KEY UPDATE ACCESS = NULL',
+        'params' => array('s')
+    )
 );
 $db_icon_manipulation = array(
     'write' => array(

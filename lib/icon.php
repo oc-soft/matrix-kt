@@ -1,6 +1,8 @@
 <?php
 
-require_once(implode('/', array(dirname(__DIR__), 'site', 'config.php')));
+require_once implode('/', array(dirname(__DIR__), 'site', 'config.php'));
+require_once implode('/', array(__DIR__, 'db.php'));
+
 /**
  * icon handler
  */
@@ -16,7 +18,6 @@ class Icon {
      * get database object
      */
     function get_db() {
-        require_once(implode('/', array(__DIR__, 'db.php')));
         return DB::$instance;
     }
 
@@ -31,9 +32,10 @@ class Icon {
         if ($data) {
             $stmt_str = sprintf($db_icon_manipulation['write']['query'],
                 $db_settings['prefix']);
-            $stmt = $this->get_db()->get_sql_client()->preare($stmt_str);     
+            $stmt = $this->get_db()->get_sql_client()->prepare($stmt_str);     
+            $str_data = json_encode($data);
             $stmt->bind_param($db_icon_manipulation['write']['params'][0], 
-                $id, json_encode($data));
+                $id, $str_data);
             $result = $stmt->execute();
             $stmt->close();
         }
@@ -48,9 +50,9 @@ class Icon {
         $result = FALSE;
         $stmt_str = sprintf($db_icon_manipulation['read']['query'],
             $db_settings['prefix']);
-        $stmt = $this->get_db()->get_sql_client()->preare($stmt_str);
+        $stmt = $this->get_db()->get_sql_client()->prepare($stmt_str);
         $stmt->bind_param($db_icon_manipulation['read']['params'][0], 
-            json_encode($id));
+            $id);
         $stmt->execute();
         $result = NULL;
         $stmt->bind_result($result);
@@ -65,7 +67,7 @@ class Icon {
     function get_necessary_data($data) {
         $specs_str = file_get_contents(
             implode('/', array(dirname(__DIR__), 'specs', 'config.js')));
-        $specs = json_decode($specs_str);
+        $specs = json_decode($specs_str, TRUE);
         $result = NULL;
         foreach ($specs['iconData'] as $item) {
             $new_data = array();
