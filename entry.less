@@ -73,9 +73,18 @@ li.icon-item div {
     border: solid #ffffff;
 }
 
-li.icon-item div:hover {
-    border:solid #0f0f0f;
+li.icon-item div:hover
+{
+    border:solid var(--secondary);
 }
+
+
+li.icon-item.selected div:hover,
+li.icon-item.selected div
+{
+    border:solid var(--primary);
+}
+
 
 .pagination.container {
     display: flex;
@@ -91,8 +100,10 @@ li.icon-item div:hover {
 li.icon-item div i {
     font-size: 36px;
 }
-li.icon-itme div div {
+li.icon-item div div {
     height: 36px;
+    padding: initial;
+    border: initial;
 }
 
 li.icon-item svg.svg-inline--fa {
@@ -104,7 +115,7 @@ li.icon-item svg.svg-inline--fa {
 }    
 
 li.icon-item svg.svg-inline--fa path {
-    fill: blue;
+    fill: #1B1B1B 
 }
 
 

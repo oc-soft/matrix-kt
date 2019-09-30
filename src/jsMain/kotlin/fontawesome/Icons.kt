@@ -49,7 +49,25 @@ class Icons {
             }
             return result 
         }
+
+        /**
+         * load an icon to be ready to be rendered.
+         */
+        fun loadIcon(name: String, prefix: String?) {
+            if (js("typeof window.FontAwesome  !== 'undefined'")) {
+                val fa: dynamic = js("window.FontAwesome")
+                fa.findIconDefinition(object {
+                    @JsName("prefix")
+                    var prefix = prefix
+
+                    @JsName("iconName")
+                    var iconName = name
+                    
+                })
+            }
+        }
     } 
+
 
     /**
      * icon idetifier

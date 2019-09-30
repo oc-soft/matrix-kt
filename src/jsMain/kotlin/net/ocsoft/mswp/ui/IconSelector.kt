@@ -5,6 +5,7 @@ import jQuery
 import JQueryEventObject
 import JQueryStatic
 import JQuery
+import org.w3c.dom.Element  
 import fontawesome.Icons
 
 import kotlin.text.toIntOrNull
@@ -12,8 +13,10 @@ import kotlin.browser.window
 import kotlin.collections.List
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
-
+import kotlin.collections.Map
+import kotlin.collections.HashMap
 import net.ocsoft.mswp.Activity
+import net.ocsoft.mswp.*
 
 /**
  * icon selector
@@ -25,15 +28,20 @@ class IconSelector(val option : Option) {
     data class Option(val modalQuery: String, 
         val itemListQuery: String,
         val itemsQuery: String,
-        val itemTemplateQuery: String,
-        val blankItemTemplateQuery: String,
         val pagingContainerQuery: String,
         val okQuery: String,
+        /**
+         * runtime icon item query
+         */
+        val rtIconItemQuery: String,
+        val itemTemplateQuery: String,
+        val blankItemTemplateQuery: String,
         val pagingCtrlFullTemplateQuery: String,
         val pagingCtrlMediumTemplateQuery: String,
         val pagingCtrlSimpleTemplateQuery: String,
         val pagingItemTemplateQuery: String,
-        val syncIconTemplateQuery: String)
+        val syncIconTemplateQuery: String,
+        val iconSetting: IconSetting)
 
     /**
      * icon page contents meta infomation
@@ -93,6 +101,10 @@ class IconSelector(val option : Option) {
      */
     var okHdlr: ((JQueryEventObject, Any?)->Any)? = null
 
+    /**
+     * icon item click handler
+     */
+    var iconItemClickHdlr: ((JQueryEventObject, Any?)->Any)? = null
 
     /**
      * called when modal dialog is hidden.
@@ -103,7 +115,14 @@ class IconSelector(val option : Option) {
      * contens of ok ui control, this list is keeping while ajax request. 
      */
     var okContents: MutableList<String>? = null 
-     
+
+
+    /**
+     * currently selected icon 
+     */
+    var selectedMineIcon: Persistence.Icon? = null
+
+    
     /**
      * bind into html
      */
@@ -131,10 +150,13 @@ class IconSelector(val option : Option) {
     fun bindModal() {
         modalHiddenHdlr = { e, arg -> onModalHidden(e, arg) }
         okHdlr = { e, arg -> onOk(e, arg) }
-
+        iconItemClickHdlr = { e, args -> onIconItemClick(e, args) }
+ 
         val modalQuery = jQuery(option.modalQuery) as JQuery
         jQuery(option.okQuery).on("click", okHdlr!!)
         modalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
+        selectedMineIcon = option.iconSetting.mineIcon 
+
         setupContents()
     }
 
@@ -152,6 +174,8 @@ class IconSelector(val option : Option) {
             jQuery(option.okQuery).off("click", okHdlr!!)
             okHdlr = null
         }
+        selectedMineIcon = null
+        iconItemClickHdlr = null
     }
 
     /**
@@ -185,22 +209,18 @@ class IconSelector(val option : Option) {
      */
     fun doSave() {
         changeUiOkToSync()
-        Persistence.saveIcon(getSelectedIcon()).then({
+        val selectedIcon = selectedMineIcon!!
+        Persistence.saveIcon(selectedIcon).then({
             jQuery(option.modalQuery).asDynamic().modal("hide")
-            restoreOkFromSync()   
+            restoreOkFromSync()
+            option.iconSetting.mineIcon = selectedIcon
         }, {
             // todo: you have to display waring 
             restoreOkFromSync()   
         })
    } 
 
-    /**
-     * get selected icon
-     */
-    fun getSelectedIcon(): Persistence.Icon {
-        return Persistence.Icon("fas", "skull")
-    }
-    
+   
     /**
      * change ok to synchronizing icon
      */
@@ -232,13 +252,6 @@ class IconSelector(val option : Option) {
     /**
      * set up user interface contents
      */
-    fun setupContentsI() {
- 
-    }
-
-    /**
-     * set up user interface contents
-     */
     fun setupContents() {
         var ids = readIconIdentfiers() 
         var tableSize = findTableSize()
@@ -246,12 +259,44 @@ class IconSelector(val option : Option) {
             var (colSize, rowSize) = tableSize
             if (colSize != null && rowSize != null) {
                 contentsMeta = ContentsMeta(colSize, rowSize, ids)
-                updatePage(0, contentsMeta!!)
-                setupPagination()
+                val pageNumber = findPageSelectedItemIn(contentsMeta!!)
+                updatePage(pageNumber, 
+                    contentsMeta!!)
+                setupPagination(pageNumber)
+                postFocusInNumberPage(pageNumber)
             }
         }
     }
+
+    /**
+     * find the page in which selected icon is.
+     */
+    fun findPageSelectedItemIn(ctMeta: ContentsMeta): Int {
+        var result = 0
+        if (selectedMineIcon != null) {
+                
+            val iconPageMap = createIconPageMap(ctMeta) 
+            result = iconPageMap[selectedMineIcon!!] ?: 0
+        }
+        
+        return result 
+    }
     
+    /**
+     * create icon page map
+     */
+    fun createIconPageMap(ctMeta: ContentsMeta): Map<Persistence.Icon, Int> {
+        val result = HashMap<Persistence.Icon, Int>()
+        val itemCountInPage = ctMeta.colSize * ctMeta.rowSize
+        ctMeta.iconIdentifiers.forEachIndexed {
+            index, elem ->
+            val pageIdx = index / itemCountInPage
+            val icon = Persistence.Icon(elem.prefix, elem.name)
+            result[icon] = pageIdx
+        }
+
+        return result
+    }
 
     /**
      * read icon identifier list
@@ -279,7 +324,7 @@ class IconSelector(val option : Option) {
     /**
      * setup pagination ui
      */
-    fun setupPagination() {
+    fun setupPagination(firstPageNumber: Int = 0) {
         var ctMeta = contentsMeta
         if (ctMeta != null) {
             val pageCount = calcCountOfPages(ctMeta)       
@@ -297,7 +342,8 @@ class IconSelector(val option : Option) {
                                 option.pagingCtrlMediumTemplateQuery 
                         } 
                     } 
-                    setupPagingCtrl(templateQuery, Pair(0, pagingSize))
+                    setupPagingCtrl(templateQuery, 
+                        Pair(firstPageNumber, pagingSize))
                 } 
             }
         } 
@@ -347,7 +393,7 @@ class IconSelector(val option : Option) {
         prevPageHdlr = { e, args -> onPrevPage(e, args) }
         nextPageHdlr = { e, args -> onNextPage(e, args) }
         numberCtrlHdlr = { e, args -> onNumberUi(e, args) }
- 
+
         val pagingContainer = jQuery(option.pagingContainerQuery)
         val pagingCtrl = pagingContainer.children().eq(0) as JQuery?
 
@@ -387,7 +433,7 @@ class IconSelector(val option : Option) {
         prevPageHdlr = null
         nextPageHdlr = null
         numberCtrlHdlr = null
- 
+        selectedMineIcon = null
      }
 
 
@@ -422,7 +468,7 @@ class IconSelector(val option : Option) {
         if (ctMeta != null) {
             val pageUiCount = calcCountOfPageNumUi()
             val pageCount = calcCountOfPages(ctMeta)
-            val nextIndex = pageCount - pageUiCount - 1
+            val nextIndex = pageCount - pageUiCount
             postRenumberPageCtrl(nextIndex)
             Activity.record()
         }
@@ -458,7 +504,7 @@ class IconSelector(val option : Option) {
             val endIndex = nextIndex + pageUiCount - 1
             val pageCount = calcCountOfPages(ctMeta)
             if (endIndex > pageCount) {
-                nextIndex = pageCount - pageUiCount - 1
+                nextIndex = pageCount - pageUiCount
             }
             postRenumberPageCtrl(nextIndex)
             Activity.record()
@@ -489,6 +535,41 @@ class IconSelector(val option : Option) {
             true
         })
     } 
+
+    /**
+     * focus in pageNumber if pageIndex is in numbers lateley.
+     */
+    fun postFocusInNumberPage(pageIndex: Int) {
+        window.setTimeout({
+            focusInNumberPage(pageIndex)
+        }, 100)
+    }
+
+    /**
+     * focus in pageNumber if pageIndex is in numbers.
+     */
+    fun focusInNumberPage(pageIndex: Int) {
+        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery?
+        val pageNumbers = jQuery(".page-number", pagingCtrl)
+        val pageNumber = pageIndex + 1
+        var elemIndex : Int? = null
+        pageNumbers.each { idx, elem -> 
+            val elemNum = jQuery(elem).text().toIntOrNull()
+            var notMatched = true
+            if (elemNum != null) {
+                notMatched = elemNum!! != pageNumber  
+                if (!notMatched) {
+                    elemIndex = idx.toInt()
+                }
+            }
+            notMatched 
+        }
+        if (elemIndex != null) {
+            pageNumbers.eq(elemIndex!!).trigger("focus")
+        }
+
+    }
 
     
 
@@ -642,23 +723,40 @@ class IconSelector(val option : Option) {
      */
     fun replaceItem(item: Icons.Identifier?,
         index: Int) {
-        val items = jQuery(option.itemsQuery)
+        var items = jQuery(option.itemsQuery)
         if (0 <= index && index <= items.length.toInt()) {
             var newNode : JQuery? = null
+            var selected = false
             if (item != null) {
                 val newLine = jQuery(option.itemTemplateQuery).html()
                 newNode = jQuery(newLine) 
                 val divNode = jQuery("div", newNode as JQueryStatic)
                 val iNode = jQuery("i", divNode as JQueryStatic)
                 iNode.addClass("${item.prefix} fa-${item.name}")
+                selected = selectedMineIcon == Persistence.Icon(
+                    item.prefix, item.name)
             } else {
                 val newLine = jQuery(option.blankItemTemplateQuery).html()
                 newNode = jQuery(newLine) 
             }
-            if (index < items.length.toInt()) {
+            if (index < items.children().length.toInt()) {
+                if (iconItemClickHdlr != null) {
+                    items.eq(index).off(
+                        "click", iconItemClickHdlr!!) 
+                }
                 items.eq(index).replaceWith(newNode) 
+                items = jQuery(option.itemsQuery)
             } else {
                 jQuery(option.itemListQuery).append(newNode)
+                items = jQuery(option.itemsQuery)
+             }
+
+            if (iconItemClickHdlr != null && item != null) {
+                val item0 = items.eq(index)
+                item0.on("click", iconItemClickHdlr!!)
+                if (selected) {
+                    item0.addClass("selected")
+                }
             }
         }
     }
@@ -667,7 +765,54 @@ class IconSelector(val option : Option) {
      */
     fun removeItem(index: Int) {
         val items = jQuery(option.itemsQuery)
-        items.eq(index).remove()    
+        if (iconItemClickHdlr != null) {
+            items.eq(index).off("click", iconItemClickHdlr!!) 
+        }
+        items.eq(index).remove()
+    }
+
+    /**
+     * handle item click
+     */
+    fun onIconItemClick(e: JQueryEventObject, args: Any?) {
+        postSelectIconNode(e.delegateTarget)
+    }
+
+    /**
+     * select icon node lately
+     */
+    fun postSelectIconNode(iconNode: Element) {
+        window.setTimeout({
+            selectIconNode(iconNode)
+        }, 100)
+    }
+
+    /**
+     * select icon node
+     */
+    fun selectIconNode(iconNode: Element) {
+        val iconNodeJ = jQuery(iconNode)
+        iconNodeJ.siblings().removeClass("selected")
+        iconNodeJ.addClass("selected")
+        val iconDisplayingNode = jQuery(option.rtIconItemQuery, 
+            iconNodeJ as JQuery?) 
+        val persisIcon = createIconIdFromNode(iconDisplayingNode)
+        if (persisIcon != null) {
+            selectedMineIcon = persisIcon!!
+        }
+    }
+
+    /**
+     * creawte persistence icon from node
+     */
+    fun createIconIdFromNode(node : JQuery): Persistence.Icon? {
+        val prefix = node.data("prefix")
+        val iconName = node.data("icon")
+        var result: Persistence.Icon? = null
+        if (prefix != null && iconName != null) {
+            result = Persistence.Icon(prefix as String, iconName as String)
+        }
+        return result
     }
 }
 

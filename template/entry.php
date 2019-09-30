@@ -68,6 +68,9 @@
   <div id="icon_list" class="modal" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Please select NG icon.</div>
+        </div>
         <div class="modal-body">
           <ul class="icons list">
           </ul>
@@ -91,16 +94,16 @@
   </template>
   <template id="icons_paginating_full_tmpl">
     <div class="btn-group full" role="group">
-      <button class="btn btn-secondary first">
+      <button class="btn btn-light first">
         <i class="fas fa-angle-double-left"></i>
       </button>
-      <button class="btn btn-secondary prev">
+      <button class="btn btn-light prev">
         <i class="fas fa-angle-left"></i>
       </button>
-      <button class="btn btn-secondary next">
+      <button class="btn btn-light next">
         <i class="fas fa-angle-right"></i>
       </button>
-      <button class="btn btn-secondary last">
+      <button class="btn btn-light last">
         <i class="fas fa-angle-double-right"></i>
       </button>
     </div>
@@ -120,7 +123,7 @@
     </ul>
   </template>
   <template id="icons_paginating_item_tmpl">
-    <button class="btn btn-secondary page-number"></button>
+    <button class="btn btn-light page-number"></button>
   </template>
 </body>
 
