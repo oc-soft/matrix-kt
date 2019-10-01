@@ -42,7 +42,11 @@ class Persistence {
                         val res0: dynamic = res 
                         var iconData: Icon? = null
                         if (res0.data != null) { 
-                            iconData = JSON.parse<Icon>(res0.data)
+                            val tmpIconData = JSON.parse<Icon?>(res0.data)
+                            if (tmpIconData != null) {
+                                iconData = Icon(tmpIconData.prefix, 
+                                    tmpIconData.iconName)
+                            }
                         }
                         resolve(iconData) 
                     }).catch( 
