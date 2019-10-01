@@ -58,20 +58,18 @@ class Glyph(
      * connect nodeid into this class
      */
     fun bind(nodeId: String, 
-        mineImage : Image,
-        mineIconDef : fontawesome.IconDefinition) {
+        iconSetting : IconSetting) {
         this.nodeId = nodeId     
         val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-        setup(ctx, mineImage, mineIconDef)
+        setup(ctx, iconSetting)
     }
     
 
     fun setup(ctx : CanvasRenderingContext2D, 
-        mineImage : Image,
-        mineIconDef : fontawesome.IconDefinition) {
+        iconSetting: IconSetting) {
         setupNumbers(ctx)
-        setupMineImages(ctx, mineImage, mineIconDef)
+        setupMineImages(ctx, iconSetting)
     }
     /**
      * setup numbers
@@ -84,10 +82,8 @@ class Glyph(
      * setup mine image
      */
     fun setupMineImages(ctx: CanvasRenderingContext2D,
-        mineImage: Image,
-        mineIconDef: fontawesome.IconDefinition) {
-        setupMineImage(ctx, mineImage)
-        setupMineImage(ctx, mineIconDef)
+        iconSetting: IconSetting) {
+        setupMineImage(ctx, iconSetting)
         setupMineImage1()
         // drawScal()
     }
@@ -216,6 +212,7 @@ class Glyph(
         val svgElem = document.createElementNS("http://www.w3.org/2000/svg", 
             "svg") as SVGSVGElement
         val result = svgElem.createSVGMatrix()
+        // val result = DOMMatrix()
         result.a = scale
         result.b = 0.0
         result.c = 0.0
@@ -224,16 +221,67 @@ class Glyph(
         result.f = 0.0
         return result
     }
+
+    /**
+     * multiply matricies
+     */
+
+    fun multiply(a: DOMMatrix, b: DOMMatrix): DOMMatrix {
+        var res: DOMMatrix? = null
+        if (js("typeof a.multiplySelf === 'function'")) {
+            res = a.multiplySelf(b)
+        } else {
+            res = a.multiply(b)
+        }
+        return res!!
+    }
+
+    /**
+     * create translate matrix
+     */
+    fun createTranslateMatrix(xDisp: Double, yDisp: Double): DOMMatrix {
+        val svgElem = document.createElementNS("http://www.w3.org/2000/svg", 
+            "svg") as SVGSVGElement
+        val result = svgElem.createSVGMatrix()
+        //  val result = DOMMatrix()
+        result.e = xDisp 
+        result.f = yDisp
+
+        return result
+    }
+
+    /**
+     * create image with icon setting
+     */
+    fun setupMineImage(ctx: CanvasRenderingContext2D,
+        iconSetting : IconSetting) {
+    
+        setupMineImage(ctx, iconSetting.mineIcon) 
+    }
     /**
      * create image with font awesome icon
      */
     fun setupMineImage(ctx: CanvasRenderingContext2D,
-        iconDef : fontawesome.IconDefinition) {
+        mineIconRef : Persistence.Icon) {
+        setupMineImage(ctx, createFontawesomeIconDef(
+            mineIconRef.prefix, mineIconRef.iconName))
+    }
+        
+    /**
+     * create image with font awesome icon
+     */
+    fun setupMineImage(ctx: CanvasRenderingContext2D,
+        iconDef: fontawesome.IconDefinition) {
         val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
         val iconWidth = iconDef.icon[0] as Int
         val iconHeight = iconDef.icon[1] as Int
         val scale = imgSize.toDouble() / max(iconWidth, iconHeight)
-        val m = createScaleMatrix(scale)
+        val sizeDisplaying = arrayOf(scale * iconWidth, scale * iconHeight) 
+        val displacement = (this.buttonTextureSize * (1 - buttonTextRatio)) / 2 
+        val ms = createScaleMatrix(scale)
+        val mt = createTranslateMatrix(displacement.toDouble(), 
+            displacement.toDouble())
+        val m = multiply(mt, ms)
         val pathSrc = Path2D(iconDef.icon[4] as String)
         val path = Path2D()
         path.addPath(pathSrc, m)

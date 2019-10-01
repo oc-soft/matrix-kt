@@ -479,12 +479,11 @@ class Grid(rowCount: Int = 6,
      * connect a canvas and create grid
      */
     fun bind( 
-        idSettings: GridSettings,
+        settings: GridSettings,
         model: Model,
         camera: Camera,
         pointLight: PointLight,
-        shaderPrograms: ShaderPrograms,
-        mineImage: Image) {
+        shaderPrograms: ShaderPrograms) {
         
         model.logic.rowSize = rowCount
         model.logic.columnSize = columnCount
@@ -495,9 +494,9 @@ class Grid(rowCount: Int = 6,
         this.camera = camera
         this.pointLight = pointLight
         this.shaderPrograms = shaderPrograms
-        this.canvasId = idSettings.canvasId 
-        this.gameOverModalId = idSettings.gameOverModalId
-        this.playerWonModalId = idSettings.playerWonModalId
+        this.canvasId = settings.canvasId 
+        this.gameOverModalId = settings.gameOverModalId
+        this.playerWonModalId = settings.playerWonModalId
         jQuery({
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
@@ -513,8 +512,7 @@ class Grid(rowCount: Int = 6,
             setupPlayerWonModal()
             syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
             canvas.addEventListener("click", onClickHandler)
-            glyph.bind(idSettings.glyphCanvasId, mineImage,
-                glyph.createFontawesomeIconDef("fas", "check"))
+            glyph.bind(settings.glyphCanvasId, settings.iconSetting)
             setup(gl)
             drawScene(gl)
         }) 

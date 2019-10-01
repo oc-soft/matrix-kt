@@ -20,10 +20,10 @@ class Persistence {
     companion object {
         
         /**
-         * read icon
+         * load icon
          */
-        fun ReadIcon(): Promise<Icon> {
-            val result = Promise<Icon>({
+        fun loadIcon(): Promise<Icon?> {
+            val result = Promise<Icon?>({
                 resolve, reject ->  
 
                  val body = FormData()
@@ -35,12 +35,16 @@ class Persistence {
                  prm.then(
                     {
                         res ->
-                        res.text()
+                        res.json()
                     }).then(
                     {
                         res ->
                         val res0: dynamic = res 
-                        resolve(Icon(res0.prefix, res0.name)) 
+                        var iconData: Icon? = null
+                        if (res0.data != null) { 
+                            iconData = JSON.parse<Icon>(res0.data)
+                        }
+                        resolve(iconData) 
                     }).catch( 
                     {
                         reason ->

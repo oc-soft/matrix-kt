@@ -17,6 +17,7 @@ import kotlin.collections.Set
 import kotlin.collections.HashSet
 import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
+import net.ocsoft.mswp.ui.Persistence
 
 /**
  * main page display
@@ -24,9 +25,6 @@ import net.ocsoft.mswp.ui.AppSettings
 actual class MainPage {
         
     companion object {
-        val LoadCompletionClasses : Set<String> = HashSet<String>(arrayOf(
-            "wf-active"
-        ).toList())
     }
     /**
      * configuration
@@ -102,42 +100,32 @@ actual class MainPage {
         pointLight: PointLight,
         rootDir: String,
         uiSetting: Json) {
-        // WebFont.load(getWebfontConfig())
         appSettings.runtimeConfig = uiSetting
         jQuery({ 
             val grid = Grid()
             val shaders = arrayOf(
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
-            val imgs = arrayOf(
-                "${rootDir}/img/skull-solid.svg")
 
             val shaderPromises = Array<Promise<Response>>(shaders.size) {
                 window.fetch(shaders[it])
             }
-            val imagePromises = Array<Promise<Image>>(imgs.size) {
-                idx ->
-                Promise({ resolve, reject ->
-                    val img = Image()
-                    img.onload = { 
-                        evt -> 
-                        resolve(img) 
+            val iconPromises = arrayOf(
+                Persistence.loadIcon().then({ 
+                    if (it != null) {
+                        config.gridSettings.iconSetting.mineIcon = it!!
                     }
-                    img.onerror = {
-                        e0, e1, e2, e3, e4 ->
-                        reject(e0)
-                    }
-                    img.src = imgs[idx]
-                })
-            }
+                    Unit
+                })) 
+                    
             var promises = Array<Promise<Any>>(shaders.size
-                + imagePromises.size) {
+                + iconPromises.size) {
                 i -> 
                 var promiseRes : Promise<Any>? = null 
                 if (i < shaders.size) {
                     promiseRes = shaderPromises[i].then({ res -> res.text() })
                 } else {
-                    promiseRes = imagePromises[i - shaders.size]
+                    promiseRes = iconPromises[i - shaders.size]
                 }
                 promiseRes!!
             }
@@ -149,8 +137,7 @@ actual class MainPage {
                     responses[1] as String)
                 grid.bind(config.gridSettings,
                     model, camera, 
-                    pointLight, shaderPrograms,
-                    responses[2] as Image)
+                    pointLight, shaderPrograms)
                 appSettings.bind()
                 readyToPlay() 
  
@@ -158,62 +145,6 @@ actual class MainPage {
         })
     }
 
-
-    /**
-     * attach mutation observer int html 
-     */
-    fun attachMutationToHtmlForFutureReleaase(loadFinished:(()->Unit)) {
-        val topNodes = window.document.getElementsByTagName(
-            "html")
-        val aNode : Element = topNodes.item(0) as Element
-        val classList = aNode.classList
-                          
-        var doLoad = true 
-        for (idx in 0..classList.length - 1) {
-            val className = classList.item(idx)
-            if (className in LoadCompletionClasses) {
-                doLoad = false 
-            }
-        }
-        if (doLoad) { 
-            attachMutationToHtmlI(loadFinished)
-        } else {
-            loadFinished()
-        }
-    }
-    /**
-     * attach mutation observer int html 
-     */
-    fun attachMutationToHtmlI(loadFinished:(()->Unit)) {
-        val observer = MutationObserver({
-            mtRecs, mtObj->
-            mtRecs.forEach({
-                if (it.type == "attributes") {
-                    if (it.attributeName == "class") {
-                        val topNodes = window.document.getElementsByTagName(
-                            "html")
-                        val aNode : Element = topNodes.item(0) as Element
-                        val classList = aNode.classList
-                          
-                        for (idx in 0..classList.length - 1) {
-                            val className = classList.item(idx)
-                            if (className in LoadCompletionClasses) {
-                                loadFinished()
-                                mtObj.disconnect()
-                            }
-                        }
-                    }
-                }
-            })
-        })
-        val topNodes = window.document.getElementsByTagName("html")
-        val topNode : Node = topNodes.item(0) as Node 
-        observer.observe(topNode, 
-            object: MutationObserverInit {
-                override var attributes: Boolean? = true 
-        })
-        
-    }
     /**
      * the program is ready to play now
      */
