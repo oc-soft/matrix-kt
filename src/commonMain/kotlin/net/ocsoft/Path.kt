@@ -250,19 +250,18 @@ class Path {
                 parser.nextChar
                 parseWspZeroOrMore(parser)
                 val coordinatePairs = ArrayList<Pair<Int, Int>>()
-                result = parseSmoothCurvetoCoordinateSequence(coordinatePairs)
-                val coordinats = ArrayList<Int>()
-                coordinatePairs.forEach {
-                    coordinates.add(it.first),
-                    coordinates.add(it.second)
+                result = parseSmoothCurvetoCoordinateSequence(
+                    parser, coordinatePairs)
+                if (result) {
+                    val coordinates = ArrayList<Int>()
+                    coordinatePairs.forEach {
+                        coordinates.add(it.first),
+                        coordinates.add(it.second)
+                    }
+                    result = handler(
+                        Element(ElementType.valueOf(pc.toString()), 
+                        coordinates))
                 }
-                handler(Element(ElementType.valueOf(pc.toString()), 
-                    coordinates))
-                    
-                if (!result) {
-                    result = parseClosePath(handler) 
-                }  
-
             } 
             return result
         }
@@ -285,27 +284,25 @@ class Path {
          * parse quadratic bezier curve
          */
         fun parseQuadraticBezierCurveto(parser: Paraser,
-            handler: ((Element)->Unit)): Boolean {
+            handler: ((Element)->Boolean)): Boolean {
             var result = false
             val pc = parser.peekChar
             if ('Q' == pc || 'q' == pc') {
                 parser.nextChar
                 val coordinatePairs = ArrayList<Pair<Int, Int>>()
-                result = parseQuadraticBezierSequence(parser, 
+                parseCommaWsp(parser)
+                result = parseQuadraticBezierCurvetoCoordinateSequence(parser, 
                     coordiratePairs)
-                val coordinates = ArrayList<Int>()
-                if (!result) {
-                    parsePairSequence(parser, coordinatePairs)
-                } 
-                coordinatePairs.forEach {
-                    coordinates.add(it.first)
-                    coordinates.add(it.second)
-                }
-                handler(Element(ElementType.valueOf(pc.toString()),
-                    coordinates))
-
-                if (!result) {
-                    result = parseClosePath(parser, handler)
+                
+                if (result) {
+                    val coordinates = ArrayList<Int>()
+                    coordinatePairs.forEach {
+                        coordinates.add(it.first)
+                        coordinates.add(it.second)
+                    }
+                    result = handler(
+                        Element(ElementType.valueOf(pc.toString()),
+                        coordinates))
                 }
             } 
             return result
@@ -319,7 +316,7 @@ class Path {
             var result = false
             result = parseCoordinatePairDouble(parser, coordinates)
             if (result) {
-                parseWspZeroOrMore(parser)
+                parseWsp(parser)
                 parseQuadraticBezierCurvetoSequence(parser,
                     coordinates)
             } 
@@ -329,15 +326,26 @@ class Path {
         /**
          * smooth quadratic bezier curveto
          */
-        fun parseSmoothQuadraticBezierCurveto(parser: Paraser): Boolean {
+        fun parseSmoothQuadraticBezierCurveto(
+            parser: Paraser,
+            handler: ((Element)->Boolean):) Boolean {
             var result = false
             var pc = parser.peekNext
             if ('T' == pc || 't' == pc) {
                 parser.nextChar
                 parseWspZeroOrMore(parser)
-                result = parseCoordiatePairSequenc(parser)
-                if (!result) {
-                    result = parseClosepath(parser)
+                val coordinatePairs = Array<Pair<Int, Int>>()
+                result = parseCoordiatePairSequence(parser,
+                    coordinatePairs)
+                if (result) {
+                    val coordinates = Array<Int>()
+                    coordinatePairs.forEach {
+                        coordinates.add(it.first)
+                        coordinates.add(it.second)
+                    } 
+                    result = handler(
+                        Element(ElementType.valueOf(pc.toString(),
+                            coordinates))) 
                 } 
             }
             return result
@@ -346,14 +354,18 @@ class Path {
         /**
          * elliptical arc
          */
-        fun parseEllipticalArc(parser: Parser): Boolean {
+        fun parseEllipticalArc(parser: Parser,
+            handler: ((Element)->Boolean)): Boolean {
             var result = false
             var pc = parser.peekChar
             if ('A' == pc || 'a' == pc) {
                 parser.nextChar
-                result = parseEllipticalArcArgumentSequence(parser)
-                if (!result) {
-                    result = parseEllipticalArcClosingArgument(parser) 
+                val args = ArrayList<Int>()
+                result = parseEllipticalArcArgumentSequence(parser, args) 
+                if (result) {
+                    result = handler(Element(
+                        ElementType.valueOf(pc.toString()),
+                        args))
                 }
             }
             return result
@@ -362,48 +374,62 @@ class Path {
         /**
          * parse elliptical arc argument sequence
          */
-        fun parseElliptticalArcArgumentSequence(parser: Parser): Boolean {
-            var result = parseEllipticalArcArgument(parser)
-            if (!result) {
+        fun parseElliptticalArcArgumentSequence(parser: Parser,
+            ellipticalArgs: MutablList<Int>?): Boolean {
+            var result = parseEllipticalArcArgument(parser,
+                ellipticalArgs)
+            if (result) {
                 parseCommaWsp(parser)
-                result = parseEllipticalArcArgumentSequence(parser)
+                parseEllipticalArcArgumentSequence(parser,
+                    elliptialArgs)
             }
             return result
         }
         /**
          * parse elliptical arc argument
          */
-        fun parseEllipticalArgArgument(parser: Parser): Boolean {
-            var result = paserNumber(parser)
+        fun parseEllipticalArgArgument(parser: Parser,
+            ellipticalArcArgument: MutableList<Int>?): Boolean {
+            var nums : IntArray(7)
+            var result = paserNumber(parser, { nums[0] = it })
             if (result) {
                 parseCommaWsp(parser)
-                result = parseNumber(parser)
+                result = parseNumber(parser, { nums[1] = it })
             }
             if (result) {
                 parseCommaWsp(parser)
-                result = parseNumber(parser)
+                result = parseNumber(parser, { nums[2] = it })
             }
             if (result) {
                 result = parseCommaWsp(parser)
             }
             if (result) {
-                result = parseFlag(parser)
+                result = parseFlag(parser, { nums[3] = it })
+            } 
+            if (result) {
+                parseCommaWsp(parser)
+                result = parseFlag(parser, { nums[4] = it })
             }
             if (result) {
                 parseCommaWsp(parser)
-                result = parseFlat(parser)
+                result = paserCoordinatePair(parser {
+                    num[5] = it.first
+                    num[6] = it.second
+                })
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = paserCoordinatePair(parser)
+                nums.forEach {
+                    ellipticalArcArgument?.add(it)
+                }
             }
+            
             return result
         }
         
         /**
-         * parse elliptical arc closing argument
+         * parse elliptical arc argument
          */ 
-        fun parseEllipticalArcClosingArgument(parser: Paraser) {
+        fun parseEllipticalArcArgument(parser: Paraser) {
             var result = paserNumber(parser)
             if (result) {
                 parseCommaWsp(parser)
