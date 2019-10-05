@@ -162,7 +162,8 @@ actual class MainPage {
                 resolve(Unit) 
             }
             val inactiveCallback = {
-                reject(Error("failed"))
+                resolve(Unit)
+                // reject(Error("failed"))
             }
             val config : dynamic = WebFontConfig(activeCallback, 
                 inactiveCallback,

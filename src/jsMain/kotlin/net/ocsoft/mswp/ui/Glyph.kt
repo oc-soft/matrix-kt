@@ -258,6 +258,19 @@ class Glyph(
     
         setupMineImage(ctx, iconSetting.mineIcon) 
     }
+
+
+    /**
+     * create path from string
+     */
+    fun createPath(pathStr: String) {
+
+        val result = Path2D(pathStr)
+
+
+        return result
+    }
+
     /**
      * create image with font awesome icon
      */
@@ -283,12 +296,19 @@ class Glyph(
             displacement.toDouble())
         val m = multiply(mt, ms)
         val pathSrc = Path2D(iconDef.icon[4] as String)
-        val path = Path2D()
-        path.addPath(pathSrc, m)
+        val path = pathSrc
+        // val path = Path2D()
+        // path.addPath(pathSrc, m)
         val canvas = ctx.canvas
         val width = canvas.width
         val height = canvas.height
+        // val savedTrans = ctx.getTransform()
+        ctx.save()
+        // ctx.setTransform(m)
+        ctx.setTransform(m.a, m.b, m.c, m.d, m.e, m.f)
         ctx.fill(path)
+        ctx.restore()
+        // ctx.setTransform(savedTrans)
         val img = ctx.getImageData(0.0, 0.0,
             buttonTextureSize.toDouble(),
             buttonTextureSize.toDouble())
