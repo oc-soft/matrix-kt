@@ -263,7 +263,7 @@ class Glyph(
     /**
      * create path from string
      */
-    fun createPath(pathStr: String) {
+    fun createPath(pathStr: String): Path2D {
 
         val result = Path2D(pathStr)
 

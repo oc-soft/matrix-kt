@@ -32,13 +32,11 @@ class MatrixTest {
 
         val matRes = Matrix.multiply(matA, matB)
         assertNotNull(matRes, "matrix multiply operation must be done.")
-        if (matRes != null) {
-            matRes.forEachIndexed({ idx, elem ->
-                assertEquals(elem, matExpect[idx],
-                    "multiplied component value must be ${matExpect} but"
-                    + " ${elem}.") 
-            })
-        }
+        matRes.forEachIndexed({ idx, elem ->
+            assertEquals(elem, matExpect[idx],
+                "multiplied component value must be ${matExpect} but"
+                + " ${elem}.") 
+        })
     }    
 
 }

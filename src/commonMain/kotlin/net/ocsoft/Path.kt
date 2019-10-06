@@ -1,5 +1,9 @@
 package net.ocsoft
 
+import kotlin.collections.MutableList
+import kotlin.collections.ArrayList
+import kotlin.collections.List
+
 /**
  * manage svg path2d element
  */
@@ -13,55 +17,62 @@ class Path {
         /**
          * parse path string. 
          */
-        fun parse(pathData: String, handler: ((Element) -> Boolean)) {
-
-            pathData.forEach {
-                if (curType == null) {
-                    when (it) {
-                        'M' -> curType = MoveTo
-                        'm' -> curType = moveTo
-                        'L' -> curType = LineTo
-                        'l' -> curType = lineTo
-                    }
-                } else {
-                    
-                }    
-            }    
+        fun parse(pathData: String, 
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
+            val st = Stream(pathData)
+            var result = false
+            result = parse0(st, handler, errorHandler)
+            return result
         }       
 
         /**
          *  parse start
          */
-        fun parse0(parser: Parser, 
-            handler: ((Element) -> Boolean)): Boolean {
-            var result = parseWspZeroOrMor(parser)
-            parseMoveto(parser, handler) 
-            (parseMoveto(parser, hander) && parseDrawto(parser, handler))
+        fun parse0(stream: Stream, 
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
+            var result = parseWspZeroOrMore(stream)
+            result = parseMoveto(stream, handler, errorHandler) 
+            if (result) {
+                do {
+                    parseWspZeroOrMore(stream)
+                    if (stream.peekChar == null) {
+                        break
+                    }
+                    result = parseDrawto(stream, handler, errorHandler)
+                } while(result)
+            } else {
+                result = true
+            }
             return result
         }
 
         /**
          * parse draw to
          */
-        fun parseDrawto(parser: Parser,
-            handler: ((Element) -> Boolean)): Boolean {
-            var parseMethods : Array<(Parser, ((Elem)->Boolean)) -> Boolean>
+        fun parseDrawto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
+            
+            var parseMethods : Array<(
+                Stream, (Element)->Boolean, ((Int)->Unit)?)->Boolean>
             = arrayOf(
-                parseMoveto,
-                parseLineto,
-                parseHorizontalLineto,
-                parseVerticalLineto,
-                parseCurveto,
-                parseSmoothCurveto,
-                parseQuadraticBezierCurveto,
-                parseSmoothQuadraticBezierCurveto,
-                parseEllipticalArc,
-                parseBearing,
-                parseCatmullRom
+                ::parseMoveto,
+                ::parseLineto,
+                ::parseHorizontalLineto,
+                ::parseVerticalLineto,
+                ::parseCurveto,
+                ::parseSmoothCurveto,
+                ::parseQuadraticBezierCurveto,
+                ::parseSmoothQuadraticBezierCurveto,
+                ::parseEllipticalArc,
+                ::parseBearing,
+                ::parseCatmullRom
             ) 
             var result = false
             parseMethods.find { 
-                result = it(parsr, handler)
+                result = it(stream, handler, errorHandler)
                 result
             }
             return result
@@ -70,26 +81,30 @@ class Path {
         /**
          * parse moveTo
          */
-        fun parseMoveto(parser: Parser, 
-            handler: ((Element) -> Boolean)): Boolean {
+        fun parseMoveto(stream: Stream, 
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar  
+            val pc = stream.peekChar  
             if ('M' == pc || 'm' == pc) {
-                
-                parser.nextChar
-                parseWspZeroOrMore  
+                stream.nextChar
+                parseWspZeroOrMore(stream)
                 val coordinates = ArrayList<Pair<Int, Int>>()
-                result = paseCoodinatePairSequence(parser,
+                result = parseCoordinatePairSequence(stream,
                     coordinates)
                 if (result) {
                     var elemType = ElementType.valueOf(pc.toString())  
                     val flatCoordinates = ArrayList<Int>()
                     coordinates.forEach { 
-                        flatCoordinates.addAll(it.toArray()) 
+                        flatCoordinates.addAll(it.toList()) 
                     } 
-                    result = handler(Element(elementType, flatCoordinates))
+                    result = handler(Element(elemType, flatCoordinates))
                     if (result) {
-                        result = paseClosepath(parser, handler)
+                        parseClosepath(stream, handler, null)
+                    }
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
                     }
                 }
             }
@@ -99,15 +114,16 @@ class Path {
         /**
          * parse close path
          */
-        fun parseClosepath(parser: Parser,
-            handler: ((Element)->Boolean)): Boolean {
+        fun parseClosepath(stream: Stream,
+            handler: ((Element)->Boolean),
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar 
+            val pc = stream.peekChar 
             if ('Z' == pc || 'z' == pc) {
                 result = handler(
-                    ElementType.valueOf(pc.toString(),
-                    ArrayList<Int>()) 
-                parser.nextChar
+                    Element(ElementType.valueOf(pc.toString()),
+                        ArrayList<Int>())) 
+                stream.nextChar
             }
             return result
         }
@@ -115,34 +131,40 @@ class Path {
         /**
          * parse
          */
-        fun parseLineto(parser: Parser,
-            handler: ((Element)->Boolean)): Boolean {
+        fun parseLineto(stream: Stream,
+            handler: ((Element)->Boolean),
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
+            val pc = stream.peekChar
             if ('L' == pc || 'l' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
+                stream.nextChar
+                parseWspZeroOrMore(stream)
                 val coordinates = ArrayList<Pair<Int, Int>>()
-                result = parseCoordinatePairSequenc(parser, coordinates)
-                val elem = Element(ElementType.valueOf(pc),
+                result = parseCoordinatePairSequence(stream,
+                    coordinates)
+                val flatCoordinates = ArrayList<Int>()
+                coordinates.forEach {
+                    flatCoordinates.addAll(it.toList())
+                } 
+                val elem = Element(ElementType.valueOf(pc.toString()),
                         flatCoordinates)
                 if (result) {
-                    val flatCoordinates = ArrayList<Float>()
-                    coordinates.forEach {
-                        flatCoordinates.add(it.first)
-                        flatCoordinates.add(it.second)
-                    } 
                     result = handler(elem)
                 } else {
-                    val closepathRes: Element? = null
-                    result =  parseClosepath(parser, { 
+                    var closepathRes: Element? = null
+                    result = parseClosepath(stream, { 
                         closepathRes = it 
-                    })
+                        true
+                    }, null)
                     if (result) {
                         result = handler(elem)
                     }
                     if (result) {
-                        result = handler(closepathRes)
+                        result = handler(closepathRes!!)
+                    } else {
+                        if (errorHandler != null) {
+                            errorHandler(stream.index)
+                        }
                     }
                 }
             }
@@ -152,18 +174,24 @@ class Path {
         /**
          * parse horizontal lineto
          */
-        fun parseHorizontalLineto(parser: Parser,
-            handler: ((Element)->Boolean)): Boolean {
+        fun parseHorizontalLineto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
+            val pc = stream.peekChar
             if ('H' == pc || 'h' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
-                val coordinates = ArrayList<Float>()
-                result = parseCoordinateSquence(parser, coordinates)
+                stream.nextChar
+                parseWspZeroOrMore(stream)
+                val coordinates = ArrayList<Int>()
+                result = parseCoordinateSequence(stream, coordinates)
                 if (result) {
-                    result = handler(Element(ElementType.valueOf(pc),
+                    result = handler(Element(
+                        ElementType.valueOf(pc.toString()),
                         coordinates))
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    }
                 }
             }
             return result
@@ -172,18 +200,24 @@ class Path {
         /**
          * parse vertical lineto
          */
-        fun parseVerticalLineto(parser: Parser,
-            handler: ((Element)->Unit)): Boolean {
+        fun parseVerticalLineto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
+            val pc = stream.peekChar
             if ('H' == pc || 'h' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
+                stream.nextChar
+                parseWspZeroOrMore(stream)
                 val coordinates = ArrayList<Int>()
-                result = parseCoordinateSquence(parser,coordinates)
+                result = parseCoordinateSequence(stream,coordinates)
                 if (result) {
-                    result = handler(Element(ElementType.valueOf(pc),
+                    result = handler(Element(
+                        ElementType.valueOf(pc.toString()),
                         coordinates))
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    } 
                 }
             }
             return result
@@ -192,33 +226,43 @@ class Path {
         /**
          * parse curveto
          */
-        fun parseCurveto(parser: Parser,
-            handler: ((Element)->Unit)): Boolean {
+        fun parseCurveto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
+            val pc = stream.peekChar
             if ('C'== pc || 'c' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
+                stream.nextChar
+                parseWspZeroOrMore(stream)
                 val coordinates = ArrayList<Int>()
-                result = parseCurvetoCoordinateSquence(parser,
-                    coordinates)
+                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                result = parseCurvetoCoordinateSequence(stream,
+                    coordinatePairs)
                 val elemType = ElementType.valueOf(pc.toString())
                 if (result) {
-                    result = handler(Element(elemType, coordinate))
-                } else {
-                    val coordinatePairs = ArrayList<Pair<Int, Int>>()
-                    parseCoordiantePairSequence(parser, coordinatePairs)
                     coordinatePairs.forEach {
-                        coordinates.add(it.first)
-                        coordinates.add(it.second)
+                        coordinates.addAll(it.toList())
                     }
-                    val closepathRes: Element? = null
-                    result = parseClosepath({ closepathRes = it })
+                    result = handler(Element(elemType, coordinates))
+                } else {
+                    parseCoordinatePairSequence(stream, coordinatePairs)
+                    coordinatePairs.forEach {
+                        coordinates.addAll(it.toList())
+                    }
+                    var closepathRes: Element? = null
+                    result = parseClosepath(stream, { 
+                        closepathRes = it
+                        true
+                    }, null)
                     if (result) {
                         result = handler(Element(elemType, coordinates))
                     }
                     if (result) {
-                        result = handler(closepathRes)
+                        result = handler(closepathRes!!)
+                    } else {
+                        if (errorHandler != null) {
+                            errorHandler(stream.index)
+                        }
                     }
                 }
             }
@@ -228,39 +272,70 @@ class Path {
         /**
          * parse curveto coorditate sequence
          */
-        fun parseCurvetoCoordinateSequence(parser: Parser,
-            coordinates: List<Pair<Int, Int>>?): Boolean {
+        fun parseCurvetoCoordinateSequence(stream: Stream,
+            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
             var result = false
              
-            result = parseCoordiatePairTriplet(parser, coordinats)
+            result = parseCoordinatePairTriplet(stream, coordinates)
             if (result) {
-                parseCommaWsp(parser)
-                result = parseCurvetoCoordinateSequence(parser, coordinates)
+                val savedIdx = stream.index
+                parseCommaWsp(stream)
+                result = parseCurvetoCoordinateSequence(stream, 
+                    coordinates)
+                if (!result) {
+                    result = true
+                    stream.index = savedIdx
+                }
             }
             return result
         }
         /**
          * parse smooth curveto
          */
-        fun parseSmoothCurveto(parser: Parser,
-            handler: ((Element)->Unit)): Boolean {
+        fun parseSmoothCurveto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
+            val pc = stream.peekChar
             if ('S'== pc || 's' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
+                stream.nextChar
+                parseWspZeroOrMore(stream)
                 val coordinatePairs = ArrayList<Pair<Int, Int>>()
                 result = parseSmoothCurvetoCoordinateSequence(
-                    parser, coordinatePairs)
+                    stream, coordinatePairs)
                 if (result) {
                     val coordinates = ArrayList<Int>()
                     coordinatePairs.forEach {
-                        coordinates.add(it.first),
-                        coordinates.add(it.second)
+                        coordinates.addAll(it.toList())
                     }
                     result = handler(
                         Element(ElementType.valueOf(pc.toString()), 
-                        coordinates))
+                            coordinates))
+                } else {
+                    parseCoordinatePairSequence(stream, 
+                        coordinatePairs)
+                    val coordinates = ArrayList<Int>()
+                    coordinatePairs.forEach {
+                        coordinates.addAll(it.toList())
+                    }
+ 
+                    var closepathRef: Element? = null 
+                    result = parseClosepath(stream, {
+                        closepathRef = it
+                        true
+                    }, null)
+                    if (result) {
+                        result = handler(Element(
+                            ElementType.valueOf(pc.toString()),
+                            coordinates))
+                        if (result) {
+                            result = handler(closepathRef!!)
+                        }
+                    } else {
+                        if (errorHandler != null) {
+                            errorHandler(stream.index)
+                        }
+                    }
                 }
             } 
             return result
@@ -269,13 +344,13 @@ class Path {
          * parse smooth curveto coordinate sequence
          */
         fun parseSmoothCurvetoCoordinateSequence(
-            parser: Parser,
+            stream: Stream,
             coordinates: MutableList<Pair<Int, Int>>?): Boolean {
-            val result = false
-            result = parsePairDouble(parser, coordinates) 
+            var result = false
+            result = parseCoordinatePairDouble(stream, coordinates) 
             if (result) {
-                parseCommaWsp(parser)
-                parseSmoothCurvetoCoordinateSequence(parser, coordinates)
+                parseCommaWsp(stream)
+                parseSmoothCurvetoCoordinateSequence(stream, coordinates)
             } 
             return result
         }
@@ -283,26 +358,52 @@ class Path {
         /**
          * parse quadratic bezier curve
          */
-        fun parseQuadraticBezierCurveto(parser: Paraser,
-            handler: ((Element)->Boolean)): Boolean {
+        fun parseQuadraticBezierCurveto(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            val pc = parser.peekChar
-            if ('Q' == pc || 'q' == pc') {
-                parser.nextChar
+            val pc = stream.peekChar
+            if ('Q' == pc || 'q' == pc) {
+                stream.nextChar
                 val coordinatePairs = ArrayList<Pair<Int, Int>>()
-                parseCommaWsp(parser)
-                result = parseQuadraticBezierCurvetoCoordinateSequence(parser, 
-                    coordiratePairs)
+                parseCommaWsp(stream)
+                result = parseQuadraticBezierCurvetoCoordinateSequence(
+                    stream, 
+                    coordinatePairs)
                 
                 if (result) {
                     val coordinates = ArrayList<Int>()
                     coordinatePairs.forEach {
-                        coordinates.add(it.first)
-                        coordinates.add(it.second)
+                        coordinates.addAll(it.toList())
                     }
                     result = handler(
                         Element(ElementType.valueOf(pc.toString()),
                         coordinates))
+                } else {
+                    parseCoordinatePairSequence(
+                        stream, coordinatePairs) 
+                    var closepathElem: Element? = null
+                    result = parseClosepath(stream, {
+                        closepathElem = it
+                        true
+                    }, null)
+                    if (result) {
+                        val coordinates = ArrayList<Int>()
+                        coordinatePairs.forEach {
+                            coordinates.addAll(it.toList())
+                        }
+ 
+                        result = handler(Element(
+                            ElementType.valueOf(pc.toString()),
+                            coordinates))
+                        if (result) {
+                            handler(closepathElem!!)
+                        }
+                    } else {
+                        if (errorHandler != null) {
+                            errorHandler(stream.index)
+                        }
+                    } 
                 }
             } 
             return result
@@ -311,13 +412,14 @@ class Path {
         /**
          * parse quadratic curveto coordinate sequence
          */
-        fun parseQuadraticCurvetoCoordinateSequence(parser: Parser,
+        fun parseQuadraticBezierCurvetoCoordinateSequence(
+            stream: Stream,
             coordinates: MutableList<Pair<Int, Int>>?): Boolean {
             var result = false
-            result = parseCoordinatePairDouble(parser, coordinates)
+            result = parseCoordinatePairDouble(stream, coordinates)
             if (result) {
-                parseWsp(parser)
-                parseQuadraticBezierCurvetoSequence(parser,
+                parseWsp(stream)
+                parseQuadraticBezierCurvetoCoordinateSequence(stream,
                     coordinates)
             } 
             return result
@@ -327,26 +429,30 @@ class Path {
          * smooth quadratic bezier curveto
          */
         fun parseSmoothQuadraticBezierCurveto(
-            parser: Paraser,
-            handler: ((Element)->Boolean):) Boolean {
+            stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            var pc = parser.peekNext
+            var pc = stream.nextChar
             if ('T' == pc || 't' == pc) {
-                parser.nextChar
-                parseWspZeroOrMore(parser)
-                val coordinatePairs = Array<Pair<Int, Int>>()
-                result = parseCoordiatePairSequence(parser,
+                stream.nextChar
+                parseWspZeroOrMore(stream)
+                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                result = parseCoordinatePairSequence(stream,
                     coordinatePairs)
                 if (result) {
-                    val coordinates = Array<Int>()
+                    val coordinates = ArrayList<Int>()
                     coordinatePairs.forEach {
-                        coordinates.add(it.first)
-                        coordinates.add(it.second)
+                        coordinates.addAll(it.toList())
                     } 
                     result = handler(
-                        Element(ElementType.valueOf(pc.toString(),
-                            coordinates))) 
-                } 
+                        Element(ElementType.valueOf(pc.toString()),
+                            coordinates)) 
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    }
+                }
             }
             return result
         }
@@ -354,19 +460,43 @@ class Path {
         /**
          * elliptical arc
          */
-        fun parseEllipticalArc(parser: Parser,
-            handler: ((Element)->Boolean)): Boolean {
+        fun parseEllipticalArc(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            var pc = parser.peekChar
+            var pc = stream.peekChar
             if ('A' == pc || 'a' == pc) {
-                parser.nextChar
+                stream.nextChar
                 val args = ArrayList<Int>()
-                result = parseEllipticalArcArgumentSequence(parser, args) 
-                if (result) {
-                    result = handler(Element(
-                        ElementType.valueOf(pc.toString()),
-                        args))
+                result = parseEllipticalArcArgumentSequence(stream, args) 
+                var closingRes: Element? = null
+                val savedIndex = stream.index
+                parseCommaWsp(stream)
+                var closingArgPathRes = false
+                val closingArgs = ArrayList<Int>()
+                closingArgPathRes = parseEllipticalArcClosingArgument(
+                    stream, closingArgs) {
+                        closingRes = it
+                        true
+                    }
+                if (!result && !closingArgPathRes) {
+                    stream.index = savedIndex
                 }
+                val elemType = ElementType.valueOf(pc.toString())
+                if (result && closingRes == null) {
+                    result = handler(
+                        Element(elemType, args))
+                } else if (closingArgPathRes) {
+                    args.addAll(closingArgs)
+                    result = handler(Element(elemType, args))
+                    if (result) {
+                        result = handler(closingRes!!)
+                    } 
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    }
+                } 
             }
             return result
         }
@@ -374,48 +504,48 @@ class Path {
         /**
          * parse elliptical arc argument sequence
          */
-        fun parseElliptticalArcArgumentSequence(parser: Parser,
-            ellipticalArgs: MutablList<Int>?): Boolean {
-            var result = parseEllipticalArcArgument(parser,
+        fun parseEllipticalArcArgumentSequence(stream: Stream,
+            ellipticalArgs: MutableList<Int>?): Boolean {
+            var result = parseEllipticalArcArgument(stream,
                 ellipticalArgs)
             if (result) {
-                parseCommaWsp(parser)
-                parseEllipticalArcArgumentSequence(parser,
-                    elliptialArgs)
+                parseCommaWsp(stream)
+                parseEllipticalArcArgumentSequence(stream,
+                    ellipticalArgs)
             }
             return result
         }
         /**
          * parse elliptical arc argument
          */
-        fun parseEllipticalArgArgument(parser: Parser,
+        fun parseEllipticalArcArgument(stream: Stream,
             ellipticalArcArgument: MutableList<Int>?): Boolean {
-            var nums : IntArray(7)
-            var result = paserNumber(parser, { nums[0] = it })
+            var nums = IntArray(7)
+            var result = parseNumber(stream, { nums[0] = it })
             if (result) {
-                parseCommaWsp(parser)
-                result = parseNumber(parser, { nums[1] = it })
+                parseCommaWsp(stream)
+                result = parseNumber(stream, { nums[1] = it })
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = parseNumber(parser, { nums[2] = it })
+                parseCommaWsp(stream)
+                result = parseNumber(stream, { nums[2] = it })
             }
             if (result) {
-                result = parseCommaWsp(parser)
+                result = parseCommaWsp(stream)
             }
             if (result) {
-                result = parseFlag(parser, { nums[3] = it })
+                result = parseFlag(stream, { nums[3] = it })
             } 
             if (result) {
-                parseCommaWsp(parser)
-                result = parseFlag(parser, { nums[4] = it })
+                parseCommaWsp(stream)
+                result = parseFlag(stream, { nums[4] = it })
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = paserCoordinatePair(parser {
-                    num[5] = it.first
-                    num[6] = it.second
-                })
+                parseCommaWsp(stream)
+                result = parseCoordinatePair(stream) {
+                    nums[5] = it.first
+                    nums[6] = it.second
+                }
             }
             if (result) {
                 nums.forEach {
@@ -427,44 +557,119 @@ class Path {
         }
         
         /**
-         * parse elliptical arc argument
+         * parse elliptical arc closing argument
          */ 
-        fun parseEllipticalArcArgument(parser: Paraser) {
-            var result = paserNumber(parser)
+        fun parseEllipticalArcClosingArgument(
+            stream: Stream,
+            ellipticalArcArgs: MutableList<Int>?,
+            closepathHdlr: (Element)->Boolean): Boolean {
+            val nums = IntArray(5)
+            var result = parseNumber(stream, { nums[0] = it })
             if (result) {
-                parseCommaWsp(parser)
-                result = parseNumber(parser)
+                parseCommaWsp(stream)
+                result = parseNumber(stream, { nums[1] = it })
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = parseNumber(parser)
+                parseCommaWsp(stream)
+                result = parseNumber(stream, { nums[2]  = it })
             }
             if (result) {
-                result = parseCommaWsp(parser)
+                result = parseCommaWsp(stream)
             }
             if (result) {
-                result = parseFlag(parser)
+                result = parseFlag(stream, { nums[3] = it })
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = parseFlat(parser)
+                parseCommaWsp(stream)
+                result = parseFlag(stream, { nums[4] = it })
+            }
+            var closepathRes: Element? = null
+            if (result) {
+                parseCommaWsp(stream)
+                result = parseClosepath(stream, {
+                    closepathRes = it
+                    true 
+                }, null)
             }
             if (result) {
-                parseCommaWsp(parser)
-                result = paserClosepath(parser)
+                nums.forEach {
+                     ellipticalArcArgs?.add(it)
+                }
+                result = closepathHdlr(closepathRes!!)
             }
             return result
         }
 
 
         /**
+         * parse bearing
+         */
+        fun parseBearing(
+            stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
+            var pc = stream.peekChar
+            var result = false
+            if ('B' == pc || 'b' == pc) {
+                parseWspZeroOrMore(stream)
+                val args = ArrayList<Int>() 
+                result = parseBearingArgumentSequence(stream, args) 
+                if (result) {
+                    result = handler(
+                        Element(
+                            ElementType.valueOf(pc.toString()), args))
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    }
+                }
+            }
+            return result 
+        }
+
+        /**
+         * parse bearing argument sequence
+         */
+        fun parseBearingArgumentSequence(
+            stream: Stream,
+            bearingArgs: MutableList<Int>?): Boolean {
+            var result = false
+            var num: Int = 0 
+            result = parseNumber(stream, { num = it })
+            if (result) {
+                bearingArgs?.add(num)
+                parseBearingArgumentSequence(stream, bearingArgs)
+            }
+            
+            return result
+        }
+
+        /**
          * parse catmull-rom 
          */
-        fun parseCatmullRom(parser: Parser): Boolean {
-            var pc = parser.peekChar
+        fun parseCatmullRom(stream: Stream,
+            handler: (Element)->Boolean,
+            errorHandler: ((Int)->Unit)?): Boolean {
+            var pc = stream.peekChar
+            var result = false
             if ('R' == pc || 'r' == pc) {
-                parseWspZeroOrMore(parser)
-                result =  parseCatmullRomArgumentSequence(parser) 
+                parseWspZeroOrMore(stream)
+                val pairArgs = ArrayList<Pair<Int, Int>>()
+                result =  parseCatmullRomArgumentSequence(stream, 
+                    pairArgs) 
+                if (result) {
+                    val args = ArrayList<Int>()
+                    pairArgs.forEach {
+                        args.addAll(it.toList())
+                    }
+                    result = handler(Element(
+                        ElementType.valueOf(pc.toString()),
+                        args))
+                } else {
+                    if (errorHandler != null) {
+                        errorHandler(stream.index)
+                    }
+                }
             }
             return result
         }
@@ -472,45 +677,72 @@ class Path {
         /**
          * parse catmull-rom  arugment sequence
          */
-        fun parseCatmullRomArgumentSequence(parser: Parser): Boolean {
-            var result = parseCoodinatePair(parser)
-            if (result) {
-                result = parseCoodinatePair(parser)
-            } 
-            if (result) {
-                result = paserCoordinatePair(parser)
+        fun parseCatmullRomArgumentSequence(
+            stream: Stream,
+            catmullArgs: MutableList<Pair<Int, Int>>?): Boolean {
+            val tmpArgs = ArrayList<Pair<Int, Int>>()
+            var result = parseCoordinatePair(stream) {
+                tmpArgs.add(it)
             }
             if (result) {
-                while (parseCoodinatePair(parser)) {
-                } 
+                result = parseCoordinatePair(stream) {
+                    tmpArgs.add(it)
+                }
+            } 
+            if (result) {
+                result = parseCoordinatePair(stream) {
+                    tmpArgs.add(it)
+                }
+            }
+            if (result) {
+                catmullArgs?.addAll(tmpArgs)
+                var state = true
+                do {
+                    state = parseCoordinatePair(stream) {
+                        catmullArgs?.add(it)
+                    }
+                } while (state)
+                 
             }
             return result
         }
         /**
-         * parse cooditate pair double
+         * parse coorditate pair double
          */
-        fun parseCoodiatePairDouble(parser: Parser) {
-            result = parseCoordinatePair(parser)
+        fun parseCoordinatePairDouble(stream: Stream,
+            coordinatePairs: MutableList<Pair<Int, Int>>?): Boolean {
+            
+            val coordinates = ArrayList<Pair<Int, Int>>()
+            var result = false
+            result = parseCoordinatePair(stream) { coordinates.add(it) }
             if (result) {
-                parseCommaWsp(parser)
-                result = parseCoodiatePair(parser)
+                parseCommaWsp(stream)
+                result = parseCoordinatePair(stream) {
+                    coordinates.add(it)
+                }
+                if (result) {
+                    coordinatePairs?.addAll(coordinates)
+                }
             }
             return result
         }
         
         /**
-         * parse cooditate pair triplet
+         * parse coorditate pair triplet
          */
-        fun parseCoodiatePairTriplet(parser: Parser,
+        fun parseCoordinatePairTriplet(stream: Stream,
             coordinatePairs: MutableList<Pair<Int, Int>>?): Boolean {
             val pairList = ArrayList<Pair<Int, Int>>() 
-            result = parseCoordinatePair(parser, { pairList.add(it) })
+            var result = false
+            result = parseCoordinatePair(stream, { pairList.add(it) })
             if (result) {
                 for (i in 0..1) {
-                    parseCommaWsp(parser)
-                    result = parseCoodiatePair(parser, { pairList.add(it) })
+                    parseCommaWsp(stream)
+                    result = parseCoordinatePair(stream) {
+                        pairList.add(it)
+                    }
                     if (!result) {
-                        break;
+                        break
                     }
                 }
             }
@@ -524,12 +756,14 @@ class Path {
          * parse coordinate pair sequence
          */
         fun parseCoordinatePairSequence(
-            parser: Parser,
-            coodinates: MutablList<Pair<Int, Int>>?): Boolean {
-            var result = parseCoordinatePair(parser, { coordinates?.add(it) })
+            stream: Stream,
+            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
+            var result = parseCoordinatePair(stream) { 
+                coordinates?.add(it)
+            }
             if (result) {
-                parseCommaWsp(parser)
-                parseCoordinatePairSequence(parser, coodinates)
+                parseCommaWsp(stream)
+                parseCoordinatePairSequence(stream, coordinates)
             }
             return result
         }
@@ -537,12 +771,15 @@ class Path {
         /**
          * parse coordinate sequence
          */
-        fun parseCoordinateSequence(parser: Parser,
+        fun parseCoordinateSequence(stream: Stream,
             coordinates: MutableList<Int>?): Boolean {
-            var result = parseCoordinate(parser, { coordinates?.add(it) })
+            var result = parseCoordinate(stream) {
+                coordinates?.add(it)
+            }
+
             if (result) {
-                parseCommaWsp(parser)
-                parseCoordinateSequence(parser, coordinates)
+                parseCommaWsp(stream)
+                parseCoordinateSequence(stream, coordinates)
             }
             return result
         }
@@ -551,16 +788,16 @@ class Path {
         /**
          * parse coordinate pair
          */
-        fun parseCoordinatePair(parser: Parser,
-            handler : (Pair<Int, Int>->Unit)?): Boolean {
+        fun parseCoordinatePair(stream: Stream,
+            handler : ((Pair<Int, Int>)->Unit)?): Boolean {
             val numbers = intArrayOf(0, 0)
-            var result = parseCoordinate(parser, { numbers[0] = it })
+            var result = parseCoordinate(stream, { numbers[0] = it })
             if (result) {
-                parseCommaWsp(parser)
-                result = parseCoordinate(parser, { numbers[1] = it })
+                parseCommaWsp(stream)
+                result = parseCoordinate(stream, { numbers[1] = it })
                 if (result) {
                     if (handler != null) {
-                        handler(Pair<Int>(numbers[0], numbers[1]))
+                        handler(Pair<Int, Int>(numbers[0], numbers[1]))
                     }
                 }
             }
@@ -570,13 +807,13 @@ class Path {
         /**
          * parse coordinate
          */
-        fun parseCoordinate(parser: Parser, 
-            hanlder: ((value: Int)->Unit)?): Boolean {
+        fun parseCoordinate(stream: Stream, 
+            handler: ((Int)->Unit)?): Boolean {
             var result = false
             var sign = 1
-            parseSign(parser, { sign = it })
+            parseSign(stream, { sign = it })
             var number: Int = 0 
-            result = parseNumber(parser, { number = it })
+            result = parseNumber(stream, { number = it })
             if (result) { 
                 if (handler != null ) {
                     handler(sign * number) 
@@ -588,10 +825,10 @@ class Path {
         /**
          * parse sign
          */
-        fun parseSign(parser: Parser,
+        fun parseSign(stream: Stream,
             handler: ((Int)->Unit)?): Boolean {
             var result = false
-            var pc = parser.peekChar
+            var pc = stream.peekChar
             var sign = 1
             if ('+' == pc) {
                 result = true
@@ -604,7 +841,7 @@ class Path {
                 if (handler != null) {
                     handler(sign)
                 }
-                parser.nextChar
+                stream.nextChar
             } 
             return result
         }
@@ -612,13 +849,13 @@ class Path {
         /**
          * parse number
          */
-        fun parseNumber(parser: Parser,
+        fun parseNumber(stream: Stream,
             handler: ((Int)->Unit)?): Boolean {
             var result = false 
             var hit = false
-            val number = 0 
+            var number = 0 
             do {
-                var pc = parser.peekChar
+                var pc = stream.peekChar
                 if (pc != null) {
                     hit = '0' <= pc && pc <= '9'
                 } else {
@@ -627,8 +864,8 @@ class Path {
                 if (hit) {
                     result = true
                     number *= 10
-                    number += (pc - '0') 
-                    parser.nextChar
+                    number += (pc!! - '0') 
+                    stream.nextChar
                 }
             } while (hit)
             if (result && handler != null) {
@@ -640,12 +877,14 @@ class Path {
         /**
          * parse flag
          */
-        fun parseFlag(parser: Parser): Boolean {
+        fun parseFlag(stream: Stream,
+            handler: (Int)->Unit): Boolean {
             var result = false
-            var pc = parser.peekChar
+            var pc = stream.peekChar
             result = '0' == pc || '1' == pc
             if (result) {
-                parser.nextChar
+                handler(pc!! - '0')
+                stream.nextChar
             }
             return result
         }
@@ -653,21 +892,22 @@ class Path {
         /**
          * parse comma and white space
          */
-        fun parseCommaWsp(parser: Parser): Boolean {
+        fun parseCommaWsp(stream: Stream): Boolean {
             var result = false
-            result = parseWsp(parser)
+            result = parseWsp(stream)
             if (result) {
-                var pc = parser.peekChar
+                var pc = stream.peekChar
                 if (',' == pc) {
-                    parser.nextChar
+                    stream.nextChar
                 }
-                while (parseWsp(parser)) {
+                while (parseWsp(stream)) {
                 }
             } else {
-                var pc = parser.peekChar
+                var pc = stream.peekChar
                 if (',' == pc) {
                     result = true
-                    while(parseWsp(parser)) {
+                    stream.nextChar
+                    while(parseWsp(stream)) {
                     }
                 }
             } 
@@ -677,16 +917,19 @@ class Path {
         /**
          * parse white space
          */
-        fun parseWsp(parser: Parser) {
+        fun parseWsp(stream: Stream): Boolean {
             var result = false
-            var pc = parser.peekChar 
-            if ('\U0009' == pc
-                || '\u0020' == pc
-                || '\u000A' == pc
-                || '\u000C' == pc
-                || '\u000D' == pc) {
-                result = true
-                parser.nextChar
+            var pc = stream.peekChar 
+            if (pc != null) {
+                val aChar = pc!!
+                if ('\u0009' == aChar
+                    || '\u0020' == aChar
+                    || '\u000A' == aChar 
+                    || '\u000C' == aChar 
+                    || '\u000D' == aChar) {
+                    result = true
+                    stream.nextChar
+                }
             }
             return result
         }
@@ -694,10 +937,10 @@ class Path {
         /**
          * parse white space zero or more
          */
-        fun parseWspZeroOrMore(parser: Parser): Boolean {
-            var result = parseWsp(parser)
+        fun parseWspZeroOrMore(stream: Stream): Boolean {
+            var result = parseWsp(stream)
             if (result) {
-                result = parseWspZeroOrMore(parser)
+                parseWspZeroOrMore(stream)
             }
             return result
         }
@@ -706,9 +949,9 @@ class Path {
     }
 
     /**
-     * path string parser
+     * path string stream 
      */
-    class Parser(val pathString: String) {
+    class Stream(val pathString: String) {
         
         /**
          * current index
@@ -716,105 +959,11 @@ class Path {
         var index: Int = 0 
        
         /**
-         *  token start index
-         */
-        var lexTokenStart: Int = -1
-        /**
-         * token end index
-         */
-        var lexTokenEnd: Int = -1
-
-        /**
-         * last lex token
-         */
-        var lastLexToken: LexToken?
-        /**
-         * next token
-         */
-        val nextLexToken: LexToken?
-            get() {
-                var result: LexToken? = null
-                var tokenStart: Int = -1
-                var tokenEnd: Int = -1
-                if (peekChar != nul) {
-                    if (peekChar in wsp) {
-                        result = Was
-                        tokenStart = index
-                        nextChar
-                        tokneEnd = index
-                    }
-                    if (result != null) {
-                        while (peekChar in wsp) {
-                            nextChar 
-                            tokenEnd = index 
-                        }  
-                        if (peekChar == ',') {
-                            nextChar
-                            tokenEnd = index
-                            while (peekChar in wsp) {
-                                nextChar
-                                tokenEnd = index
-                            } 
-                            result = CommaWsp
-                        }
-                    } else if (peekChar == ',') {
-                        nextChar
-                        tokenEnd = index
-                        while (peekChar in wsp) {
-                            nextChar
-                            tokenEnd = index
-                        }
-                        result = CommaWsp
-                    }
-                    if (result == null) {
-                        if (peekChar == '0' || peekChar == '1') {
-                            tokenStart = index
-                            result = Flag 
-                            nextChar
-                            tokenEnd = index
-                        } 
-                        if (result != null) {
-                            if (peekChar in numberSet) {
-                                result = Number
-                                while (peekChar in numberSet) {
-                                    nextChar
-                                    tokenEnd = index
-                                }  
-                            }
-                        }
-                    }
-                    if (result == null) {
-                        if (peekChar == '+' || peekChar == '-') {
-                            result = Sign
-                            tokenStart = index
-                            nextChar
-                            tokenEnd = index
-                        }
-                    }
-                }
-                if (result != null) {
-                    this.lexTokenStart = tokenStart
-                    this.lexTokenEnd = tokenEnd
-                    this.lastLexToken = result
-                }
-                
-                return result
-            } 
-        /**
-         * read next token from path string
-         */
-        val nextToken: Token?
-            get() {
-                var result: Token? = null
-                
-                return result
-            }
-        /**
          * peek character
          */
-        val peekChar: Character?
+        val peekChar: Char?
             get() {
-                var result: Character? = null
+                var result: Char? = null
                 if (index < pathString.length) {
                     result = pathString[index] 
                 }
@@ -823,7 +972,7 @@ class Path {
         /**
          * next character
          */
-        val nextChar: Character?
+        val nextChar: Char?
             get() {
                 var result = peekChar
                 if (result != null) {
@@ -831,84 +980,8 @@ class Path {
                 }
                 return result
             }
-        /**
-         * white space set
-         */
-        var wspValue: Set<Character>? = null
-        /**
-         * white space set
-         */
-        val wsp: Set<Character>
-            get() {
-                if (wspValue == null) {
-                    val wspSet = HashSet<Character>()
-                    wspSet.add('\u0009')
-                    wspSet.add('\u0020')
-                    wspSet.add('\u000A')
-                    wspSet.add('\u000D')                    
-                    WspValue = wspSet
-                }
-                return wspValue!!
-            }
-        /**
-         * number set
-         */
-        var numberSetValue: Set<Character>? = null
-        /**
-         * number set
-         */
-        val numberSet: Set<Character>
-            get() {
-                if (numberSetValue == nul) {
-                    numberSetValue = HashSet<Character>()
-                    for (i in 0..9) {
-                        numberSetValue.add('0' + i)
-                    }
-                }   
-                return numberSetValue!!
-            }
-    }
+   }
 
-    /**
-     * token
-     */
-    enum class Token {
-        Moveto,
-        Close,
-        Lineto,
-        HorizontalLineto,
-        VerticalLineto,
-        Curveto,
-        CurvetoCoordinateSequence,
-        SmoothCurveto,
-        SmoothCurvetoCoordinateSequence,
-        QuadraticBezierCurveto,
-        QuadraticBezierCurvetoSequence,
-        SmoothQuadraticBezierCurveto,
-        EllipticalArc,
-        EllipticalArcArgument,
-        EllipticalArcClosingArgument,
-        Bearing,
-        BearingArgumentSequence,
-        CatmullRom,
-        CatmullRomArgumentSequence,
-        CoordiantePairDouble,
-        CoordinatePairTriplet,
-        CoordinatePairSequence,
-        CoordinatePair,
-        Coordinate
-    }
-    /**
-     *
-     */
-    enum class LexToken {
-        Sign,
-        Number,
-        Flag,
-        CommaWsp,
-        Wsp
-    }
-    
 
     /**
      * element type
@@ -957,7 +1030,7 @@ class Path {
         /**
          * curve to relative
          */
-        c
+        c,
         /**
          * shorthand curve to absolute
          */
@@ -1011,6 +1084,6 @@ class Path {
     /**
      * path element
      */
-    data class Element(type: ElementType, data: FloatArray) 
+    data class Element(val type: ElementType, val data: List<Int>) 
     
 }
