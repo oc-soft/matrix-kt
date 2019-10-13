@@ -12,7 +12,6 @@ import net.ocsoft.mswp.ui.grid.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.Image
-
 typealias GLRctx = WebGLRenderingContext
 
 /**

@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+require_once implode('/', array('site', 'config.php')); 
 
 /**
  * get body contents and header settings.
@@ -44,8 +46,7 @@ function doc_render_head($setting) {
 				echo '<title>' . $head['title'] . '</title>';
 			}
 			if (isset($head['og'])) {
-				require_once 'config.php';
-				
+				global 	$mswp_settings;
 				$og = $head['og'];
 				if (isset($og['title'])) {
 					$str = '<meta property="og:title" ';
@@ -68,6 +69,16 @@ function doc_render_head($setting) {
 					$str .= 'content="' . $mswp_settings['siteUrl'];
 		   			$str .= '/index.php?doc=' . $setting['doc_name'] . '">';
   					echo $str; 
+				}
+			}
+			if (isset($head['using'])) {
+				global $using_mapping;
+				foreach($head['using'] as $val) {
+					if (is_string($val)) {
+						if (isset($using_mapping[$val])) {
+							echo $using_mapping[$val];
+						}		
+					}	
 				}
 			}
 		}

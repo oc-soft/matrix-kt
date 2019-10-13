@@ -1,0 +1,14 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/webfontloader-1.png",
+            "title": "To solve ellipse center",
+            "type": "website"
+        },
+        "title": "To solve ellipse center",
+		"using": [
+			"polyfill",
+			"mathjax"
+		]	
+    }
+}

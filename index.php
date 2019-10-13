@@ -3,8 +3,13 @@
 if (count($_GET)) {
 	if (isset($_GET['doc'])) {
 		require('doc-function.php');
-		$doc_name = $_GET['doc'];
-		$lang = $_GET['lang'];
+		if (isset($_GET['doc'])) {
+			$doc_name = $_GET['doc'];
+		}
+
+		if (isset($_GET['lang'])) {
+			$lang = $_GET['lang'];
+		}
 		$accept_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 		if (isset($lang)) {
 			$accept_lang = $lang . ',' . $accept_lang;	

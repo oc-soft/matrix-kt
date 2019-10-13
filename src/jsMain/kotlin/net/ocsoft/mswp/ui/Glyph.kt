@@ -265,10 +265,15 @@ class Glyph(
      */
     fun createPath(pathStr: String): Path2D {
 
-        val result = Path2D(pathStr)
+        val ua = window.navigator.userAgent; 
+        var result: Path2D? = null 
+        if (ua.indexOf("Edge") == -1) {
+            result = Path2D(pathStr)
+        } else {
+            result = ms.Svg.createPath2D(pathStr)
+        }
 
-
-        return result
+        return result!!
     }
 
     /**
@@ -295,7 +300,7 @@ class Glyph(
         val mt = createTranslateMatrix(displacement.toDouble(), 
             displacement.toDouble())
         val m = multiply(mt, ms)
-        val pathSrc = Path2D(iconDef.icon[4] as String)
+        val pathSrc = createPath(iconDef.icon[4] as String)
         val path = pathSrc
         // val path = Path2D()
         // path.addPath(pathSrc, m)
