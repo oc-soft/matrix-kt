@@ -332,13 +332,13 @@ class Svg {
                 }
                 
                 val cp1 = (lp - lcp) + lp
-                val cp2 = pos[1] 
-                val p = pos[2]
+                val cp2 = pos[0] 
+                val p = pos[1]
                 convertedCoords.addAll(cp1.toList())
                 convertedCoords.addAll(cp2.toList())
                 convertedCoords.addAll(p.toList())
-                lcp = pos[1]
-                lp = pos[2]
+                lcp = pos[0]
+                lp = pos[1]
             }
             val result = handleCurveto(
                 Path.Element(Path.ElementType.C, convertedCoords), pp)
@@ -353,7 +353,7 @@ class Svg {
             pp: PathParsing): Boolean {
             var coordConversion = ::noConversion
             var result = false
-            if (elm.type == Path.ElementType.c) {
+            if (elm.type == Path.ElementType.q) {
                 coordConversion = ::relativeToAbsolute
             }
             for (i in 0..elm.data.size - 1 step 4) {
@@ -434,8 +434,8 @@ class Svg {
                     pp.path.ellipse(
                         ellipseParam.x.toDouble(), 
                         ellipseParam.y.toDouble(),
-                        elm.data[0].toDouble(), 
-                        elm.data[1].toDouble(),
+                        ellipseParam.radiusX.toDouble(), 
+                        ellipseParam.radiusY.toDouble(),
                         elm.data[2].toDouble(),
                         ellipseParam.startAngle.toDouble(),
                         ellipseParam.endAngle.toDouble(),

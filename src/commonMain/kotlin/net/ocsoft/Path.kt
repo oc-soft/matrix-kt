@@ -80,6 +80,7 @@ class Path {
                 Stream, (Element)->Boolean, ((Int)->Unit)?)->Boolean>
             = arrayOf(
                 ::parseMoveto,
+                ::parseClosepath,
                 ::parseLineto,
                 ::parseHorizontalLineto,
                 ::parseVerticalLineto,
@@ -226,7 +227,7 @@ class Path {
             errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
             val pc = stream.peekChar
-            if ('H' == pc || 'h' == pc) {
+            if ('V' == pc || 'v' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
                 val coordinates = ArrayList<Int>()
@@ -454,7 +455,7 @@ class Path {
             handler: (Element)->Boolean,
             errorHandler: ((Int)->Unit)?): Boolean {
             var result = false
-            var pc = stream.nextChar
+            var pc = stream.peekChar
             if ('T' == pc || 't' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
@@ -488,6 +489,7 @@ class Path {
             var pc = stream.peekChar
             if ('A' == pc || 'a' == pc) {
                 stream.nextChar
+                parseWspZeroOrMore(stream)
                 val args = ArrayList<Int>()
                 result = parseEllipticalArcArgumentSequence(stream, args) 
                 var closingRes: Element? = null
@@ -979,8 +981,10 @@ class Path {
             if (radii.first != 0f && radii.second != 0f) {
                 val radii2 = Pair(abs(radii.first), abs(radii.second)) 
                 result = resolveArcParami(radii2,
-                    xAxisRotation, largeArcFlag,
-                    sweepFlag, point1, point2)
+                    xAxisRotation, 
+					largeArcFlag != 0,
+                    sweepFlag != 0,
+					point1, point2)
 
             }
             return result
@@ -992,8 +996,8 @@ class Path {
          */
         fun resolveArcParami(radii: Pair<Float, Float>,
             xAxisRotation: Float,
-            largeArcFlag: Int,
-            sweepFlag: Int,
+            largeArcFlag: Boolean,
+            sweepFlag: Boolean,
             point1: Pair<Float, Float>,
             point2: Pair<Float, Float>): EllipseParam {
 
@@ -1007,8 +1011,8 @@ class Path {
             val p1dVec = phaiRevMat * vecp1Src 
             val p1d = Pair(p1dVec[0], p1dVec[1])
 
-            val lambda = p1d.first.pow(2) / radii.first.pow(2)
-                + p1d.second.pow(2) / radii.second.pow(2)
+            var lambda = p1d.first.pow(2) / radii.first.pow(2)
+            lambda += p1d.second.pow(2) / radii.second.pow(2)
             var radii2 = radii
             if (lambda > 1) {
                 val sqrLambda = sqrt(lambda)
@@ -1022,53 +1026,130 @@ class Path {
             val nom1 = rxsq * rysq - rxsq * ydsq - rysq * xdsq
             val denom1 = rxsq * ydsq + rysq * xdsq
             val rc = sqrt(nom1 / denom1)
+            // var cdsign = 1
+            // if (largeArcFlag == sweepFlag) {
+            //    cdsign = -1
+            // }
+
             // (cx', cy')
-            val cd = Pair(
+            var cdp = Pair(
                 rc * ((radii2.first * p1d.second) / radii2.second),
-                rc * ((radii2.second * p1d.first) / radii2.first))
+                - rc * ((radii2.second * p1d.first) / radii2.first))
+            var cdm = Pair(- cdp.first, -cdp.second)
+ 
             var p12Hal = Pair(
                     (point1.first + point2.first) / 2,
-                    (point1.first + point2.first) / 2)
+                    (point1.second + point2.second) / 2)
             
             // (cx, cy)
             
+            // (x1', y1') - (cx', cy') vector 
+            val pdp1u = Pair((p1d.first - cdp.first) / radii2.first, 
+                (p1d.second - cdp.second) / radii2.second)
+
+            val pdp2u = Pair((-p1d.first - cdp.first) / radii2.first, 
+                (-p1d.second - cdp.second) / radii2.second)
+
+            val pdm1u = Pair((p1d.first - cdm.first) / radii2.first, 
+                (p1d.second - cdm.second) / radii2.second)
+
+            val pdm2u = Pair((-p1d.first - cdm.first) / radii2.first, 
+                (-p1d.second - cdm.second) / radii2.second)
+
+
+            var thetaP = calcAngle(Pair(1f, 0f), pdp1u)
+            var thetaDeltaP = calcAngle(pdp1u, pdm2u)
+
+            var thetaM = calcAngle(Pair(1f, 0f), pdm1u)
+            var thetaDeltaM = calcAngle(pdm1u, pdm2u)
+
+            var theta = 0f
+            var thetaDelta = 0f
+            var cd = Pair(0f, 0f)
+			var clockwise = true
+			if (thetaDeltaP >= 0) {
+				if (!largeArcFlag && sweepFlag) {
+                    cd = cdp 
+                    theta = thetaP
+                    thetaDelta = thetaDeltaP 
+                    clockwise = true
+				} else if (!largeArcFlag && !sweepFlag) {
+                    cd = cdm
+                    theta = thetaM
+                    thetaDelta = thetaDeltaM
+			        clockwise = false
+				} else if (largeArcFlag && !sweepFlag) {
+                    cd = cdp
+                    theta = thetaP 
+                    thetaDelta = thetaDeltaP
+					clockwise = false		
+				} else { // largeArcFlat && sweepFlat
+                    cd = cdm
+                    theta = thetaM 
+                    thetaDelta = thetaDeltaM
+					clockwise = true	
+				}
+			} else {
+				if (!largeArcFlag && sweepFlag) {
+                    cd = cdm
+                    theta = thetaM 
+                    thetaDelta = thetaDeltaM
+                    clockwise = true
+				} else if (!largeArcFlag && !sweepFlag) {
+                    cd = cdp
+                    theta = thetaP
+                    thetaDelta = thetaDeltaP
+			        clockwise = false 
+				} else if (largeArcFlag && !sweepFlag) {
+                    cd = cdm
+                    theta = thetaM 
+                    thetaDelta = thetaDeltaM
+					clockwise = false		
+				} else { // largeArcFlat && sweepFlat
+                    cd = cdp
+                    theta = thetaM 
+                    thetaDelta = thetaDeltaM
+					clockwise = true	
+				}
+			}
+
+
+            var theta2 = 0f
+            theta2 = theta + thetaDelta
             val phaiRotMat = Matrix2(cosPhai, -sinPhai, sinPhai, cosPhai)
             val c =  phaiRotMat * cd + p12Hal   
-
-            // (x1', y1') - (cx', cy') vector 
-            val pdp = Pair((p1d.first - cd.first) / radii2.first, 
-                (p1d.second - cd.second) / radii2.second)
-            // 2(x1', y1') - (cx', cy') vector
-            val pd2 = Pair((-p1d.first - cd.first) / radii2.first, 
-                (-p1d.second - cd.second) / radii2.second)
-
-            val theta = calcAngle(Pair(1f, 0f), pdp)
-            var thetaDelta = calcAngle(pdp, pd2)
-            
-            if (sweepFlag == 0) {
-                thetaDelta = -abs(thetaDelta)
-            } else {
-                thetaDelta = abs(thetaDelta)
-            }
              
             val result = EllipseParam(c.first, c.second,
                 radii2.first, radii2.second,
                 xAxisRotation,
-                theta, theta + thetaDelta,
-                largeArcFlag != 0)
+                theta, theta2,
+                !clockwise)
+            println(result)
             return result 
         }
+        /**
+         * calc angle 
+         * display coordinate angle is clockwise plus
+         * cartesian cooridinate angle is counter clockwise plus
+         */
        
 
-        /**
-         * calc angle
-         */
         fun calcAngle(vec1 : Pair<Float, Float>,
             vec2: Pair<Float, Float>): Float {
             val inprdct = vec1.first * vec2.first + vec1.second * vec2.second
             val v1Norm = sqrt(vec1.first.pow(2) + vec1.second.pow(2))
             val v2Norm = sqrt(vec2.first.pow(2) + vec2.second.pow(2))
-            val result = acos(inprdct / (v1Norm * v2Norm))
+            var acosSign = vec1.first * vec2.second - vec1.second * vec2.first
+            // acosSign may be 0. In this case, accosSign need to be 1
+            // acosSign = sign(acosSign)
+            if (acosSign >= 0) {
+                acosSign = 1f
+            } else {
+                acosSign = -1f
+            }
+           
+            val result = acosSign * acos(inprdct / (v1Norm * v2Norm))
+
             return result
         } 
                

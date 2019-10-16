@@ -109,7 +109,7 @@ class Matrix2(
             v1 = vector[0]
         }
         if (vector.size > 1) {
-            v1 = vector[1]
+            v2 = vector[1]
         } 
         val otherMat = Matrix2(v1, 0f, 0f, v2)
         val resMat = this * otherMat

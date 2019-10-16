@@ -12,12 +12,12 @@
   </script>
 </head>
 <body>
-<ul id="test-result" sytle="list-syle-type:none;">
+<ul id="test-result">
 </ul>
 <template id="test-result-item">
 <li>
   <div class="test path-data"></div>
-  <canvas class="test region" width="256" height="256"></canvas>
+  <canvas class="test region" width="128" height="128"></canvas>
 </li>
 </template>
 </body>

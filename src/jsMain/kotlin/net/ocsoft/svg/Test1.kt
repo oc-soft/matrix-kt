@@ -4,6 +4,7 @@ import jQuery
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.Path2D
+import kotlin.browser.window
 
 /**
  * test runner for svg
@@ -105,7 +106,14 @@ class Test1 {
     fun addPath(pathData: String,
         canvasQuery: String) {
         val canvas = jQuery(canvasQuery)
-        val path = ms.Svg.createPath2D(pathData)
+        val ua = window.navigator.userAgent; 
+        var path: Path2D? = null
+        if (ua.indexOf("Edge") == -1) {
+            path = ms.Svg.createPath2D(pathData)
+            // path = Path2D(pathData)
+        } else {
+            path = ms.Svg.createPath2D(pathData)
+        }
         if (canvas != null && path != null) {
             val canvasElem = canvas[0] as HTMLCanvasElement
             val ctx = canvasElem.getContext("2d") as CanvasRenderingContext2D? 
