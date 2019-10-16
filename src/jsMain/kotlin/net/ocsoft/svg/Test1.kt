@@ -41,6 +41,10 @@ class Test1 {
     var resultItemTemplateQuery: String? = null
 
     /**
+     * you can debug in chrome if true
+     */
+    var debugInChrome: Boolean = false
+    /**
      * bind test setting 
      */
     fun bind(setting: dynamic) {
@@ -53,7 +57,9 @@ class Test1 {
             setting.resultListQuery as String?
         this.resultItemTemplateQuery =
             setting.resultItemTemplateQuery as String?
-
+        if (setting.debugInChrome != null) {
+            debugInChrome = setting.debugInChrome as Boolean
+        }
     }
 
     /**
@@ -108,9 +114,8 @@ class Test1 {
         val canvas = jQuery(canvasQuery)
         val ua = window.navigator.userAgent; 
         var path: Path2D? = null
-        if (ua.indexOf("Edge") == -1) {
-            path = ms.Svg.createPath2D(pathData)
-            // path = Path2D(pathData)
+        if (ua.indexOf("Edge") == -1 && !debugInChrome) {
+            path = Path2D(pathData)
         } else {
             path = ms.Svg.createPath2D(pathData)
         }

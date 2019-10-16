@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Edge svg data parsing test</title>
   <script>
-    var test1Setting = <?php echo file_get_contents("svg-test-config.js"); ?>;
+    var test1Setting = <?php echo $config_contents; ?>;
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js">
   </script>
