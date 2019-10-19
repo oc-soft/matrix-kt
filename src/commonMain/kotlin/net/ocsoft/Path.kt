@@ -876,6 +876,8 @@ class Path {
         fun parseNumber(stream: Stream,
             handler: ((Int)->Unit)?): Boolean {
             var result = false 
+            var sign = 1
+            parseSign(stream) { sign = it }
             var hit = false
             var number = 0 
             do {
@@ -893,7 +895,7 @@ class Path {
                 }
             } while (hit)
             if (result && handler != null) {
-                handler(number)
+                handler(sign * number)
             } 
             return result
         }

@@ -413,48 +413,52 @@ class Svg {
                 coordConversion = ::relativeToAbsoluteF
             }
             val convertedCoords = ArrayList<Int>()
-            var lp = pp.cp
-            var result = false
+           var result = false
 
             if (elm.type == Path.ElementType.A
                 || elm.type == Path.ElementType.a) { 
-                val p1f = convertToFloat(lp, pp.cb,
-                    lp)  
-                val p2f = coordConversion(lp, pp.cb,
-                     Pair(elm.data[5], elm.data[6]))
+               for (idx in 0..elm.data.size - 1 step 7) {
+                    var lp = pp.cp
+                    val p1f = convertToFloat(lp, pp.cb, lp)  
+                    val p2f = coordConversion(lp, pp.cb,
+                        Pair(elm.data[idx + 5], elm.data[idx + 6]))
 
-                val ellipseParam = Path.resolveArcParam(
-                    Pair(elm.data[0].toDouble(), 
-                        elm.data[1].toDouble()),
-                    (elm.data[2].toDouble() * PI) / 180,
-                    elm.data[3], elm.data[4],
-                    Pair(p1f.first.toDouble(), p1f.second.toDouble()), 
-                    Pair(p2f.first.toDouble(), p2f.second.toDouble()))
-                if (ellipseParam != null) {
+                    val ellipseParam = Path.resolveArcParam(
+                        Pair(elm.data[idx + 0].toDouble(), 
+                            elm.data[idx + 1].toDouble()),
+                        (elm.data[idx + 2].toDouble() * PI) / 180,
+                        elm.data[idx + 3], elm.data[4],
+                        Pair(p1f.first.toDouble(), p1f.second.toDouble()), 
+                        Pair(p2f.first.toDouble(), p2f.second.toDouble()))
+                    if (ellipseParam != null) {
 
-                    pp.path.ellipse(
-                        ellipseParam.x.toDouble(), 
-                        ellipseParam.y.toDouble(),
-                        ellipseParam.radiusX.toDouble(), 
-                        ellipseParam.radiusY.toDouble(),
-                        ellipseParam.rotation.toDouble(),
-                        ellipseParam.startAngle.toDouble(),
-                        ellipseParam.endAngle.toDouble(),
-                        ellipseParam.anticlockwise)
-                    pp.cp = Pair(p2f.first.roundToInt(),
-                        p2f.second.roundToInt())
-                    result = true
-                } else {
-                    var lineElem: Path.Element? = null
-                    val coords = elm.data.slice(5..6)
-                    if (elm.type == Path.ElementType.A) {
-                        lineElem = Path.Element(Path.ElementType.L,
-                            coords)   
+                        pp.path.ellipse(
+                            ellipseParam.x.toDouble(), 
+                            ellipseParam.y.toDouble(),
+                            ellipseParam.radiusX.toDouble(), 
+                            ellipseParam.radiusY.toDouble(),
+                            ellipseParam.rotation.toDouble(),
+                            ellipseParam.startAngle.toDouble(),
+                            ellipseParam.endAngle.toDouble(),
+                            ellipseParam.anticlockwise)
+                        pp.cp = Pair(p2f.first.roundToInt(),
+                            p2f.second.roundToInt())
+                        result = true
                     } else {
-                        lineElem = Path.Element(Path.ElementType.l,
-                            coords)   
+                        var lineElem: Path.Element? = null
+                        val coords = elm.data.slice(5..6)
+                        if (elm.type == Path.ElementType.A) {
+                            lineElem = Path.Element(Path.ElementType.L,
+                                coords)   
+                        } else {
+                            lineElem = Path.Element(Path.ElementType.l,
+                                coords)   
+                        }
+                        result = handleLineto(lineElem, pp)
                     }
-                    result = handleLineto(lineElem, pp)
+                    if (!result) {
+                        break
+                    }
                 }
             }
             return result
