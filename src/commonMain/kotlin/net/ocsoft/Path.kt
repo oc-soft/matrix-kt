@@ -10,18 +10,19 @@ import net.ocsoft.Matrix2
 /**
  * extention
  */
-operator fun Pair<Float, Float>.plus(
-    other: Pair<Float, Float>): Pair<Float, Float> {
+operator fun Pair<Double, Double>.plus(
+    other: Pair<Double, Double>): Pair<Double, Double> {
     return Pair(this.first + other.first, this.second + other.second) 
 }
 
 /**
  * extention
  */
-operator fun Pair<Float, Float>.minus(
-    other: Pair<Float, Float>): Pair<Float, Float> {
+operator fun Pair<Double, Double>.minus(
+    other: Pair<Double, Double>): Pair<Double, Double> {
     return Pair(first - other.first, second - other.second) 
 }
+
 
 
 
@@ -970,15 +971,15 @@ class Path {
         /**
          * convert from svg arc parameter to path2d arc parameter
          */
-        fun resolveArcParam(radii: Pair<Float, Float>,
-            xAxisRotation: Float,
+        fun resolveArcParam(radii: Pair<Double, Double>,
+            xAxisRotation: Double,
             largeArcFlag: Int,
             sweepFlag: Int,
-            point1: Pair<Float, Float>,
-            point2: Pair<Float, Float>): EllipseParam? {
+            point1: Pair<Double, Double>,
+            point2: Pair<Double, Double>): EllipseParam? {
             var result: EllipseParam? = null
 
-            if (radii.first != 0f && radii.second != 0f) {
+            if (radii.first != 0.0 && radii.second != 0.0) {
                 val radii2 = Pair(abs(radii.first), abs(radii.second)) 
                 result = resolveArcParami(radii2,
                     xAxisRotation, 
@@ -994,49 +995,54 @@ class Path {
         /**
          * convert from svg arc parameter to path2d arc parameter
          */
-        fun resolveArcParami(radii: Pair<Float, Float>,
-            xAxisRotation: Float,
+        fun resolveArcParami(radii: Pair<Double, Double>,
+            xAxisRotation: Double,
             largeArcFlag: Boolean,
             sweepFlag: Boolean,
-            point1: Pair<Float, Float>,
-            point2: Pair<Float, Float>): EllipseParam {
+            point1: Pair<Double, Double>,
+            point2: Pair<Double, Double>): EllipseParam {
 
             val cosPhai = cos(xAxisRotation)
             val sinPhai = sin(xAxisRotation)
             // (x1', y1')
-            val vecp1Src = floatArrayOf((point1.first - point2.first) / 2,
+            val vecp1Src = doubleArrayOf((point1.first - point2.first) / 2,
                 (point1.second - point2.second) / 2)
 
             val phaiRevMat = Matrix2(cosPhai, sinPhai, -sinPhai, cosPhai) 
             val p1dVec = phaiRevMat * vecp1Src 
             val p1d = Pair(p1dVec[0], p1dVec[1])
-
-            var lambda = p1d.first.pow(2) / radii.first.pow(2)
-            lambda += p1d.second.pow(2) / radii.second.pow(2)
+            val xdsq = p1d.first.pow(2)
+            val ydsq = p1d.second.pow(2)
+ 
+            var lambda = xdsq / radii.first.pow(2)
+            lambda += ydsq / radii.second.pow(2)
             var radii2 = radii
+            var rc = 0.0
             if (lambda > 1) {
                 val sqrLambda = sqrt(lambda)
                 radii2 = Pair(sqrLambda * radii.first, 
                     sqrLambda * radii.second) 
-            } 
+                
+            }
             val rxsq = radii2.first.pow(2) 
             val rysq = radii2.second.pow(2)
-            val xdsq = p1d.first.pow(2)
-            val ydsq = p1d.second.pow(2)
-            val nom1 = rxsq * rysq - rxsq * ydsq - rysq * xdsq
+            val nom1 = max(rxsq * rysq - rxsq * ydsq - rysq * xdsq, 0.0)
             val denom1 = rxsq * ydsq + rysq * xdsq
-            val rc = sqrt(nom1 / denom1)
+            rc = sqrt(nom1 / denom1)
+            
+           
             // var cdsign = 1
             // if (largeArcFlag == sweepFlag) {
             //    cdsign = -1
             // }
-
             // (cx', cy')
             var cdp = Pair(
                 rc * ((radii2.first * p1d.second) / radii2.second),
                 - rc * ((radii2.second * p1d.first) / radii2.first))
             var cdm = Pair(- cdp.first, -cdp.second)
  
+            // (cx'', cy'')  
+
             var p12Hal = Pair(
                     (point1.first + point2.first) / 2,
                     (point1.second + point2.second) / 2)
@@ -1057,15 +1063,17 @@ class Path {
                 (-p1d.second - cdm.second) / radii2.second)
 
 
-            var thetaP = calcAngle(Pair(1f, 0f), pdp1u)
-            var thetaDeltaP = calcAngle(pdp1u, pdm2u)
+            var thetaP = calcAngle(Pair(1.0, 0.0), pdp1u)
+            println("thetaP: ${thetaP}")
+            var thetaDeltaP = calcAngle(pdp1u, pdp2u)
 
-            var thetaM = calcAngle(Pair(1f, 0f), pdm1u)
+            var thetaM = calcAngle(Pair(1.0, 0.0), pdm1u)
+            println("thetaM: ${thetaM}")
             var thetaDeltaM = calcAngle(pdm1u, pdm2u)
 
-            var theta = 0f
-            var thetaDelta = 0f
-            var cd = Pair(0f, 0f)
+            var theta = 0.0
+            var thetaDelta = 0.0
+            var cd = Pair(0.0, 0.0)
 			var clockwise = true
 			if (thetaDeltaP >= 0) {
 				if (!largeArcFlag && sweepFlag) {
@@ -1114,8 +1122,9 @@ class Path {
 			}
 
 
-            var theta2 = 0f
+            var theta2 = 0.0
             theta2 = theta + thetaDelta
+            // val phaiRotMat = Matrix2()
             val phaiRotMat = Matrix2(cosPhai, -sinPhai, sinPhai, cosPhai)
             val c =  phaiRotMat * cd + p12Hal   
              
@@ -1127,15 +1136,28 @@ class Path {
             println(result)
             return result 
         }
+/*
+        fun calcSingleEllipseParam(radii: Pair<Double, Double>,
+            xAxisRotation: Double,
+            largeArcFlag: Boolean,
+            sweepFlag: Boolean,
+            point1: Pair<Double, Double>,
+            point2: Pair<Double, Double>): EllipseParam {
+            
+            val cosPhai = cos(xAxisRotation)
+            val sinPhai = sin(xAxisRotation)
+            val phaiRevMat = Matrix2(cosPhai, sinPhai, -sinPhai, cosPhai) 
+            val ptOnEllipseL = Pair(point1.first - point
+
+        }
+*/
         /**
          * calc angle 
          * display coordinate angle is clockwise plus
          * cartesian cooridinate angle is counter clockwise plus
          */
-       
-
-        fun calcAngle(vec1 : Pair<Float, Float>,
-            vec2: Pair<Float, Float>): Float {
+        fun calcAngle(vec1 : Pair<Double, Double>,
+            vec2: Pair<Double, Double>): Double {
             val inprdct = vec1.first * vec2.first + vec1.second * vec2.second
             val v1Norm = sqrt(vec1.first.pow(2) + vec1.second.pow(2))
             val v2Norm = sqrt(vec2.first.pow(2) + vec2.second.pow(2))
@@ -1143,12 +1165,13 @@ class Path {
             // acosSign may be 0. In this case, accosSign need to be 1
             // acosSign = sign(acosSign)
             if (acosSign >= 0) {
-                acosSign = 1f
+                acosSign = 1.0
             } else {
-                acosSign = -1f
+                acosSign = -1.0
             }
-           
-            val result = acosSign * acos(inprdct / (v1Norm * v2Norm))
+            var acosValue =  inprdct / (v1Norm * v2Norm)
+            acosValue = max(min(acosValue, 1.0), -1.0)
+            val result = acosSign * acos(acosValue)
 
             return result
         } 
@@ -1296,13 +1319,13 @@ class Path {
     /**
      * path 2d ellipse parameter
      */ 
-    data class EllipseParam(val x: Float,
-        val y: Float,
-        val radiusX: Float,
-        val radiusY: Float,
-        val rotation: Float,
-        val startAngle: Float,
-        val endAngle: Float,
+    data class EllipseParam(val x: Double,
+        val y: Double,
+        val radiusX: Double,
+        val radiusY: Double,
+        val rotation: Double,
+        val startAngle: Double,
+        val endAngle: Double,
         val anticlockwise: Boolean)
     
 }

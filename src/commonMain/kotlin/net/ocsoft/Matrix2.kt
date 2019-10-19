@@ -6,22 +6,22 @@ import kotlin.math.*
  * matrix 2 x 2
  */
 class Matrix2(
-    m00: Float = 1f,
-    m01: Float = 0f,
-    m10: Float = 0f,
-    m11: Float = 1f) {
+    m00: Double = 1.0,
+    m01: Double = 0.0,
+    m10: Double = 0.0,
+    m11: Double = 1.0) {
 
     /**
      * components
      */
     val components = arrayOf(
-        floatArrayOf(m00, m01),
-        floatArrayOf(m10, m11))
+        doubleArrayOf(m00, m01),
+        doubleArrayOf(m10, m11))
     
     /**
      * component at 0, 0
      */
-    var m00: Float
+    var m00: Double
         get() {
             return components[0][0]
         } 
@@ -33,7 +33,7 @@ class Matrix2(
     /**
      * component at 0, 1
      */
-    var m01: Float
+    var m01: Double
         get() {
             return components[0][1]
         } 
@@ -45,7 +45,7 @@ class Matrix2(
     /**
      * component at 1, 0
      */
-    var m10: Float
+    var m10: Double
         get() {
             return components[1][0]
         } 
@@ -57,7 +57,7 @@ class Matrix2(
     /**
      * component at 1, 1
      */
-    var m11: Float
+    var m11: Double
         get() {
             return components[1][1]
         } 
@@ -70,11 +70,11 @@ class Matrix2(
     /**
      * indexed operator
      */
-    operator fun get(rowIndex: Int, colIndex: Int): Float {
+    operator fun get(rowIndex: Int, colIndex: Int): Double {
         return components[rowIndex][colIndex]
     }
 
-    operator fun set(rowIndex: Int, colIndex: Int, value: Float) {
+    operator fun set(rowIndex: Int, colIndex: Int, value: Double) {
         components[rowIndex][colIndex] = value
     }
    
@@ -86,7 +86,7 @@ class Matrix2(
     operator fun times(other: Matrix2): Matrix2  {
         val result = Matrix2()
         for (rowIdx in 0..1) {
-            var comp = 0f
+            var comp = 0.0
             for (colIdx in 0..1) {
                 for (idx in 0..1) {
                     val aComp = this[rowIdx, idx]
@@ -102,28 +102,37 @@ class Matrix2(
     /**
      * mulitiply vector
      */
-    operator fun times(vector: FloatArray): FloatArray {
-        var v1 = 0f 
-        var v2 = 0f
-        if (vector.size > 0) {
-            v1 = vector[0]
+    operator fun times(vector: DoubleArray): DoubleArray {
+        var v1 = 0.0 
+        var v2 = 0.0
+        val srcVec = DoubleArray(2) {
+            var cmp = 0.0
+            if (vector.size > it) {
+                cmp = vector[it]
+            }
+            cmp
         }
-        if (vector.size > 1) {
-            v2 = vector[1]
-        } 
-        val otherMat = Matrix2(v1, 0f, 0f, v2)
-        val resMat = this * otherMat
-        val result = floatArrayOf(
-            resMat[0, 0],
-            resMat[1, 1])
+
+        // val otherMat = Matrix2(v1, 0, v2, 1)
+        // val resMat = this * otherMat
+        // val result = doubleArrayOf(
+        //    resMat[0, 0],
+        //    resMat[1, 0])
+        val result = DoubleArray(2) {
+            var cmp = 0.0
+            for (cidx in 0..1) { 
+                cmp += this[it, cidx] * srcVec[cidx]
+            }
+            cmp
+        }
         return result
     }
 
     /**
      * mulitiply pair 
      */
-    operator fun times(pt: Pair<Float, Float>): Pair<Float, Float> {
-        val vecRes = this * floatArrayOf(pt.first, pt.second)
+    operator fun times(pt: Pair<Double, Double>): Pair<Double, Double> {
+        val vecRes = this * doubleArrayOf(pt.first, pt.second)
         val result = Pair(vecRes[0], vecRes[1])
         return result
     }
@@ -132,7 +141,7 @@ class Matrix2(
     /**
      * cofactor
      */
-    fun cofactor(rowIdx: Int, colIdx: Int): Float {
+    fun cofactor(rowIdx: Int, colIdx: Int): Double {
         val sign = -1f.pow(rowIdx + colIdx)
         val result = sign * this[(rowIdx + 1) % 2, (colIdx + 1) % 2] 
         return result
@@ -141,8 +150,8 @@ class Matrix2(
     /**
      * determinant
      */
-    fun determinant(): Float {
-        var result = 0.toFloat() 
+    fun determinant(): Double {
+        var result = 0.toDouble() 
         for (i in 0..1) {
             result += cofactor(0, i)
         }
@@ -155,7 +164,7 @@ class Matrix2(
     fun inverse(): Matrix2? {
         val det = determinant()
         var result: Matrix2? = null
-        if (det != 0f) {
+        if (det != 0.0 || det != -0.0) {
             result = Matrix2(
                 cofactor(0, 0) / det, cofactor(1, 0) / det,
                 cofactor(0, 1) / det, cofactor(1, 1) / det)

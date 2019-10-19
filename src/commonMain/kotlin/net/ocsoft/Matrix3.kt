@@ -6,28 +6,28 @@ import kotlin.math.*
  * matrix 3 x 3
  */
 class Matrix3(
-    m00: Float = 1f,
-    m01: Float = 0f,
-    m02: Float = 0f,
-    m10: Float = 0f,
-    m11: Float = 1f,
-    m12: Float = 0f,
-    m20: Float = 0f,
-    m21: Float = 0f,
-    m22: Float = 1f) {
+    m00: Double = 1.0,
+    m01: Double = 0.0,
+    m02: Double = 0.0,
+    m10: Double = 0.0,
+    m11: Double = 1.0,
+    m12: Double = 0.0,
+    m20: Double = 0.0,
+    m21: Double = 0.0,
+    m22: Double = 1.0) {
 
     /**
      * components
      */
     val components = arrayOf(
-        floatArrayOf(m00, m01, m11),
-        floatArrayOf(m10, m11, m12),
-        floatArrayOf(m20, m21, m22))
+        doubleArrayOf(m00, m01, m11),
+        doubleArrayOf(m10, m11, m12),
+        doubleArrayOf(m20, m21, m22))
     
     /**
      * component at 0, 0
      */
-    var m00: Float
+    var m00: Double
         get() {
             return components[0][0]
         } 
@@ -39,7 +39,7 @@ class Matrix3(
     /**
      * component at 0, 1
      */
-    var m01: Float
+    var m01: Double
         get() {
             return components[0][1]
         } 
@@ -51,7 +51,7 @@ class Matrix3(
     /**
      * component at 0, 2
      */
-    var m02: Float
+    var m02: Double
         get() {
             return components[0][2]
         } 
@@ -63,7 +63,7 @@ class Matrix3(
     /**
      * component at 1, 0
      */
-    var m10: Float
+    var m10: Double
         get() {
             return components[1][0]
         } 
@@ -75,7 +75,7 @@ class Matrix3(
     /**
      * component at 1, 1
      */
-    var m11: Float
+    var m11: Double
         get() {
             return components[1][1]
         } 
@@ -87,7 +87,7 @@ class Matrix3(
     /**
      * component at 1, 2
      */
-    var m12: Float
+    var m12: Double
         get() {
             return components[1][2]
         } 
@@ -99,7 +99,7 @@ class Matrix3(
     /**
      * component at 2, 0
      */
-    var m20: Float
+    var m20: Double
         get() {
             return components[2][0]
         } 
@@ -111,7 +111,7 @@ class Matrix3(
     /**
      * component at 2, 1
      */
-    var m21: Float
+    var m21: Double
         get() {
             return components[2][1]
         } 
@@ -123,7 +123,7 @@ class Matrix3(
     /**
      * component at 2, 2
      */
-    var m22: Float
+    var m22: Double
         get() {
             return components[2][2]
         } 
@@ -135,11 +135,11 @@ class Matrix3(
     /**
      * indexed operator
      */
-    operator fun get(rowIndex: Int, colIndex: Int): Float {
+    operator fun get(rowIndex: Int, colIndex: Int): Double {
         return components[rowIndex][colIndex]
     }
 
-    operator fun set(rowIndex: Int, colIndex: Int, value: Float) {
+    operator fun set(rowIndex: Int, colIndex: Int, value: Double) {
         components[rowIndex][colIndex] = value
     }
    
@@ -152,7 +152,7 @@ class Matrix3(
         val result = Matrix3()
         for (rowIdx in 0..2) {
             for (colIdx in 0..2) {
-                var comp = 0f
+                var comp = 0.0
                 for (idx in 0..2) {
                     val aComp = this[rowIdx, idx]
                     val bComp = other[idx, colIdx]
@@ -189,7 +189,7 @@ class Matrix3(
     /**
      * cofactor
      */
-    fun cofactor(rowIdx: Int, colIndex: Int): Float {
+    fun cofactor(rowIdx: Int, colIndex: Int): Double {
         val sign = -1f.pow(rowIdx + colIndex)
         val det2 = cofactorMatrix(rowIdx, colIndex).determinant() 
         val result = sign * det2
@@ -199,8 +199,8 @@ class Matrix3(
     /**
      * determinant
      */
-    fun determinant(): Float {
-        var result = 0f
+    fun determinant(): Double {
+        var result = 0.0
         for (i in 0..2) {
             result += cofactor(0, i)
         }            
@@ -214,7 +214,7 @@ class Matrix3(
     fun inverse(): Matrix3? {
         val det = determinant()
         var result: Matrix3? = null
-        if (det != 0f) {
+        if (det != 0.0 || det != -0.0) {
             result = Matrix3(
                 cofactor(0, 0) / det,
                 cofactor(1, 0) / det,

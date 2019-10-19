@@ -424,11 +424,12 @@ class Svg {
                      Pair(elm.data[5], elm.data[6]))
 
                 val ellipseParam = Path.resolveArcParam(
-                    Pair(elm.data[0].toFloat(), 
-                        elm.data[1].toFloat()),
-                    ((elm.data[2].toDouble() * PI) / 180).toFloat(),
+                    Pair(elm.data[0].toDouble(), 
+                        elm.data[1].toDouble()),
+                    (elm.data[2].toDouble() * PI) / 180,
                     elm.data[3], elm.data[4],
-                    p1f, p2f)
+                    Pair(p1f.first.toDouble(), p1f.second.toDouble()), 
+                    Pair(p2f.first.toDouble(), p2f.second.toDouble()))
                 if (ellipseParam != null) {
 
                     pp.path.ellipse(
@@ -436,7 +437,7 @@ class Svg {
                         ellipseParam.y.toDouble(),
                         ellipseParam.radiusX.toDouble(), 
                         ellipseParam.radiusY.toDouble(),
-                        elm.data[2].toDouble(),
+                        ellipseParam.rotation.toDouble(),
                         ellipseParam.startAngle.toDouble(),
                         ellipseParam.endAngle.toDouble(),
                         ellipseParam.anticlockwise)
