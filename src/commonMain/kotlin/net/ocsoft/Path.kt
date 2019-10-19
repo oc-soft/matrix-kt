@@ -1023,109 +1023,50 @@ class Path {
                 radii2 = Pair(sqrLambda * radii.first, 
                     sqrLambda * radii.second) 
                 
-            }
-            val rxsq = radii2.first.pow(2) 
-            val rysq = radii2.second.pow(2)
-            val nom1 = max(rxsq * rysq - rxsq * ydsq - rysq * xdsq, 0.0)
-            val denom1 = rxsq * ydsq + rysq * xdsq
-            rc = sqrt(nom1 / denom1)
-            
+            } else {
+                val rxsq = radii2.first.pow(2) 
+                val rysq = radii2.second.pow(2)
+                val nom1 = max(rxsq * rysq - rxsq * ydsq - rysq * xdsq, 0.0)
+                val denom1 = rxsq * ydsq + rysq * xdsq
+                rc = sqrt(nom1 / denom1)
+            } 
            
-            // var cdsign = 1
-            // if (largeArcFlag == sweepFlag) {
-            //    cdsign = -1
-            // }
+            var cdsign = 1
+            if (largeArcFlag == sweepFlag) {
+                cdsign = -1
+            }
             // (cx', cy')
-            var cdp = Pair(
-                rc * ((radii2.first * p1d.second) / radii2.second),
-                - rc * ((radii2.second * p1d.first) / radii2.first))
-            var cdm = Pair(- cdp.first, -cdp.second)
- 
-            // (cx'', cy'')  
+            var cd = Pair(
+                cdsign * rc * ((radii2.first * p1d.second) / radii2.second),
+                - cdsign * rc * ((radii2.second * p1d.first) / radii2.first))
 
-            var p12Hal = Pair(
-                    (point1.first + point2.first) / 2,
-                    (point1.second + point2.second) / 2)
-            
-            // (cx, cy)
-            
+           
             // (x1', y1') - (cx', cy') vector 
-            val pdp1u = Pair((p1d.first - cdp.first) / radii2.first, 
-                (p1d.second - cdp.second) / radii2.second)
+            val pd1u = Pair((p1d.first - cd.first) / radii2.first, 
+                (p1d.second - cd.second) / radii2.second)
 
-            val pdp2u = Pair((-p1d.first - cdp.first) / radii2.first, 
-                (-p1d.second - cdp.second) / radii2.second)
+            val pd2u = Pair((-p1d.first - cd.first) / radii2.first, 
+                (-p1d.second - cd.second) / radii2.second)
 
-            val pdm1u = Pair((p1d.first - cdm.first) / radii2.first, 
-                (p1d.second - cdm.second) / radii2.second)
-
-            val pdm2u = Pair((-p1d.first - cdm.first) / radii2.first, 
-                (-p1d.second - cdm.second) / radii2.second)
-
-
-            var thetaP = calcAngle(Pair(1.0, 0.0), pdp1u)
-            println("thetaP: ${thetaP}")
-            var thetaDeltaP = calcAngle(pdp1u, pdp2u)
-
-            var thetaM = calcAngle(Pair(1.0, 0.0), pdm1u)
-            println("thetaM: ${thetaM}")
-            var thetaDeltaM = calcAngle(pdm1u, pdm2u)
-
-            var theta = 0.0
-            var thetaDelta = 0.0
-            var cd = Pair(0.0, 0.0)
-			var clockwise = true
-			if (thetaDeltaP >= 0) {
-				if (!largeArcFlag && sweepFlag) {
-                    cd = cdp 
-                    theta = thetaP
-                    thetaDelta = thetaDeltaP 
-                    clockwise = true
-				} else if (!largeArcFlag && !sweepFlag) {
-                    cd = cdm
-                    theta = thetaM
-                    thetaDelta = thetaDeltaM
-			        clockwise = false
-				} else if (largeArcFlag && !sweepFlag) {
-                    cd = cdp
-                    theta = thetaP 
-                    thetaDelta = thetaDeltaP
-					clockwise = false		
-				} else { // largeArcFlat && sweepFlat
-                    cd = cdm
-                    theta = thetaM 
-                    thetaDelta = thetaDeltaM
-					clockwise = true	
-				}
-			} else {
-				if (!largeArcFlag && sweepFlag) {
-                    cd = cdm
-                    theta = thetaM 
-                    thetaDelta = thetaDeltaM
-                    clockwise = true
-				} else if (!largeArcFlag && !sweepFlag) {
-                    cd = cdp
-                    theta = thetaP
-                    thetaDelta = thetaDeltaP
-			        clockwise = false 
-				} else if (largeArcFlag && !sweepFlag) {
-                    cd = cdm
-                    theta = thetaM 
-                    thetaDelta = thetaDeltaM
-					clockwise = false		
-				} else { // largeArcFlat && sweepFlat
-                    cd = cdp
-                    theta = thetaM 
-                    thetaDelta = thetaDeltaM
-					clockwise = true	
-				}
-			}
-
-
+            var theta = calcAngle(Pair(1.0, 0.0), pd1u)
+            var thetaDelta = calcAngle(pd1u, pd2u)
+            if (sweepFlag) {
+                if (thetaDelta < 0) {
+                    thetaDelta += 2 * PI 
+                }
+            } else {
+                if (thetaDelta > 0) {
+                    thetaDelta -= 2 * PI
+                }
+            }
+            val clockwise = thetaDelta >= 0 
+            
             var theta2 = 0.0
             theta2 = theta + thetaDelta
-            // val phaiRotMat = Matrix2()
             val phaiRotMat = Matrix2(cosPhai, -sinPhai, sinPhai, cosPhai)
+            var p12Hal = Pair(
+                (point1.first + point2.first) / 2,
+                (point1.second + point2.second) / 2)
             val c =  phaiRotMat * cd + p12Hal   
              
             val result = EllipseParam(c.first, c.second,
