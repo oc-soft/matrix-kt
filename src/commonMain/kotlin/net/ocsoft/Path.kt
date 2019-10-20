@@ -112,12 +112,12 @@ class Path {
             if ('M' == pc || 'm' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinates = ArrayList<Pair<Int, Int>>()
+                val coordinates = ArrayList<Pair<Double, Double>>()
                 result = parseCoordinatePairSequence(stream,
                     coordinates)
                 if (result) {
                     var elemType = ElementType.valueOf(pc.toString())  
-                    val flatCoordinates = ArrayList<Int>()
+                    val flatCoordinates = ArrayList<Double>()
                     coordinates.forEach { 
                         flatCoordinates.addAll(it.toList()) 
                     } 
@@ -145,7 +145,7 @@ class Path {
             if ('Z' == pc || 'z' == pc) {
                 result = handler(
                     Element(ElementType.Z,
-                        ArrayList<Int>())) 
+                        ArrayList<Double>())) 
                 stream.nextChar
             }
             return result
@@ -162,10 +162,10 @@ class Path {
             if ('L' == pc || 'l' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinates = ArrayList<Pair<Int, Int>>()
+                val coordinates = ArrayList<Pair<Double, Double>>()
                 result = parseCoordinatePairSequence(stream,
                     coordinates)
-                val flatCoordinates = ArrayList<Int>()
+                val flatCoordinates = ArrayList<Double>()
                 coordinates.forEach {
                     flatCoordinates.addAll(it.toList())
                 } 
@@ -205,7 +205,7 @@ class Path {
             if ('H' == pc || 'h' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinates = ArrayList<Int>()
+                val coordinates = ArrayList<Double>()
                 result = parseCoordinateSequence(stream, coordinates)
                 if (result) {
                     result = handler(Element(
@@ -231,7 +231,7 @@ class Path {
             if ('V' == pc || 'v' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinates = ArrayList<Int>()
+                val coordinates = ArrayList<Double>()
                 result = parseCoordinateSequence(stream,coordinates)
                 if (result) {
                     result = handler(Element(
@@ -257,8 +257,8 @@ class Path {
             if ('C'== pc || 'c' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinates = ArrayList<Int>()
-                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                val coordinates = ArrayList<Double>()
+                val coordinatePairs = ArrayList<Pair<Double, Double>>()
                 result = parseCurvetoCoordinateSequence(stream,
                     coordinatePairs)
                 val elemType = ElementType.valueOf(pc.toString())
@@ -296,16 +296,16 @@ class Path {
          * parse curveto coorditate sequence
          */
         fun parseCurvetoCoordinateSequence(stream: Stream,
-            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
+            coordinates: MutableList<Pair<Double, Double>>?): Boolean {
             var result = false
              
             result = parseCoordinatePairTriplet(stream, coordinates)
             if (result) {
                 val savedIdx = stream.index
                 parseCommaWsp(stream)
-                result = parseCurvetoCoordinateSequence(stream, 
+                val parseRes0 = parseCurvetoCoordinateSequence(stream, 
                     coordinates)
-                if (!result) {
+                if (!parseRes0) {
                     result = true
                     stream.index = savedIdx
                 }
@@ -323,11 +323,11 @@ class Path {
             if ('S'== pc || 's' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                val coordinatePairs = ArrayList<Pair<Double, Double>>()
                 result = parseSmoothCurvetoCoordinateSequence(
                     stream, coordinatePairs)
                 if (result) {
-                    val coordinates = ArrayList<Int>()
+                    val coordinates = ArrayList<Double>()
                     coordinatePairs.forEach {
                         coordinates.addAll(it.toList())
                     }
@@ -337,7 +337,7 @@ class Path {
                 } else {
                     parseCoordinatePairSequence(stream, 
                         coordinatePairs)
-                    val coordinates = ArrayList<Int>()
+                    val coordinates = ArrayList<Double>()
                     coordinatePairs.forEach {
                         coordinates.addAll(it.toList())
                     }
@@ -368,7 +368,7 @@ class Path {
          */
         fun parseSmoothCurvetoCoordinateSequence(
             stream: Stream,
-            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
+            coordinates: MutableList<Pair<Double, Double>>?): Boolean {
             var result = false
             result = parseCoordinatePairDouble(stream, coordinates) 
             if (result) {
@@ -388,14 +388,14 @@ class Path {
             val pc = stream.peekChar
             if ('Q' == pc || 'q' == pc) {
                 stream.nextChar
-                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                val coordinatePairs = ArrayList<Pair<Double, Double>>()
                 parseCommaWsp(stream)
                 result = parseQuadraticBezierCurvetoCoordinateSequence(
                     stream, 
                     coordinatePairs)
                 
                 if (result) {
-                    val coordinates = ArrayList<Int>()
+                    val coordinates = ArrayList<Double>()
                     coordinatePairs.forEach {
                         coordinates.addAll(it.toList())
                     }
@@ -411,7 +411,7 @@ class Path {
                         true
                     }, null)
                     if (result) {
-                        val coordinates = ArrayList<Int>()
+                        val coordinates = ArrayList<Double>()
                         coordinatePairs.forEach {
                             coordinates.addAll(it.toList())
                         }
@@ -437,7 +437,7 @@ class Path {
          */
         fun parseQuadraticBezierCurvetoCoordinateSequence(
             stream: Stream,
-            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
+            coordinates: MutableList<Pair<Double, Double>>?): Boolean {
             var result = false
             result = parseCoordinatePairDouble(stream, coordinates)
             if (result) {
@@ -460,11 +460,11 @@ class Path {
             if ('T' == pc || 't' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val coordinatePairs = ArrayList<Pair<Int, Int>>()
+                val coordinatePairs = ArrayList<Pair<Double, Double>>()
                 result = parseCoordinatePairSequence(stream,
                     coordinatePairs)
                 if (result) {
-                    val coordinates = ArrayList<Int>()
+                    val coordinates = ArrayList<Double>()
                     coordinatePairs.forEach {
                         coordinates.addAll(it.toList())
                     } 
@@ -491,13 +491,13 @@ class Path {
             if ('A' == pc || 'a' == pc) {
                 stream.nextChar
                 parseWspZeroOrMore(stream)
-                val args = ArrayList<Int>()
+                val args = ArrayList<Double>()
                 result = parseEllipticalArcArgumentSequence(stream, args) 
                 var closingRes: Element? = null
                 val savedIndex = stream.index
                 parseCommaWsp(stream)
                 var closingArgPathRes = false
-                val closingArgs = ArrayList<Int>()
+                val closingArgs = ArrayList<Double>()
                 closingArgPathRes = parseEllipticalArcClosingArgument(
                     stream, closingArgs) {
                         closingRes = it
@@ -529,7 +529,7 @@ class Path {
          * parse elliptical arc argument sequence
          */
         fun parseEllipticalArcArgumentSequence(stream: Stream,
-            ellipticalArgs: MutableList<Int>?): Boolean {
+            ellipticalArgs: MutableList<Double>?): Boolean {
             var result = parseEllipticalArcArgument(stream,
                 ellipticalArgs)
             if (result) {
@@ -543,8 +543,8 @@ class Path {
          * parse elliptical arc argument
          */
         fun parseEllipticalArcArgument(stream: Stream,
-            ellipticalArcArgument: MutableList<Int>?): Boolean {
-            var nums = IntArray(7)
+            ellipticalArcArgument: MutableList<Double>?): Boolean {
+            var nums = DoubleArray(7)
             var result = parseNumber(stream, { nums[0] = it })
             if (result) {
                 parseCommaWsp(stream)
@@ -585,9 +585,9 @@ class Path {
          */ 
         fun parseEllipticalArcClosingArgument(
             stream: Stream,
-            ellipticalArcArgs: MutableList<Int>?,
+            ellipticalArcArgs: MutableList<Double>?,
             closepathHdlr: (Element)->Boolean): Boolean {
-            val nums = IntArray(5)
+            val nums = DoubleArray(5)
             var result = parseNumber(stream, { nums[0] = it })
             if (result) {
                 parseCommaWsp(stream)
@@ -636,7 +636,7 @@ class Path {
             var result = false
             if ('B' == pc || 'b' == pc) {
                 parseWspZeroOrMore(stream)
-                val args = ArrayList<Int>() 
+                val args = ArrayList<Double>() 
                 result = parseBearingArgumentSequence(stream, args) 
                 if (result) {
                     result = handler(
@@ -656,9 +656,9 @@ class Path {
          */
         fun parseBearingArgumentSequence(
             stream: Stream,
-            bearingArgs: MutableList<Int>?): Boolean {
+            bearingArgs: MutableList<Double>?): Boolean {
             var result = false
-            var num: Int = 0 
+            var num = 0.0  
             result = parseNumber(stream, { num = it })
             if (result) {
                 bearingArgs?.add(num)
@@ -678,11 +678,11 @@ class Path {
             var result = false
             if ('R' == pc || 'r' == pc) {
                 parseWspZeroOrMore(stream)
-                val pairArgs = ArrayList<Pair<Int, Int>>()
+                val pairArgs = ArrayList<Pair<Double, Double>>()
                 result =  parseCatmullRomArgumentSequence(stream, 
                     pairArgs) 
                 if (result) {
-                    val args = ArrayList<Int>()
+                    val args = ArrayList<Double>()
                     pairArgs.forEach {
                         args.addAll(it.toList())
                     }
@@ -703,8 +703,8 @@ class Path {
          */
         fun parseCatmullRomArgumentSequence(
             stream: Stream,
-            catmullArgs: MutableList<Pair<Int, Int>>?): Boolean {
-            val tmpArgs = ArrayList<Pair<Int, Int>>()
+            catmullArgs: MutableList<Pair<Double, Double>>?): Boolean {
+            val tmpArgs = ArrayList<Pair<Double, Double>>()
             var result = parseCoordinatePair(stream) {
                 tmpArgs.add(it)
             }
@@ -734,10 +734,11 @@ class Path {
          * parse coorditate pair double
          */
         fun parseCoordinatePairDouble(stream: Stream,
-            coordinatePairs: MutableList<Pair<Int, Int>>?): Boolean {
+            coordinatePairs: MutableList<Pair<Double, Double>>?): Boolean {
             
-            val coordinates = ArrayList<Pair<Int, Int>>()
+            val coordinates = ArrayList<Pair<Double, Double>>()
             var result = false
+            val savedIndex = stream.index
             result = parseCoordinatePair(stream) { coordinates.add(it) }
             if (result) {
                 parseCommaWsp(stream)
@@ -748,6 +749,9 @@ class Path {
                     coordinatePairs?.addAll(coordinates)
                 }
             }
+            if (!result) {
+                stream.index = savedIndex
+            }
             return result
         }
         
@@ -755,9 +759,10 @@ class Path {
          * parse coorditate pair triplet
          */
         fun parseCoordinatePairTriplet(stream: Stream,
-            coordinatePairs: MutableList<Pair<Int, Int>>?): Boolean {
-            val pairList = ArrayList<Pair<Int, Int>>() 
+            coordinatePairs: MutableList<Pair<Double, Double>>?): Boolean {
+            val pairList = ArrayList<Pair<Double, Double>>() 
             var result = false
+            val savedIndex = stream.index
             result = parseCoordinatePair(stream, { pairList.add(it) })
             if (result) {
                 for (i in 0..1) {
@@ -772,6 +777,8 @@ class Path {
             }
             if (result) {
                 coordinatePairs?.addAll(pairList)
+            } else {
+                stream.index = savedIndex
             }
             return result
         }
@@ -781,7 +788,7 @@ class Path {
          */
         fun parseCoordinatePairSequence(
             stream: Stream,
-            coordinates: MutableList<Pair<Int, Int>>?): Boolean {
+            coordinates: MutableList<Pair<Double, Double>>?): Boolean {
             var result = parseCoordinatePair(stream) { 
                 coordinates?.add(it)
             }
@@ -796,7 +803,7 @@ class Path {
          * parse coordinate sequence
          */
         fun parseCoordinateSequence(stream: Stream,
-            coordinates: MutableList<Int>?): Boolean {
+            coordinates: MutableList<Double>?): Boolean {
             var result = parseCoordinate(stream) {
                 coordinates?.add(it)
             }
@@ -813,15 +820,15 @@ class Path {
          * parse coordinate pair
          */
         fun parseCoordinatePair(stream: Stream,
-            handler : ((Pair<Int, Int>)->Unit)?): Boolean {
-            val numbers = intArrayOf(0, 0)
+            handler : ((Pair<Double, Double>)->Unit)?): Boolean {
+            val numbers = doubleArrayOf(0.0, 0.0)
             var result = parseCoordinate(stream, { numbers[0] = it })
             if (result) {
                 parseCommaWsp(stream)
                 result = parseCoordinate(stream, { numbers[1] = it })
                 if (result) {
                     if (handler != null) {
-                        handler(Pair<Int, Int>(numbers[0], numbers[1]))
+                        handler(Pair<Double, Double>(numbers[0], numbers[1]))
                     }
                 }
             }
@@ -832,16 +839,12 @@ class Path {
          * parse coordinate
          */
         fun parseCoordinate(stream: Stream, 
-            handler: ((Int)->Unit)?): Boolean {
+            handler: ((Double)->Unit)?): Boolean {
             var result = false
-            var sign = 1
-            parseSign(stream, { sign = it })
-            var number: Int = 0 
-            result = parseNumber(stream, { number = it })
-            if (result) { 
-                if (handler != null ) {
-                    handler(sign * number) 
-                }  
+            result = parseNumber(stream) { 
+                if (handler != null) {
+                    handler(it)
+                }
             }
             
             return result
@@ -874,10 +877,44 @@ class Path {
          * parse number
          */
         fun parseNumber(stream: Stream,
-            handler: ((Int)->Unit)?): Boolean {
-            var result = false 
+            handler: ((Double)->Unit)?): Boolean {
             var sign = 1
             parseSign(stream) { sign = it }
+            var number = 0.0
+            val numberHandlerF = {
+                num: Double -> 
+                number = sign.toDouble() * num
+            }
+            val numberHandlerI = {
+                num: Int ->
+                number = sign.toDouble() * num.toDouble()
+            }
+            var result = parseFloatingPointConstant(stream, numberHandlerF)
+            if (!result) {
+                result = parseIntegerConstant(stream, numberHandlerI)
+            }
+            if (result) {
+                if (handler != null) {
+                    handler(number)
+                }
+            }
+            return result
+        }
+
+        /**
+         * parse Integer 
+         */
+        fun parseIntegerConstant(stream: Stream,
+            handler: ((Int)->Unit)?): Boolean {
+            return parseDigitSequence(stream, handler)
+        }
+
+        /**
+         * parse digit sequens as integer
+         */
+        fun parseDigitSequence(stream: Stream,
+            handler: ((Int)->Unit)?): Boolean {
+            var result = false 
             var hit = false
             var number = 0 
             do {
@@ -895,21 +932,128 @@ class Path {
                 }
             } while (hit)
             if (result && handler != null) {
-                handler(sign * number)
+                handler(number)
             } 
             return result
         }
-        
+       
+        /**
+         * parse floating point constant
+         */ 
+        fun parseFloatingPointConstant(
+            stream: Stream,
+            handler: ((Double)->Unit)?): Boolean {
+            
+            var intPart = 0 
+            var fractionalPart = 0
+            var exponentNum = 0
+            var result = parseFractionalConstant(stream) { 
+                dig1, dig2 ->
+                if (dig1 != null) {
+                    intPart = dig1  
+                }
+                if (dig2 != null) {
+                    fractionalPart = dig2 
+                }
+            }
+            if (result) {
+                parseExponent(stream) {
+                    exponentNum = it
+                }
+            } else {
+                val savedIndex = stream.index
+                result = parseDigitSequence(stream) {
+                    intPart = it
+                }
+                if (result) {
+                    result = parseExponent(stream) {
+                        exponentNum = it
+                    }
+                }
+                if (!result) {
+                    stream.index = savedIndex
+                }
+            }
+            if (result) {
+                var fractionalNum = 0.0
+                if (fractionalPart > 0) {
+                    var expNum = 0.0
+                    var fracPartF =  fractionalPart.toDouble()
+                    expNum = log10(fracPartF + 1)
+                    expNum = ceil(expNum)
+                    fractionalNum = fracPartF * 10.0.pow(-expNum)
+                }
+                fractionalNum += intPart.toDouble()
+                fractionalNum *= 10.0.pow(exponentNum) 
+                if (handler != null) {
+                    handler(fractionalNum)
+                } 
+            }
+            return result
+        }
+       
+        /**
+         * parse flactional data
+         */
+        fun parseFractionalConstant(
+            stream: Stream,
+            handler: ((Int?, Int?)->Unit)?): Boolean {
+            var digit1: Int? = null   
+            var digit2: Int? = null
+            var result = false
+            val savedIndex = stream.index  
+            parseDigitSequence(stream, { digit1 = it } )
+            if ('.' == stream.peekChar) {
+                stream.nextChar
+                result = parseDigitSequence(stream, { digit2 = it })
+                if (digit1 != null) {
+                    result = true
+                }
+                if (result) {
+                    if (handler != null) {
+                        handler(digit1, digit2)
+                    }
+                } 
+            }
+            if (!result) {
+                stream.index = savedIndex 
+            }
+            return result
+        } 
+        /**
+         * parse exponent
+         */
+        fun parseExponent(stream :Stream,
+            handler: ((Int)->Unit)?): Boolean {
+            var result = 'e' == stream.peekChar
+                || 'E' == stream.peekChar 
+            if (result) {
+                val savedIndex = stream.index  
+                var sign = 1
+                stream.nextChar
+                parseSign(stream) { sign = it }
+                result = parseDigitSequence(stream) {
+                    if (handler != null) {
+                        handler(sign * it)
+                    }
+                } 
+                if (!result) {
+                    stream.index = savedIndex
+                }  
+            }
+            return result
+        }
         /**
          * parse flag
          */
         fun parseFlag(stream: Stream,
-            handler: (Int)->Unit): Boolean {
+            handler: (Double)->Unit): Boolean {
             var result = false
             var pc = stream.peekChar
             result = '0' == pc || '1' == pc
             if (result) {
-                handler(pc!! - '0')
+                val iVal = pc!! - '0'
+                handler(iVal.toDouble())
                 stream.nextChar
             }
             return result
@@ -951,7 +1095,6 @@ class Path {
                 if ('\u0009' == aChar
                     || '\u0020' == aChar
                     || '\u000A' == aChar 
-                    || '\u000C' == aChar 
                     || '\u000D' == aChar) {
                     result = true
                     stream.nextChar
@@ -1079,21 +1222,6 @@ class Path {
             println(result)
             return result 
         }
-/*
-        fun calcSingleEllipseParam(radii: Pair<Double, Double>,
-            xAxisRotation: Double,
-            largeArcFlag: Boolean,
-            sweepFlag: Boolean,
-            point1: Pair<Double, Double>,
-            point2: Pair<Double, Double>): EllipseParam {
-            
-            val cosPhai = cos(xAxisRotation)
-            val sinPhai = sin(xAxisRotation)
-            val phaiRevMat = Matrix2(cosPhai, sinPhai, -sinPhai, cosPhai) 
-            val ptOnEllipseL = Pair(point1.first - point
-
-        }
-*/
         /**
          * calc angle 
          * display coordinate angle is clockwise plus
@@ -1257,7 +1385,7 @@ class Path {
     /**
      * path element
      */
-    data class Element(val type: ElementType, val data: List<Int>) 
+    data class Element(val type: ElementType, val data: List<Double>) 
 
     /**
      * path 2d ellipse parameter

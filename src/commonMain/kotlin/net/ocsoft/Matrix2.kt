@@ -103,8 +103,13 @@ class Matrix2(
      * mulitiply vector
      */
     operator fun times(vector: DoubleArray): DoubleArray {
-        var v1 = 0.0 
-        var v2 = 0.0
+        // var v1 = 0.0 
+        // var v2 = 0.0
+        // val otherMat = Matrix2(v1, 0, v2, 1)
+        // val resMat = this * otherMat
+        // val result = doubleArrayOf(
+        //    resMat[0, 0],
+        //    resMat[1, 0])
         val srcVec = DoubleArray(2) {
             var cmp = 0.0
             if (vector.size > it) {
@@ -113,11 +118,6 @@ class Matrix2(
             cmp
         }
 
-        // val otherMat = Matrix2(v1, 0, v2, 1)
-        // val resMat = this * otherMat
-        // val result = doubleArrayOf(
-        //    resMat[0, 0],
-        //    resMat[1, 0])
         val result = DoubleArray(2) {
             var cmp = 0.0
             for (cidx in 0..1) { 

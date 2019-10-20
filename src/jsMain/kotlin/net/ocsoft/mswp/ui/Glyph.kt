@@ -268,7 +268,8 @@ class Glyph(
         val ua = window.navigator.userAgent; 
         var result: Path2D? = null 
         if (ua.indexOf("Edge") == -1) {
-            result = Path2D(pathStr)
+            result = ms.Svg.createPath2D(pathStr)
+            // result = Path2D(pathStr)
         } else {
             result = ms.Svg.createPath2D(pathStr)
         }

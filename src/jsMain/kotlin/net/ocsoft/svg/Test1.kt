@@ -26,7 +26,7 @@ class Test1 {
     /**
      * test data
      */
-    var testData: Array<String>? = null
+    var testData: Array<Pair<String, Double>>? = null
 
 
     /**
@@ -49,8 +49,27 @@ class Test1 {
      */
     fun bind(setting: dynamic) {
         if (setting.pathData != null) {
-            this.testData = Array<String>(setting.pathData.length) {
-                setting.pathData[it] as String
+            val dataLen = setting.pathData.length
+            val pathData = setting.pathData
+            this.testData = Array<Pair<String, Double>>(dataLen) {
+                var strData = ""
+                var scale = 1.0
+                val pathItem = pathData[it]
+                if (js("typeof pathItem") == "object") {
+                    val elm = pathItem
+                    strData = elm[0] as String
+                    if (elm.length > 1) {
+                        val scaleItem = elm[1]
+                        if (js("typeof scaleItem") == "string") {
+                            scale = scaleItem.toDouble()
+                        } else {
+                            scale = scaleItem
+                        }
+                    }
+                } else {
+                    strData = pathData[it] 
+                }
+                Pair(strData, scale)      
             }
         }
         this.resultListQuery =
@@ -70,7 +89,7 @@ class Test1 {
         if (testData != null) {
             testData.forEachIndexed {
                 idx, elem ->
-                addTestResult(elem, idx)
+                addTestResult(elem.first, idx, elem.second)
             }
         }
     }
@@ -79,7 +98,7 @@ class Test1 {
     /**
      * add test result
      */
-    fun addTestResult(pathData: String, id: Int) {
+    fun addTestResult(pathData: String, id: Int, scale: Double) {
         val resultListQuery = this.resultListQuery
         val resultItemTemplateQuery = this.resultItemTemplateQuery
         if (resultListQuery != null
@@ -92,7 +111,7 @@ class Test1 {
             jQuery(node).addClass(testDataClass)
             assignPathDataTitle(pathData,
                 "${resultListQuery} .${testDataClass} div") 
-            addPath(pathData,
+            addPath(pathData, scale,
                 "${resultListQuery} .${testDataClass} canvas")
         }
     }
@@ -110,6 +129,7 @@ class Test1 {
      * add path into canvas
      */
     fun addPath(pathData: String,
+        scale: Double,
         canvasQuery: String) {
         val canvas = jQuery(canvasQuery)
         val ua = window.navigator.userAgent; 
@@ -122,7 +142,11 @@ class Test1 {
         if (canvas != null && path != null) {
             val canvasElem = canvas[0] as HTMLCanvasElement
             val ctx = canvasElem.getContext("2d") as CanvasRenderingContext2D? 
-            ctx?.stroke(path) 
+            ctx?.save()
+            ctx?.setTransform(scale, 0.0, 0.0, scale, 0.0, 0.0)
+            ctx?.fill(path)
+            // ctx?.stroke(path) 
+            ctx?.restore()
         }
     }
 }

@@ -23,7 +23,9 @@ class PathTest {
         var dataRes = "" 
         
         val res = Path.parseCoordinatePair(Path.Stream(data)) {
-            dataRes = "${it.first} ${it.second}"
+            assertEquals(it.first, it.first.toInt().toDouble())
+            assertEquals(it.second, it.second.toInt().toDouble())
+            dataRes = "${it.first.toInt()} ${it.second.toInt()}"
         }
         assertTrue(res)
         assertEquals(data, dataRes)
@@ -45,13 +47,15 @@ class PathTest {
     fun parseCoordinatePairSequence0() {
         val data = "123 321 234 567"
         var dataRes = "" 
-        val coordinatePairs = ArrayList<Pair<Int, Int>>()
+        val coordinatePairs = ArrayList<Pair<Double, Double>>()
         val res = Path.parseCoordinatePairSequence(Path.Stream(data), 
             coordinatePairs)
         assertTrue(res)
         coordinatePairs.forEachIndexed {
             idx, elem ->
-            dataRes += "${elem.first} ${elem.second}"      
+            assertEquals(elem.first, elem.first.toInt().toDouble())
+            assertEquals(elem.second, elem.second.toInt().toDouble())
+            dataRes += "${elem.first.toInt()} ${elem.second.toInt()}"      
             if (idx < coordinatePairs.size - 1) {
                 dataRes += " "
             }
@@ -62,10 +66,11 @@ class PathTest {
     @Test
     fun parseNumber0() {
         val data = "200"
-        var number = 0
+        var number = 0.0
         val res = Path.parseNumber(Path.Stream(data),  { number = it }) 
         assertTrue(res)
-        assertEquals(number.toString(), data)
+        assertEquals(number, number.toInt().toDouble())
+        assertEquals(number.toInt().toString(), data)
     }
     @Test
     fun streamTest0() {
@@ -86,7 +91,9 @@ class PathTest {
         var strRes = ""
         var parseRes = false
         parseRes = Path.parseMoveto(Path.Stream(data[0]), {
-            strRes += "${it.type}${it.data[0]} ${it.data[1]}"
+            assertEquals(it.data[0], it.data[0].toInt().toDouble())
+            assertEquals(it.data[1], it.data[1].toInt().toDouble())
+            strRes += "${it.type}${it.data[0].toInt()} ${it.data[1].toInt()}"
             true
         }, null)
         assertTrue(parseRes)
@@ -102,7 +109,9 @@ class PathTest {
         var dataRes = ""
         var errorData = -1 
         val res = Path.parse0(Path.Stream(data[0]), {
-            dataRes = "${it.type}${it.data[0]} ${it.data[1]}"
+            assertEquals(it.data[0], it.data[0].toInt().toDouble())
+            assertEquals(it.data[1], it.data[1].toInt().toDouble())
+            dataRes = "${it.type}${it.data[0].toInt()} ${it.data[1].toInt()}"
             true
         }, {
             errorData = it
@@ -121,7 +130,9 @@ class PathTest {
         var strRes = ""
         var parseRes = false
         parseRes = Path.parseDrawto(Path.Stream(data[0]), {
-            strRes += "${it.type}${it.data[0]} ${it.data[1]}"
+            assertEquals(it.data[0], it.data[0].toInt().toDouble())
+            assertEquals(it.data[1], it.data[1].toInt().toDouble())
+            strRes += "${it.type}${it.data[0].toInt()} ${it.data[1].toInt()}"
             true
         }, null)
         assertTrue(parseRes)
@@ -145,7 +156,9 @@ class PathTest {
         var dataRes = ""
         var errorData = -1 
         val res = Path.parse(data[0], {
-            dataRes = "${it.type}${it.data[0]} ${it.data[1]}"
+            assertEquals(it.data[0], it.data[0].toInt().toDouble())
+            assertEquals(it.data[1], it.data[1].toInt().toDouble())
+            dataRes = "${it.type}${it.data[0].toInt()} ${it.data[1].toInt()}"
             true
         }, {
             errorData = it
@@ -160,7 +173,13 @@ class PathTest {
         var strResArray = ArrayList<String>()
         var errorLoc = -1
         val parseRes = Path.parse(data, {
-            strResArray.add("${it.type}" + it.data.joinToString(" ")) 
+            var strDataList = ArrayList<String>()
+            it.data.forEach {
+                assertEquals(it, it.toInt().toDouble()) 
+                strDataList.add("${it.toInt()}")
+            }
+
+            strResArray.add("${it.type}" + strDataList.joinToString(" ")) 
             true
         }, {
             errorLoc = it
@@ -194,11 +213,17 @@ class PathTest {
             "100 200 12 13 34 64"
         )
         val error = -1
-        val dataRes = ArrayList<Pair<Int, Int>>()
+        val dataRes = ArrayList<Pair<Double, Double>>()
         val res = Path.parseCoordinatePairTriplet(Path.Stream(data[0]),
             dataRes)
         val indices = ArrayList<Int>()
-        dataRes.forEach { indices.addAll(it.toList()) }
+        dataRes.forEach { 
+            assertEquals(it.first, it.first.toInt().toDouble())
+            assertEquals(it.second, it.second.toInt().toDouble())
+            
+            indices.add(it.first.toInt())
+            indices.add(it.second.toInt())
+        }
         assertEquals(data[1], indices.joinToString(" "))  
         assertTrue(res)
         assertEquals(error, -1)
@@ -210,11 +235,16 @@ class PathTest {
             "100 100 250 100 250 200"
         )
         val error = -1
-        val dataRes = ArrayList<Pair<Int, Int>>()
+        val dataRes = ArrayList<Pair<Double, Double>>()
         val res = Path.parseCoordinatePairTriplet(Path.Stream(data[0]),
             dataRes)
         val indices = ArrayList<Int>()
-        dataRes.forEach { indices.addAll(it.toList()) }
+        dataRes.forEach {
+            assertEquals(it.first, it.first.toInt().toDouble())
+            assertEquals(it.second, it.second.toInt().toDouble())
+            indices.add(it.first.toInt())
+            indices.add(it.second.toInt())
+        }
         assertEquals(data[1], indices.joinToString(" "))  
         assertTrue(res)
         assertEquals(error, -1)
@@ -226,12 +256,17 @@ class PathTest {
             "100 100 250 100 250 200"
         )
         val error = -1
-        val dataRes = ArrayList<Pair<Int, Int>>()
+        val dataRes = ArrayList<Pair<Double, Double>>()
         val res = Path.parseCurvetoCoordinateSequence(
             Path.Stream(data[0]),
             dataRes)
         val indices = ArrayList<Int>()
-        dataRes.forEach { indices.addAll(it.toList()) }
+        dataRes.forEach {
+            assertEquals(it.first, it.first.toInt().toDouble())
+            assertEquals(it.second, it.second.toInt().toDouble())
+            indices.add(it.first.toInt())
+            indices.add(it.second.toInt())
+        }
         assertEquals(data[1], indices.joinToString(" "))  
         assertTrue(res)
         assertEquals(error, -1)
@@ -245,7 +280,12 @@ class PathTest {
         var dataRes = ""
         var error = -1
         val res = Path.parseCurveto(Path.Stream(data[0]), {
-            dataRes = "${it.type}" + it.data.joinToString(" ")
+            val dataArray = ArrayList<Int>()
+            it.data.forEach {
+                assertEquals(it, it.toInt().toDouble())
+                dataArray.add(it.toInt())
+            }
+            dataRes = "${it.type}" + dataArray.joinToString(" ")
             true
         }, {
             error = it
@@ -259,12 +299,17 @@ class PathTest {
             "400,300 400,200",
             "400 300 400 200"
         )
-        val dataRes = ArrayList<Pair<Int, Int>>() 
+        val dataRes = ArrayList<Pair<Double, Double>>() 
         val res = Path.parseSmoothCurvetoCoordinateSequence(
             Path.Stream(data[0]), dataRes)
         val dataStrList = ArrayList<String>()
         dataRes.forEach { 
-            dataStrList.add(it.toList().joinToString(" "))
+            val dataArray = ArrayList<Int>()
+            assertEquals(it.first, it.first.toInt().toDouble())
+            assertEquals(it.second, it.second.toInt().toDouble())
+            dataArray.add(it.first.toInt())
+            dataArray.add(it.second.toInt())
+            dataStrList.add(dataArray.joinToString(" "))
         }
         assertTrue(res)
         assertEquals(data[1], dataStrList.joinToString(" "))
@@ -279,13 +324,106 @@ class PathTest {
         var error = -1
         val res = Path.parseSmoothCurveto(Path.Stream(data[0]),
             {
-                dataRes = "${it.type}" + it.data.joinToString(" ")
+                val dataArray = ArrayList<Int>()
+                it.data.forEach {
+                    assertEquals(it, it.toInt().toDouble())
+                    dataArray.add(it.toInt())
+                }            
+                dataRes = "${it.type}" + dataArray.joinToString(" ")
                 true
             }, {
                 error = it
             })
         assertTrue(res)
         assertEquals(data[1], dataRes)
-     }
+    }
+   
+    @Test
+    fun parseFloatNumber() {
+        val data = doubleArrayOf(1.0, 201.0, -34.0)
 
+        val strData = Array<String>(data.size) {
+            "%.2f".format(data[it])
+        }
+        val dataRes = ArrayList<Double>()
+        val res = Path.parseCoordinateSequence(
+            Path.Stream(strData.joinToString(" ")),
+            dataRes) 
+        assertTrue(res)
+        assertEquals(data.size, dataRes.size)
+        dataRes.forEachIndexed {
+            idx, elm -> 
+            assertEquals(data[idx], elm)
+        }
+    }
+    @Test
+    fun parseRelativeCurvetoSequence() { 
+        val data = "c0 70.1 36.9 132.6 94.5 173.7 9.6 6.9 15.2 18.1 13.5 29.9"
+        val coordData = doubleArrayOf(
+            0.0, 70.1, 36.9, 132.6, 94.5, 173.7,
+            9.6, 6.9, 15.2, 18.1, 13.5, 29.9
+        )
+        val res = Path.parseDrawto(Path.Stream(data), {
+            assertEquals(it.type, Path.ElementType.c)   
+            it.data.forEachIndexed {
+                idx, elm ->
+                assertEquals(coordData[idx], elm)
+            }
+            true
+        }) {
+            assertEquals(it, -1)
+        }
+        assertTrue(res)
+        
+    }
+    @Test
+    fun parseCurvetoSequence1() {
+        val data = "C114.6 0 0 100.3 0 224" +
+            "c0 70.1 36.9 132.6 94.5 173.7" +
+                " 9.6 6.9 15.2 18.1 13.5 29.9" +
+            "l-9.4 66.2"
+        val resData = arrayOf(
+            doubleArrayOf(
+                114.6, 0.0, 0.0, 100.3, 0.0, 224.0),
+            doubleArrayOf(
+                0.0, 70.1, 36.9, 132.6, 94.5, 173.7, 9.6, 6.9, 15.2, 
+                18.1, 13.5, 29.9),
+            doubleArrayOf(
+                -9.4, 66.2))
+        val elemData = Array<List<Double>>(resData.size) {
+            val dataSrc = resData[it]
+            val list = ArrayList<Double>()
+            dataSrc.forEach {
+                list.add(it)
+            }
+            list
+        }
+        val elemTypes = arrayOf(Path.ElementType.C,
+            Path.ElementType.c,
+            Path.ElementType.l)
+        val resElements = Array<Path.Element>(elemTypes.size) {
+            Path.Element(elemTypes[it], elemData[it])
+        }
+        val resList = ArrayList<Path.Element>()
+        val stream = Path.Stream(data)
+        do { 
+            val parseRes = Path.parseDrawto(stream, {
+                resList.add(it)        
+            }, {
+                assertEquals(it, -1)
+            })
+            assertTrue(parseRes)
+        } while(stream.peekChar != null)
+        
+        assertEquals(resList.size, resElements.size)
+        resList.forEachIndexed {
+            idx0, elm ->
+            assertEquals(resElements[idx0].type, elm.type)
+            elm.data.forEachIndexed {
+                idx1, elmData ->
+                assertEquals(resElements[idx0].data[idx1], elmData)
+            }
+        }  
+
+    }
 }

@@ -17,7 +17,7 @@
 <template id="test-result-item">
 <li>
   <div class="test path-data"></div>
-  <canvas class="test region" width="128" height="128"></canvas>
+  <canvas class="test region" width="126" height="126"></canvas>
 </li>
 </template>
 </body>

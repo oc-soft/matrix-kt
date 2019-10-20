@@ -20,7 +20,7 @@ class Matrix3(
      * components
      */
     val components = arrayOf(
-        doubleArrayOf(m00, m01, m11),
+        doubleArrayOf(m00, m01, m02),
         doubleArrayOf(m10, m11, m12),
         doubleArrayOf(m20, m21, m22))
     

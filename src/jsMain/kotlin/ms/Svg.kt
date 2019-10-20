@@ -25,16 +25,16 @@ operator fun Pair<Int, Int>.minus(
 /**
  * extension pair object
  */
-operator fun Pair<Float, Float>.plus(
-    a: Pair<Float, Float>): Pair<Float, Float> {
+operator fun Pair<Double, Double>.plus(
+    a: Pair<Double, Double>): Pair<Double, Double> {
     return Pair(first + a.first, second + a.second)
 }
 
 /**
  * extension pair object
  */
-operator fun Pair<Float, Float>.minus(
-    a: Pair<Float, Float>): Pair<Float, Float> {
+operator fun Pair<Double, Double>.minus(
+    a: Pair<Double, Double>): Pair<Double, Double> {
     return Pair(first - a.first, second - a.second)
 }
 
@@ -226,17 +226,9 @@ class Svg {
         /**
          * equality conversion
          */
-        fun noConversion(cp: Pair<Int, Int>, cb: Int,
-            pos: Pair<Int, Int>): Pair<Int, Int> {
+        fun noConversion(cp: Pair<Double, Double>, cb: Double,
+            pos: Pair<Double, Double>): Pair<Double, Double> {
             return pos    
-        } 
-
-        /**
-         * type chage conversion from Int to Float
-         */
-        fun convertToFloat(cp: Pair<Int, Int>, cb: Int,
-            pos: Pair<Int, Int>): Pair<Float, Float> {
-            return Pair(pos.first.toFloat(), pos.second.toFloat())
         } 
 
         /**
@@ -248,9 +240,9 @@ class Svg {
             var yCoord = pp.cp.second
             if (elm.type == Path.ElementType.h) {
                 lineType = Path.ElementType.l
-                yCoord = 0
+                yCoord = 0.0
             }
-            val coordinates = ArrayList<Int>()
+            val coordinates = ArrayList<Double>()
             for (i in 0..elm.data.size - 1) {
                 coordinates.add(elm.data[i])
                 coordinates.add(yCoord)
@@ -269,9 +261,9 @@ class Svg {
             var xCoord =  pp.cp.first
             if (elm.type == Path.ElementType.v) {
                 lineType = Path.ElementType.l
-                xCoord = 0
+                xCoord = 0.0
             }
-            val coordinates = ArrayList<Int>()
+            val coordinates = ArrayList<Double>()
             for (i in 0..elm.data.size - 1) {
                 coordinates.add(xCoord)
                 coordinates.add(elm.data[i])
@@ -291,10 +283,10 @@ class Svg {
                 coordConversion = ::relativeToAbsolute
             }
             for (i in 0..elm.data.size - 1 step 6) {
-                var pos = Array<Pair<Int, Int>>(3) {
+                var pos = Array<Pair<Double, Double>>(3) {
                     coordConversion(
                         pp.cp, pp.cb,
-                        Pair<Int, Int>(elm.data[i + it * 2], 
+                        Pair(elm.data[i + it * 2], 
                             elm.data[i + it * 2 + 1]))
                 }
                 pp.lcp = pos[1]
@@ -320,14 +312,15 @@ class Svg {
             if (elm.type == Path.ElementType.s) {
                 coordConversion = ::relativeToAbsolute
             }
-            val convertedCoords = ArrayList<Int>()
+            val convertedCoords = ArrayList<Double>()
             var lp = pp.cp
             var lcp = pp.lcp 
+            val cb = pp.cb
             for (i in 0..elm.data.size - 1 step 4) {
-                var pos = Array<Pair<Int, Int>>(2) {
+                var pos = Array<Pair<Double, Double>>(2) {
                     coordConversion(
-                        pp.cp, pp.cb,
-                        Pair<Int, Int>(elm.data[i + it * 2], 
+                        lp, cb,
+                        Pair(elm.data[i + it * 2], 
                             elm.data[i + it * 2 + 1]))
                 }
                 
@@ -357,10 +350,10 @@ class Svg {
                 coordConversion = ::relativeToAbsolute
             }
             for (i in 0..elm.data.size - 1 step 4) {
-                var pos = Array<Pair<Int, Int>>(2) {
+                var pos = Array<Pair<Double, Double>>(2) {
                     coordConversion(
                         pp.cp, pp.cb,
-                        Pair<Int, Int>(elm.data[i + it * 2], 
+                        Pair(elm.data[i + it * 2], 
                             elm.data[i + it * 2 + 1]))
                 }
                 pp.lcp = pos[0]
@@ -382,13 +375,13 @@ class Svg {
             if (elm.type == Path.ElementType.t) {
                 coordConversion = ::relativeToAbsolute
             }
-            val convertedCoords = ArrayList<Int>()
+            val convertedCoords = ArrayList<Double>()
             var lp = pp.cp
             var lcp = pp.lcp 
             for (i in 0..elm.data.size - 1 step 2) {
                 var pos = coordConversion(
                         pp.cp, pp.cb, 
-                        Pair<Int, Int>(elm.data[i * 2], 
+                        Pair(elm.data[i * 2], 
                             elm.data[i * 2 + 1]))
                 
                 val cp = (lp - lcp) + lp
@@ -408,28 +401,27 @@ class Svg {
          */
         fun handleEllipticalArcCurveto(elm: Path.Element,
             pp: PathParsing): Boolean {
-            var coordConversion = ::convertToFloat
+            var coordConversion = ::noConversion
             if (elm.type == Path.ElementType.a) {
                 coordConversion = ::relativeToAbsoluteF
             }
-            val convertedCoords = ArrayList<Int>()
+            val convertedCoords = ArrayList<Double>()
            var result = false
 
             if (elm.type == Path.ElementType.A
                 || elm.type == Path.ElementType.a) { 
                for (idx in 0..elm.data.size - 1 step 7) {
                     var lp = pp.cp
-                    val p1f = convertToFloat(lp, pp.cb, lp)  
+                    val p1f = lp  
                     val p2f = coordConversion(lp, pp.cb,
                         Pair(elm.data[idx + 5], elm.data[idx + 6]))
 
                     val ellipseParam = Path.resolveArcParam(
-                        Pair(elm.data[idx + 0].toDouble(), 
-                            elm.data[idx + 1].toDouble()),
+                        Pair(elm.data[idx + 0], 
+                            elm.data[idx + 1]),
                         (elm.data[idx + 2].toDouble() * PI) / 180,
-                        elm.data[idx + 3], elm.data[4],
-                        Pair(p1f.first.toDouble(), p1f.second.toDouble()), 
-                        Pair(p2f.first.toDouble(), p2f.second.toDouble()))
+                        elm.data[idx + 3].toInt(), 
+                        elm.data[4].toInt(), p1f, p2f)
                     if (ellipseParam != null) {
 
                         pp.path.ellipse(
@@ -441,8 +433,7 @@ class Svg {
                             ellipseParam.startAngle.toDouble(),
                             ellipseParam.endAngle.toDouble(),
                             ellipseParam.anticlockwise)
-                        pp.cp = Pair(p2f.first.roundToInt(),
-                            p2f.second.roundToInt())
+                        pp.cp = p2f
                         result = true
                     } else {
                         var lineElem: Path.Element? = null
@@ -467,25 +458,24 @@ class Svg {
         /**
          * relative to absolute position
          */
-        fun relativeToAbsolute(cp: Pair<Int, Int>, cb: Int,
-            rlpos: Pair<Int, Int>): Pair<Int, Int> {
+        fun relativeToAbsolute(cp: Pair<Double, Double>, cb: Double,
+            rlpos: Pair<Double, Double>): Pair<Double, Double> {
 
             val posFlt = relativeToAbsoluteF(cp, cb, rlpos)
-            return Pair(posFlt.first.roundToInt(), posFlt.second.roundToInt())
+            return posFlt 
          }
 
         /**
          * relative to absolute position
          */
-        fun relativeToAbsoluteF(cp: Pair<Int, Int>, cb: Int,
-            rlpos: Pair<Int, Int>): Pair<Float, Float> {
+        fun relativeToAbsoluteF(cp: Pair<Double, Double>, cb: Double,
+            rlpos: Pair<Double, Double>): Pair<Double, Double> {
             val rad = (cb.toDouble() / 180.0) * PI
             val rot = doubleArrayOf(
                 rlpos.first * cos(rad) + rlpos.second * sin(rad),
                 rlpos.first * sin(rad) + rlpos.second * cos(rad)
             )
-            return Pair((cp.first + rot[0]).toFloat(),
-                (cp.second + rot[1]).toFloat())
+            return Pair(cp.first + rot[0], cp.second + rot[1])
  
         } 
 
@@ -502,21 +492,21 @@ class Svg {
         /**
          * current point
          */
-        var cp: Pair<Int, Int> = Pair(0, 0)
+        var cp = Pair(0.0, 0.0)
         /**
          * current bearing
          */
-        var cb: Int = 0
+        var cb = 0.0
 
         /**
          * last moveto
          */
-        var lm: Pair<Int, Int> = Pair(0, 0)
+        var lm = Pair(0.0, 0.0)
 
         /**
          * last control point
          */
-        var lcp: Pair<Int, Int> = Pair(0, 0)
+        var lcp = Pair(0.0, 0.0)
     }
 
 }
