@@ -35,7 +35,7 @@
     <div class="loading text-white"><span>Loading...<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
     </div>
   </div>
-  <div class="setting menu"><i class="fas fa-wrench"></i></div>
+  <div class="setting menu"><div class="menu item"><i class="fas fa-wrench"></i></div></div>
   <canvas id="game_grid" class=play-ground></canvas>
   <canvas id="font_test" width="256" height="256"></canvas>
   <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
