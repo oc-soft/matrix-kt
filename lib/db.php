@@ -51,7 +51,9 @@ class DB {
         foreach ($db_table_creation as $key => $value) {
             $query = sprintf($value, $prefix);
             $client->query($query);
-            var_dump($client->error);
+            if ($client->error) {
+                var_dump($client->error);
+            }
         }
     }
 }
