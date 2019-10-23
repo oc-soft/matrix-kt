@@ -171,4 +171,17 @@ class Matrix2(
         }
         return result
     }
+
+
+    /**
+     * stringify this object
+     */
+    override fun toString(): String {
+        val fields = Array<String>(4) {
+            val rowIdx = it / 2
+            val colIdx = it % 2
+            "m${rowIdx}${colIdx} : ${this[rowIdx, colIdx]}"
+        }
+        return fields.joinToString()
+    }
 }

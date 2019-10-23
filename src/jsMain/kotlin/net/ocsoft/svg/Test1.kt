@@ -144,8 +144,8 @@ class Test1 {
             val ctx = canvasElem.getContext("2d") as CanvasRenderingContext2D? 
             ctx?.save()
             ctx?.setTransform(scale, 0.0, 0.0, scale, 0.0, 0.0)
-            ctx?.fill(path)
-            // ctx?.stroke(path) 
+            // ctx?.fill(path)
+            ctx?.stroke(path) 
             ctx?.restore()
         }
     }

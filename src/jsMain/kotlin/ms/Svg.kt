@@ -378,9 +378,10 @@ class Svg {
             val convertedCoords = ArrayList<Double>()
             var lp = pp.cp
             var lcp = pp.lcp 
+            var cb = pp.cb
             for (i in 0..elm.data.size - 1 step 2) {
                 var pos = coordConversion(
-                        pp.cp, pp.cb, 
+                        lp, cb, 
                         Pair(elm.data[i * 2], 
                             elm.data[i * 2 + 1]))
                 
@@ -425,13 +426,13 @@ class Svg {
                     if (ellipseParam != null) {
 
                         pp.path.ellipse(
-                            ellipseParam.x.toDouble(), 
-                            ellipseParam.y.toDouble(),
-                            ellipseParam.radiusX.toDouble(), 
-                            ellipseParam.radiusY.toDouble(),
-                            ellipseParam.rotation.toDouble(),
-                            ellipseParam.startAngle.toDouble(),
-                            ellipseParam.endAngle.toDouble(),
+                            ellipseParam.x, 
+                            ellipseParam.y,
+                            ellipseParam.radiusX, 
+                            ellipseParam.radiusY,
+                            ellipseParam.rotation,
+                            ellipseParam.startAngle,
+                            ellipseParam.endAngle,
                             ellipseParam.anticlockwise)
                         pp.cp = p2f
                         result = true

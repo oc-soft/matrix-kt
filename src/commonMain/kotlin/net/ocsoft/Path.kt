@@ -1219,7 +1219,6 @@ class Path {
                 xAxisRotation,
                 theta, theta2,
                 !clockwise)
-            println(result)
             return result 
         }
         /**
