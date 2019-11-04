@@ -6,9 +6,18 @@
             "type": "website"
         },
         "title": "To solve ellipse center",
-		"using": [
-			"polyfill",
-			"mathjax"
-		]	
+        "customs" : [
+          [
+            "<script>window.MathJax = { ",
+            " tex: {",
+            "   tags: 'ams'",
+            " }",   
+            "};</script>"
+          ]
+        ], 
+        "using": [
+            "polyfill",
+            "mathjax"
+        ]	
     }
 }

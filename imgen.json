@@ -1,0 +1,25 @@
+{ 
+    "svg": {
+        "dest": {
+            "root": "img",
+            "template" : {
+                "ellipseCenter" : "ellipse-%s.svg"
+            }
+        }         
+    },
+    "ellipseCenter": [
+        {
+            "header" : ["<svg width=\"12cm\" height=\"5.25cm\" ",
+                "viewBox=\"-200 -50 1200 400\" ",
+                "xmlns=\"http://www.w3.org/2000/svg\" ",
+                "version=\"1.1\">"],
+            "radii" : [150.0, 75],
+            "points" :  [200, 200, 320, 150],
+            "axis": 20,
+            "xAxisRange" : [-10, 600],
+            "yAxisRange": [-10, 400],
+            "visibility": ["true", "true", "true", "true"],
+            "axisVisibility": ["false", "false", "false", "false"]
+        }
+    ]
+}

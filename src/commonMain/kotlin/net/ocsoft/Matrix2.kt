@@ -12,6 +12,21 @@ class Matrix2(
     m11: Double = 1.0) {
 
     /**
+     * class instance
+     */
+    companion object {
+
+        
+        /**
+         * create rotation matrix
+         */
+        fun rotate(radian: Double): Matrix2 {
+            val cosValue = cos(radian)
+            val sinValue = sin(radian)
+            return Matrix2(cosValue, -sinValue, sinValue, cosValue)
+        }
+    }
+    /**
      * components
      */
     val components = arrayOf(
@@ -78,7 +93,12 @@ class Matrix2(
         components[rowIndex][colIndex] = value
     }
    
-
+    /**
+     * this * M(radian)
+     */
+    fun rotate(radian: Double): Matrix2 {
+        return this * Matrix2.rotate(radian) 
+    }
     
     /**
      * mutiply
@@ -86,8 +106,8 @@ class Matrix2(
     operator fun times(other: Matrix2): Matrix2  {
         val result = Matrix2()
         for (rowIdx in 0..1) {
-            var comp = 0.0
             for (colIdx in 0..1) {
+                var comp = 0.0
                 for (idx in 0..1) {
                     val aComp = this[rowIdx, idx]
                     val bComp = other[idx, colIdx]

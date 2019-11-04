@@ -34,7 +34,58 @@ class CenterFromPoints(
     var points: Array<Pair<Double, Double>> = 
         arrayOf(Pair(50.0, 0.0), Pair(200.0, 10.0)),
     var axisAngleAsDegree: Double = 30.0,
-    var axisLeading: Double = 30.0) {
+    var axisLeading: Double = 30.0,
+    var arrowHeadSize: Double = 10.0,
+    var globalAxis: Array<Pair<Double, Double>> = arrayOf(
+            Pair(-10.0, 400.0),
+            Pair(-10.0, 300.0)),
+    val ellipseVisibility: BooleanArray = booleanArrayOf(
+        true, true, true, true),
+    val ellipseAxisVisibility: BooleanArray = booleanArrayOf(
+        true, true, false, false)) {
+
+    companion object {
+        fun joinMultilines(mapObj : Map<String, Any?>): String {
+            val strList = ArrayList<String>()
+            for (i in 0 .. mapObj.size() - 1) {
+                val elm = mapObj["${i}"]
+                if (elm is String) {
+                    strList.add(elm as String) 
+                }
+            }
+            return strList.joinToString("") 
+        }
+        fun parseDoubleList(idxMap: Map<String, Any?>): List<Double> {
+            val result = ArrayList<Double>() 
+            for (i in 0 .. idxMap.size()  -  1) {
+                val elm = idxMap["${i}"]
+                if (elm != null) {
+                    if (elm is Number) {
+                        result.add((elm as Number).toDouble())
+                    } else if (elm is String) {
+                        result.add((elm as String).toDouble()) 
+                    }
+                }
+            }
+            return result 
+        }
+        fun parseBooleanList(idxMap: Map<String, Any?>): List<Boolean> {
+            val result = ArrayList<Boolean>() 
+            for (i in 0 .. idxMap.size()  -  1) {
+                val elm = idxMap["${i}"]
+                if (elm != null) {
+                    if (elm is Number) {
+                        val tmpVal = (elm as Number).toDouble() 
+                        result.add(tmpVal !=  0.0 && tmpVal != -0.0)
+                    } else if (elm is String) {
+                        result.add((elm as String).toBoolean()) 
+                    }
+                }
+            }
+            return result 
+        }
+   }
+
 
     val axisAngle get() = (axisAngleAsDegree / 180) * PI
 
@@ -44,7 +95,7 @@ class CenterFromPoints(
             return Path.calcAngle(Pair(1.0, 0.0), vec) 
         }
 
-    val svgHeader = "<svg width=\"12cm\" height=\"5.25cm\" " +
+    var svgHeader = "<svg width=\"12cm\" height=\"5.25cm\" " +
         "viewBox=\"0 0 1200 400\"\n" +
         "xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"
               
@@ -156,23 +207,133 @@ class CenterFromPoints(
             
     }
     
-    
+   
+    fun createArrowHeadPoints(
+        point: Pair<Double, Double>,
+        direction: Pair<Double, Double>,
+        radius: Double): Array<Pair<Double, Double>> {
+       
+        var dirCos = 0.0
+        var dirSign = 1.0
+        val dirLen = sqrt(direction.first.pow(2.0) + direction.second.pow(2.0)) 
+        if (dirLen > 0) {
+            dirCos = direction.first / dirLen
+            dirCos = max(min(dirCos, 1.0), -1.0)
+            if (direction.second != 0.0 && direction.second != -0.0) {
+                dirSign = sign(direction.second)
+            }
+        }
+        val startAngle = acos(dirCos) * dirSign           
+        val points = Array<Pair<Double, Double>>(3) {
+            val rad = (2 * PI * ((it + 2) % 3)) / 3.0 + startAngle
+            Pair(radius * cos(rad), radius * sin(rad))
+        }
+        val disp = point - points[1]  
+        for (i in 0 .. points.size - 1) {
+            points[i] = Pair(points[i].first + disp.first,
+                points[i].second + disp.second)
+        }
+        
+        val result = points
+        return result
+    }
+    fun createArrowHeadPoly(point: Pair<Double, Double>,
+        direction: Pair<Double, Double>,
+        radius: Double): String {
+        val points = createArrowHeadPoints(point, direction, radius)
+        val flatPoints = DoubleArray(points.size * 2) {
+            val idx = it / 2
+            val elmIdx = it % 2
+            points[idx].toList()[elmIdx]
+        }
+
+        val ptStr = flatPoints.joinToString(" ")
+        val result = "<polyline points=\"${ptStr}\" />"
+        return result
+    }
+
+
+
+    fun createGlobalAxis(): String {
+        
+        return createArrowAxis(
+            Pair(0.0, 0.0), 
+            0.0, globalAxis[0], globalAxis[1],
+            arrowHeadSize) 
+        
+    }
+
+    fun createArrowAxis(
+        center: Pair<Double, Double>,
+        axisAngle: Double,
+        xRange: Pair<Double, Double>,
+        yRange: Pair<Double, Double>,
+        arrowHeadSize: Double) : String {
+        val axisPathD = createAxis(center, axisAngle, 
+            xRange, yRange)      
+
+        val pathDStr = "<path d=\"${axisPathD}\" />"
+ 
+        val mRot = Matrix2().rotate(axisAngle)
+
+        var arrowPt = mRot * Pair(xRange.second, 0.0)
+        arrowPt += center
+        val xArrowHead = createArrowHeadPoly(
+            arrowPt,
+            mRot * Pair(1.0, 0.0),
+            arrowHeadSize)
+        val rotMat = Matrix2.rotate(axisAngle)
+        arrowPt =  mRot * Pair(0.0, yRange.second)
+        arrowPt += center
+        val yArrowHead = createArrowHeadPoly(
+            arrowPt,
+            mRot * Pair(0.0, 1.0),
+            arrowHeadSize)
+
+        val result = "<g fill=\"none\" stroke=\"#0f0f0f\" >" + 
+            pathDStr + xArrowHead + yArrowHead + "</g>"
+        
+        return result 
+    }    
      
+    
     fun createAxis(
         center: Pair<Double, Double>,
         axisAngle: Double,
         radii: Pair<Double, Double>): String {
+        return createAxis(center, axisAngle, radii, axisLeading)
+    } 
+     
+    fun createAxis(
+        center: Pair<Double, Double>,
+        axisAngle: Double,
+        radii: Pair<Double, Double>,
+        axisLeading: Double): String {
+   
+        
+        val result = createAxis(center, axisAngle,
+            Pair(-radii.first - axisLeading, radii.first + axisLeading),
+            Pair(-radii.second - axisLeading, radii.second + axisLeading))
+        return result
+    }
+
+    fun createAxis(
+        center: Pair<Double, Double>,
+        axisAngle: Double,
+        xRange: Pair<Double, Double>,
+        yRange: Pair<Double, Double>): String {
     
         val cosValue = cos(axisAngle) 
         val sinValue = sin(axisAngle)
 
         val rotMat = Matrix2(cosValue, -sinValue, sinValue, cosValue)
         
+        
         val sePoints = arrayOf(
-            Pair(-radii.first - axisLeading, 0.0),
-            Pair(radii.first + axisLeading, 0.0),
-            Pair(0.0, -radii.second - axisLeading),
-            Pair(0.0, radii.second + axisLeading))
+            Pair(xRange.first, 0.0),
+            Pair(xRange.second, 0.0),
+            Pair(0.0, yRange.first),
+            Pair(0.0, yRange.second))
         for (i in 0 .. sePoints.size - 1) {
             sePoints[i] = rotMat * sePoints[i]
             sePoints[i] += center
@@ -183,17 +344,18 @@ class CenterFromPoints(
             "L ${sePoints[3].first} ${sePoints[3].second}"
     }
 
+ 
     fun createLine(point0: Pair<Double, Double>,
         point1: Pair<Double, Double>): String {
         return "M ${point0.first} ${point0.second} " +
             "L ${point1.first} ${point1.second}"
     } 
-
+    
 
     fun generate() : String {
         val largeArcAndSweeps = arrayOf(
             intArrayOf(0, 0),
-            intArrayOf(1, 1),
+            intArrayOf(0, 1),
             intArrayOf(1, 0),
             intArrayOf(1, 1))
         val ellipseParams = Array<Path.EllipseParam>(largeArcAndSweeps.size) {
@@ -203,100 +365,41 @@ class CenterFromPoints(
                 largeArcAndSweeps[it][1],
                 points[0], points[1])!!
         }
-        val svgBodyParts0 = Array<String>(1) {
+        val svgBodyParts0 = Array<String>(largeArcAndSweeps.size) {
             val ls = largeArcAndSweeps[it]
-            "<path d=\"${createPathData(ls[0], ls[1])}\" " +
-            "fill=\"none\" stroke=\"#0f0f0f\" />"  
+            var strRes = ""
+            if (ellipseVisibility[it]) {
+                strRes = "<path d=\"${createPathData(ls[0], ls[1])}\" " +
+                    "fill=\"none\" stroke=\"#0f0f0f\" />"  
+            }
+            strRes
         }
 
         val svgBodyParts1 = Array<String>(svgBodyParts0.size) {
-            // println(ellipseParams[it])
             val ct = Pair(ellipseParams[it].x, ellipseParams[it].y)
             val radii = Pair(ellipseParams[it].radiusX,
                 ellipseParams[it].radiusY)
-            //"<path d=\"${createAxis(ct, radii)}\" " +
-            // "fill=\"none\" stroke=\"#0f0f0f\" />"
-            ""
+            var strRes = ""
+            if (ellipseAxisVisibility[it]) {
+                strRes = "<path d=\"${createAxis(ct, radii)}\" " +
+                    "fill=\"none\" stroke=\"#0f0f0f\" />"
+            }
+            strRes
         }
 
-        var ct = Pair((points[0].first + points[1].first) / 2.0,
-            (points[0].second + points[1].second) / 2.0)
-
         
-        var axisStr = createAxis(Pair(100.0, 0.0),
-            0.0, radii)
-        var svgBody2 = "<path d=\"${axisStr}\" " +
-            "fill=\"none\" stroke=\"#0f0f0f\" />"
-        svgBody2 = "" 
-
-        var ct0 = Pair(ellipseParams[0].x, ellipseParams[0].y)
-        var rad = 20.0
-        var centerBody0 = "<path d=\"${createCircle(ct0, rad)}\" " +
-            "fill=\"none\" stroke=\"#0f0f0f\" />"
-        centerBody0 = ""
-        val ellipXaxis = Path.EllipseParam( 
-            ellipseParams[0].x, ellipseParams[0].y,
-            ellipseParams[0].radiusX,
-            ellipseParams[0].radiusY,
-            ellipseParams[0].rotation,
-            ellipseParams[0].startAngle,
-            ellipseParams[0].endAngle,
-            // 0.0, PI / 2,
-            ellipseParams[0].anticlockwise) 
-        var ellVPathd = createEllipseSegment(
-            ellipseParams[0].x,
-            ellipseParams[0].y,
-            ellipseParams[0].radiusX,
-            ellipseParams[0].radiusY,
-            ellipseParams[0].rotation,
-            // ellipseParams[0].startAngle + 1.0 / 2.0,
-            // ellipseParams[0].endAngle
-            ellipseParams[0].startAngle,
-            (ellipseParams[0].startAngle * 1.0 + 
-                ellipseParams[0].endAngle * 9.0) / 10.0
-            )
-        var ellVBody = "<path d=\"${ellVPathd}\" " +
-            "fill=\"none\" stroke=\"#0f0f0f\" /> \n"
-
-        //ellVPathd = createVisualEllipseParam(ellipXaxis)
-        //ellVBody += "<path d=\"${ellVPathd}\" " +
-        //    "fill=\"none\" stroke=\"#0f0f0f\" />"
-
-        // var ellVPathd = createVisualEllipseParam(ellipseParams[0])
-        //var ellVBody = "<path d=\"${ellVPathd}\" " +
-        //    "fill=\"none\" stroke=\"#0f0f0f\" /> \n"
-
-        //ellVPathd = createVisualEllipseParam(ellipXaxis)
-        // ellVBody += "<path d=\"${ellVPathd}\" " +
-        //    "fill=\"none\" stroke=\"#0f0f0f\" />"
-
-        
-
 
         val svgBody0 = svgBodyParts0.joinToString("\n")
         val svgBody1 = svgBodyParts1.joinToString("\n")
         var result = "${svgHeader} \n" +
-            "${centerBody0} \n" +
+            "${createGlobalAxis()} \n" +
             "${svgBody0} \n" +
             "${svgBody1} \n" +
-            "${svgBody2} \n" +
-            "${ellVBody} \n" +
-            "</svg> \n" +
-            "<!-- center: ${ct0.first}, ${ct0.second} --> \n" +
-            "<!-- ${axisAngle} ${axisAngleAsDegree} -->\n" +
-            "<!-- ${radii} ${points[0]} ${points[1]} " +
-            "${axisAngleAsDegree} --> \n"
-            "<!-- ${ellipseParams[0]} -->"
-
+            "</svg>"
         return result
     }
 
-    fun parseOption(jsonStr : String) {
-        val mgr = ScriptEngineManager()
-        val eng = mgr.getEngineByName("JavaScript")
-        var evalContent = "(${jsonStr})"
-        var rootObj = eng.eval(evalContent) as Map<String, Object>
-
+    fun parseOption(rootObj: Map<String, Object>) {
         val radii = rootObj["radii"] as Map<String, Object>
         var res = "" 
         val radii0 = doubleArrayOf(this.radii.first, this.radii.second)
@@ -350,6 +453,61 @@ class CenterFromPoints(
             }
             this.axisLeading = leadingValue
         }
+ 
+        val svgHeader = rootObj["header"]  
+        if (svgHeader != null) {
+            if ((svgHeader as Any?) is String) {
+                this.svgHeader = svgHeader as String
+            } else if ((svgHeader as Any?) is Map<*, *>) {
+                this.svgHeader = joinMultilines(svgHeader as Map<String, Any?>)
+            }
+        }
+
+        val axisKeys = arrayOf("xAxisRange", "yAxisRange")
+        axisKeys.forEachIndexed {
+            idx, elem ->
+            val axisRangeObj = rootObj[elem]
+            if (axisRangeObj != null) {
+                if (axisRangeObj is Map<*, *>) {
+                    val idxMap = axisRangeObj as Map<String, Any?>
+                    val numberList = parseDoubleList(idxMap)
+                    if (numberList.size > 1) {
+                        globalAxis[idx] = Pair(numberList[0], numberList[1]) 
+                    }
+                }
+            }
+        }
+        var visibilityObj = rootObj["visibility"]
+        if (visibilityObj != null) {
+            if (visibilityObj is Map<*, *>) {
+                val ellipseVisibility = visibilityObj as Map<String, Any?>
+                val boolList = parseBooleanList(ellipseVisibility) 
+                boolList.forEachIndexed {
+                    idx, elm ->
+                    this.ellipseVisibility[idx] = elm 
+                }
+            } 
+        }
+        visibilityObj = rootObj["axisVisibility"]
+        if (visibilityObj != null) {
+            if (visibilityObj is Map<*, *>) {
+                val visibility = visibilityObj as Map<String, Any?>
+                val boolList = parseBooleanList(visibility) 
+                boolList.forEachIndexed {
+                    idx, elm ->
+                    this.ellipseAxisVisibility[idx] = elm 
+                }
+            } 
+        }
+    }
+
+    fun parseOption(jsonStr : String) {
+        val mgr = ScriptEngineManager()
+        val eng = mgr.getEngineByName("JavaScript")
+        var evalContent = "eval(${jsonStr})"
+        var rootObj = eng.eval(evalContent) as Map<String, Object>
+        parseOption(rootObj)
+
     }
 
     override fun toString(): String {
@@ -412,6 +570,7 @@ class CenterFromPoints(
                 }
             } while (true)
         } catch (ex :FileNotFoundException) {
+            println(ex)
         } finally {
             if (fr != null) {
                 fr.close()
