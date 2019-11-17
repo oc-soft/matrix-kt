@@ -1,0 +1,278 @@
+\def\pgfsysdriver{pgfsys-dvisvgm.def}
+\input tikz.tex
+\input pgfmath.tex
+\nopagenumbers
+
+
+\usetikzlibrary{math, animations}
+  \def\elliradiix{2.1cm}
+  \def\elliradiiy{1.4cm}
+  \def\elliangle{0.3490658503988659}
+  \def\ellistartanglea{1.8603858873564452}
+  \def\elliendanglea{0.8304641898205609}
+  \def\ellistartangleb{-2.3111284637692324}
+  \def\elliendangleb{-1.2812067662333482}
+  \def\ellianticlockwise{1}
+  \def\ellicenterax{3.022399291513963cm}
+  \def\ellicenteray{1.74430960608757cm}
+  \def\ellicenterbx{2.977600708486037cm}
+  \def\ellicenterby{4.25569039391243cm}
+  \def\iellistartx{2cm}
+  \def\iellistarty{2.8cm}
+  \def\ielliendx{4cm}
+  \def\ielliendy{3.2cm}
+  \dimendef\parseres=255
+
+  \edef\ellistartx{\iellistartx}
+  \edef\ellistarty{\iellistarty}
+  \edef\elliendx{\ielliendx}
+  \edef\elliendy{\ielliendy}
+
+  %transformation
+  \pgfmathsetlength\parseres{
+    (\iellistartx + \ielliendx) / 2
+  }
+  \edef\iellictx{\the\parseres} 
+  \pgfmathsetlength\parseres{
+    (\iellistarty + \ielliendy) / 2
+  }
+  \edef\iellicty{\the\parseres} 
+
+  %transrated start coordinate 
+  \pgfmathsetlength\parseres{
+    -\iellictx
+  }
+  \edef\stdtellistartx{\the\parseres}
+  \pgfmathsetlength\parseres{
+    - \iellicty
+  }
+  \edef\stdtellistarty{\the\parseres}
+ 
+  \pgfmathsetlength\parseres{
+    sqrt(pow(\stdtellistartx, 2) + pow(\stdtellistarty, 2))
+  }
+  \edef\ellnorm{\the\parseres}
+
+  \pgfmathparse{-\stdtellistartx / \ellnorm}
+  \edef\ellcosv{\pgfmathresult}
+
+  \pgfmathparse{-\stdtellistarty / \ellnorm}
+  \edef\ellsinv{\pgfmathresult}
+ 
+  \pgfmathparse{
+    acos(\ellcosv) * sign(\ellsinv)
+  }
+  \edef\elltheta{\pgfmathresult}
+
+  \pgfmathsetlength\parseres{
+    \ellnorm * cos(\elltheta - deg(\elliangle) + 180)
+  }
+
+  \edef\tellistartx{\the\parseres}
+  \pgfmathsetlength\parseres{
+    \ellnorm * sin(\elltheta - deg(\elliangle) + 180)
+  }   
+  \edef\tellistarty{\the\parseres}
+   
+
+  %translated end coordinate 
+  \pgfmathsetlength\parseres{
+    \ielliendx - \iellictx
+  }
+  \edef\stdtelliendx{\the\parseres}
+
+  \pgfmathsetlength\parseres{
+    \ielliendy - \iellicty
+  }
+  \edef\stdtelliendy{\the\parseres}
+
+  \message{\ellistartx \ellistarty}
+  \message{\iellictx \iellicty}
+
+  %\edef\ellistartx{\tellistartx}
+  %\edef\ellistarty{\tellistarty}
+
+  %\edef\elliendx{\telliendx}
+  %\edef\elliendy{\telliendy}
+
+   
+\tikzpicture [yscale=-1,
+  animate={
+    elli0:shift= {
+      0s="current value",
+      2s="{(\tellistartx, \tellistarty)}",
+      forever,
+      begin on={click, of next= animator}
+    },
+    elli0:rotate= {
+      origin={(2, 3)},
+      0s="0",
+      2s="0",
+      4s="{- deg(\elliangle)}",
+      forever,
+      begin on={click, of next= animator}
+    },
+  }
+]
+  \node (animator) at (3, 0) {Start animation};
+
+  \draw [help lines] (-3,-3) grid (3, 3);
+  \path [
+      name=lp0
+    ]
+    coordinate [
+      label=above:{$p_0$}
+    ] (a) at (\ellistartx, \ellistarty);
+  \path [
+      name=lp1
+    ]
+    coordinate [
+      label=below:{$p_1$}
+    ] (b) at (\elliendx, \elliendy);
+
+
+  \fill
+    [
+      name=ptca
+    ]
+    (a)
+    circle [
+      radius=0.05
+    ];
+
+%    rectangle (1, 1); 
+  \fill
+    [
+      name=ptcb
+    ]
+    (b)
+    circle [
+      radius=0.05
+    ];
+
+  \draw 
+    [
+      rotate around={{\elliangle r}:(\ellistartx, \ellistarty)},
+      name=elli0
+    ]
+    (\ellistartx, \ellistarty) 
+    arc [
+      x radius=\elliradiix, y radius=\elliradiiy,
+      start angle={\ellistartanglea r},
+      delta angle={-360}
+    ];
+
+\endtikzpicture
+
+\vfill\eject
+
+\tikzpicture [yscale=-1,
+  animate={
+    elli0:shift= {
+      0s="current value",
+      2s="{(\tellistartx, \tellistarty)}",
+      forever,
+      begin on={click, of next= animator}
+    },
+    elli0:rotate= {
+%      origin={(2, 3)},
+      0s="0",
+      2s="0",
+      4s="{- deg(\elliangle)}",
+      forever,
+      begin on={click, of next= animator}
+    },
+  }
+]
+  \node (animator) at (3, 0) {Start animation};
+
+  \draw [help lines] (-3,-3) grid (3, 3);
+
+  \draw 
+    [
+      rotate around={{\elliangle r}:(\ellistartx, \ellistarty)},
+      name=elli0
+    ]
+    (\ellistartx, \ellistarty) 
+    arc [
+      x radius=\elliradiix, y radius=\elliradiiy,
+      start angle={\ellistartanglea r},
+      delta angle={-360}
+    ];
+\endtikzpicture
+
+\vfill\eject
+
+\tikzpicture [yscale=-1,
+  animate={
+    elli0:rotate= {
+%      origin={(2, 3)},
+      0s="0",
+      10s="{- deg(\elliangle)}",
+      forever,
+      begin on={click, of next= animator}
+    },
+  }
+]
+  \node (animator) at (3, 0) {Start animation};
+
+  \draw [help lines] (-3,-3) grid (3, 3);
+
+  \draw 
+    [
+      rotate around={{\elliangle r}:(\ellistartx, \ellistarty)},
+      name=elli0
+    ]
+    (\ellistartx, \ellistarty) 
+    arc [
+      x radius=\elliradiix, y radius=\elliradiiy,
+      start angle={\ellistartanglea r},
+      delta angle={-360}
+    ];
+\endtikzpicture
+
+
+\vfill\eject\end
+
+
+    ptca:shift = {
+      0s="current value",
+      2s="{(-\iellictx, -\iellicty)}",
+      forever,
+      begin on={click, of next = animator}
+    }, 
+    ptca:rotate= {
+      origin={(\iellictx, \iellicty)},
+      0s="0",
+      2s="0", 
+      4s="{- deg(\elliangle)}",
+      forever,
+      begin on={click, of next = animator}
+    },
+    ptcb:shift = {
+      0s="current value",
+      2s="{(-\iellictx, -\iellicty)}",
+      forever,
+      begin on={click, of next = animator}
+    },
+    ptcb:rotate= {
+      origin={(\iellictx, \iellicty)},
+      0s="0",
+      2s="0",
+      4s="{- deg(\elliangle)}",
+      forever,
+      begin on={click, of next = animator}
+    },
+    lp0:shift = {
+      0s="current value",
+      2s="{(-\iellictx, -\iellicty)}",
+      forever,
+      begin on={click, of next = animator}
+    }, 
+    lp1:shift = {
+      0s="current value",
+      2s="{(-\iellictx, -\iellicty)}",
+      forever,
+      begin on={click, of next = animator}
+    }
+

@@ -1,15 +1,4 @@
 To solve ellipse center
 =======================
-
-I had to solve a ellipse center from semi-major-axis, semi-minor-axis and two different points on it. I thoght that I may solve it by transformed circle from original ellipse by matrix. But I realized that it require the center of ellipse.
-I use another way to solve it. I use following equatations.
-
-$$2(|\vec{f}|^2 + b^2) = (a  + |\vec{f}|)^2$$
-
-$$|\vec{p_1} - \vec{c} + \vec{f}| + |\vec{c} + \vec{f} - \vec{p_1}| = |\vec{p_2} - \vec{c} + \vec{f}| + |\vec{c} + \vec{f} - \vec{p_2}|$$
-
-\(\vec{f}\): focus
-\(\vec{c}\): center
-\(a\): semi-major-axis
-\(b\): semi-minor-axis
-
+This article is only available japanese.
+Please check [this page](index.php?doc=develop-3&lang=ja)

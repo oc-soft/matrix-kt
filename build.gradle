@@ -84,9 +84,27 @@ task createFigureForDoc(type: JavaExec) {
     args = ['-f', 'imgen.json' ]
 }
 
+task resolveEllipseCenter(type: JavaExec) {
+    def target = kotlin.targets.jvm
+    def compilation = target.compilations.main
+
+
+    classpath = files(compilation.runtimeDependencyFiles,
+        compilation.output.allOutputs)
+    
+    args = ['-f', 'elli-param-1.json' ]
+    main = 'net.ocsoft.geom.EllipseCenterKt'
+
+}
+
+
 createFigureForDoc.description = 'generate figure for document' 
 createFigureForDoc.group = 'Documentation'
 createFigureForDoc.dependsOn jvmJar
+
+resolveEllipseCenter.description = 'resolve ellipse center from two points on ellipse.'
+resolveEllipseCenter.group = 'Calculation'
+resolveEllipseCenter.dependsOn jvmJar
 
 build.doLast {
     copy {

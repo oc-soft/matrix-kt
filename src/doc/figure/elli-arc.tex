@@ -1,0 +1,227 @@
+\input amstex.tex
+\def\pgfsysdriver{pgfsys-dvisvgm.def}
+\input tikz.tex
+\input pgfmath.tex
+
+\usetikzlibrary{animations}
+
+
+\nopagenumbers
+
+\tikzpicture
+  \def\elliradiixa{1.8cm} 
+  \def\elliradiiya{1.2cm}
+  \let\tmplen\n=255 
+  \def\animnodex{0cm}
+  \def\animnodey{-\elliradiiya - 0.5cm}
+
+  \dimendef\parseres=255 
+  \pgfmathsetlength{\parseres}{sqrt(abs(\elliradiixa^2 - \elliradiiya^2))}
+  \edef\ellifa{\the\parseres}
+  \pgfmathsetlength\parseres{
+    \elliradiixa > \elliradiiya
+    ? \ellifa
+    : 0}
+  \edef\ellifaxp{\the\parseres}
+  \pgfmathsetlength{\parseres}{-\ellifaxp}
+  \edef\ellifaxm{\the\parseres}
+  \pgfmathsetlength{\parseres}{
+    \elliradiiya >= \elliradiixa
+    ? \ellifa
+    : 0}
+  \edef\ellifayp{\the\parseres}
+  \pgfmathsetlength{\parseres}{-\ellifayp}
+  \edef\ellifaym{\the\parseres}
+
+   
+  \pgfmathparse{
+    \elliradiixa > \elliradiiya
+    ? (\elliradiiya / \elliradiixa)
+    : 1 
+  }
+  \edef\eliiendscalex{\pgfmathresult}
+
+  \pgfmathparse{
+    \elliradiixa > \elliradiiya
+    ? 1
+    : (\elliradiixa / \elliradiiya)
+  }
+  \edef\eliiendscaley{\pgfmathresult}
+  \pgfmathparse{\elliradiixa * \eliiendscalex}
+  \edef\elliradiixb{\pgfmathresult}
+  \pgfmathparse{\elliradiiya * \eliiendscaley}
+  \edef\elliradiiyb{\pgfmathresult}
+
+  \node (animator) at (\animnodex, \animnodey) {Start animation};
+
+  \draw 
+    :xscale = {
+      0s="1",
+      2s="\eliiendscalex",
+      forever,
+      begin on={click, of = animator }}
+    :yscale = {
+      0s="1",
+      2s="\eliiendscaley",
+      forever,
+      begin on={click, of = animator }}
+    (\elliradiixa, 0)
+    arc [ 
+      x radius=\elliradiixa, y radius=\elliradiiya,
+      start angle =0, end angle =360
+    ];
+
+  \node
+    :xshift = {
+      0s="0",
+      2s="-\ellifaxp",
+      forever,
+      begin on= {click, of = animator}
+    }
+    :yshift = {
+      0s="0",
+      2s="-\ellifayp",
+      forever,
+      begin on= {click, of = animator }
+    }
+    :visible = {
+      0s="true",
+      2s="false",  
+      forever,
+      begin on= {click, of = animator }
+    }
+    [above]
+    at (\ellifaxp, \ellifayp) {$c_{fp}$};
+
+  \node
+    :stage = {
+      0s="false",
+      2s="true",  
+      forever,
+      begin on= {click, of = animator }
+    }
+    [above]
+    at (0, 0) {$ c $};
+
+
+  \node
+    :xshift = {
+      0s="0",
+      2s="-\ellifaxm",
+      forever,
+      begin on= {click, of = animator }
+    }
+    :yshift = {
+      0s="0",
+      2s="-\ellifaym",
+      forever,
+      begin on= {click, of = animator }
+    }
+    :visible = {
+      0s="true",
+      2s="false",  
+      forever,
+      begin on= {click, of = animator }
+    }
+    [above]
+    at (\ellifaxm, \ellifaym) {$c_{fm}$};
+
+ 
+  \fill 
+    :xshift = {
+      0s="0",
+      2s="-\ellifaxp",
+      forever,
+      begin on= {click, of = animator}
+    }
+    :yshift = {
+      0s="0",
+      2s="-\ellifayp",
+      forever,
+      begin on= {click, of = animator }
+    }
+    (\ellifaxp, \ellifayp) circle [radius=0.05];
+  \fill
+    :xshift = {
+      0s="0",
+      2s="-\ellifaxm",
+      forever,
+      begin on= {click, of = animator }
+    }
+    :yshift = {
+      0s="0",
+      2s="-\ellifaym",
+      forever,
+      begin on= {click, of = animator }
+    }
+    (\ellifaxm, \ellifaym) circle [radius=0.05];
+
+
+\endtikzpicture
+
+\vfill\eject
+
+
+\tikzpicture
+  \def\ellangstart{0}
+  \def\ellangend{90}
+  \def\ellr{1cm}
+  
+  \pgfmathparse{(\ellangend - \ellangstart) / 2}
+  \edef\ellangle{\pgfmathresult}
+
+  \dimendef\parseres=255 
+  \pgfmathsetlength{\parseres}{\ellr * cos(\ellangle)}
+  \edef\ellxa{\the\parseres}
+  \pgfmathsetlength{\parseres}{\ellr * sin(\ellangle)}
+  \edef\ellya{\the\parseres}
+  \edef\ellxd{\ellxa}
+  \pgfmathsetlength{\parseres}{- \ellya}
+  \edef\ellyd{\the\parseres}
+    
+  \pgfmathsetlength{\parseres}{\ellr * (4 - cos(\ellangle)) / 3}
+  \edef\ellxb{\the\parseres}
+  \pgfmathsetlength{\parseres}{\ellr * ((1 - cos(\ellangle)) * (3 - cos(\ellangle))) / (3 * sin(\ellangle))}
+  \edef\ellyb{\the\parseres}
+  \edef\ellxc{\ellxb}
+  \pgfmathsetlength{\parseres}{- \ellyb}
+  \edef\ellyc{\the\parseres}
+  \message {\ellxa \ellya \ellxd, \ellyd)} 
+  
+  \draw (\ellxa, \ellya) .. controls
+    (\ellxb, \ellyb) and (\ellxc, \ellyc) .. 
+    (\ellxd, \ellyd) [line width=1pt];
+
+  \draw (\ellxa, \ellya) -- (\ellxb, \ellyb) -- (\ellxc, \ellyc) -- (\ellxd, \ellyd) [line width=0.5pt];
+
+
+\endtikzpicture
+ 
+
+\vfill\eject\end
+    :path = {
+      0s="{(\elliradiixa, 0) arc [x radius=\elliradiixa, y radius=\elliradiiya,
+        start angle =0, end angle =360
+      ]}",
+      2s="{(\elliradiixb, 0) arc [x radius=\elliradiixb, y radius=\elliradiiyb,
+        start angle =0, end angle =360
+      ]}",
+      begin on={click, of = animator }
+    }
+    (\elliradiixa, 0)
+    arc [ 
+      x radius=\elliradiixa, y radius=\elliradiiya,
+      start angle =0, end angle =360
+    ];
+
+  \draw 
+    :xscale = {0s="1", 2s="\eliiendscalex", begin on={click, of = animator }}
+    :yscale = {0s="1", 2s="\eliiendscaley", begin on={click, of = animator }}
+    (\elliradiixa, 0)
+    arc [ 
+      x radius=\elliradiixa, y radius=\elliradiiya,
+      start angle =0, end angle =360
+    ];
+
+
+
