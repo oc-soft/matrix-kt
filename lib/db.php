@@ -56,6 +56,58 @@ class DB {
             }
         }
     }
+    /**
+     * query expired record
+     */
+    function query_expired_records() {
+    	$client = $this->get_sql_client();
+        global $db_settings;
+        $prefix = $db_settings['prefix'];
+        global $db_select_expired_records; 
+        $session_query = $db_select_expired_records['session'];
+        global $session_setting;
+        $query = sprintf(
+            $session_query['query'], $prefix);
+        $stmt = $client->prepare($query);
+        $stmt->bind_param($session_query['params'][0],
+            $session_setting['option']['expires']);
+
+        $stmt->execute();
+
+        $stmt->bind_result($res);
+        $result = array();
+        while ($stmt->fetch()) {
+          $result[] = $res;
+        }
+        $stmt->close();
+
+        return $result;
+    }
+
+    /**
+     * remove expired records
+     */
+    function remove_expired_records() {
+        $expired_ids = $this->query_expired_records();
+        if (count($expired_ids)) {
+            $expired_str_ids = array_map(function($item) {
+                return sprintf('\'%s\'', $item);
+            }, $expired_ids);
+            $client = $this->get_sql_client();
+            global $db_settings;
+            $prefix = $db_settings['prefix'];
+            global $db_remove_expired_records; 
+            
+
+            $expired_idstr = implode(',', $expired_str_ids);
+            
+            $queries = $db_remove_expired_records;
+            foreach ($queries as $key => $query_tmp) {
+                $query = sprintf($query_tmp, $prefix, $expired_idstr); 
+                $client->query($query);
+            }
+        }
+    }
 }
 
 DB::$instance = new DB();

@@ -22,6 +22,20 @@ $db_access_update = array(
         'params' => array('s')
     )
 );
+
+$db_select_expired_records = array(
+    'session' => array(
+        'query' => 'SELECT ID FROM %ssession '
+        . 'WHERE ACCESS < NOW() - INTERVAL ? SECOND',
+        'params' => array('i')
+    )
+);
+
+$db_remove_expired_records = array(
+    'icon' => 'DELETE FROM %sicon WHERE ID in (%s)',
+    'session' => 'DELETE FROM %ssession WHERE ID in (%s)'
+);
+
 $db_icon_manipulation = array(
     'write' => array(
         'query' => 'INSERT INTO %sicon (ID,DATA) VALUES(?,?) '

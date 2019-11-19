@@ -92,6 +92,7 @@ class Session {
         } 
         return $result;
     }
+
 }
 
 Session::$instance = new Session();
