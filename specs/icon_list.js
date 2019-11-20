@@ -37,7 +37,41 @@
   ],
   "colSizeDefault": 6,
   "pagingSizeDefault": 6,
-  "pagingSize" : [],
+  "pagingSize" : [
+    {
+      "minWidth" : 319,
+      "maxWidth" : 359,
+      "count": 4
+    },
+    {
+      "minWidth" : 479,
+      "count": 6
+    },
+    {
+      "minWidth": 359,
+      "maxWidth": 379,
+      "count": 4
+    },
+    {
+      "minWidth": 379,
+      "maxWidth": 419,
+      "count": 4
+    },
+    {
+      "minWidth": 419,
+      "maxWidth": 479,
+      "count": 4
+    },
+    {
+      "minWidth": 479,
+      "maxWidth": 639,
+      "count": 6
+    },
+    {
+      "minWidth": 639,
+      "count": 6 
+    }
+  ],
   "icons" : {
     "exclude" : {
       "font-awesome": [
