@@ -1,0 +1,12 @@
+#NGアイコンの変更
+
+アイコン選択ダイアログによってNGアイコン(地雷)を変更できます。
+アイコンはサーバー側で最後の操作から数えて約３日間保持されます。
+
+![アイコン選択ダイアログ](img/mswp-iphone-iconselector.png)
+
+アイコン選択ダイアログは画面左上のレンチ
+<i class="fas fa-wrench"></i>
+レンチアイコンをタップすることで表示されます。
+
+![wrench mark icon](img/mswp-iphone-settings.png)
