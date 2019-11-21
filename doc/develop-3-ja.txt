@@ -9,7 +9,7 @@ NGを表すアイコンは、次の方法によっている。
 15. 当該bitmapをWebGLのtextureとする。
 
 この方法は、pathデータを画像クリエイターが用意すれば、処理を変更せずに、表示を変更できる。pathとしているのでアイコンサイズの変更に対しても柔軟性を持っている。
-Chromeでは、予想どおりの結果となった。[Path2Dのコンストラクタのapi](https://developer.mozilla.org/ja/docs/Web/API/Path2D/Path2D)をMdnでよく見ると、Edgeが対象外になっていた。Edgeで動作させると、アイコンが消えた。Path2Dの基本図形を表示するapiは当然あるので、SVG pathの構文解析をして、Edgeでも対応するようにすることにした。字句解析レベルで対応できる仕様だとは思うが、人間がテキスト入力してもよいように、いくつかの自動処理が要求されるだろう。SVGの仕様を確認すると、面倒な仕様があった。実装せずにMicrosoftの修正を待つのも一つだが、ChomiumベースのEdgeになるまでサポートされないかもしれない。
+Chromeでは、予想どおりの結果となった。[Path2Dのコンストラクタのapi](https://developer.mozilla.org/ja/docs/Web/API/Path2D/Path2D#Syntax)をMdnでよく見ると、Edgeが対象外になっていた。Edgeで動作させると、アイコンが消えた。Path2Dの基本図形を表示するapiは当然あるので、SVG pathの構文解析をして、Edgeでも対応するようにすることにした。字句解析レベルで対応できる仕様だとは思うが、人間がテキスト入力してもよいように、いくつかの自動処理が要求されるだろう。SVGの仕様を確認すると、面倒な仕様があった。実装せずにMicrosoftの修正を待つのも一つだが、ChomiumベースのEdgeになるまでサポートされないかもしれない。
 
 
 [8.3.8 The elliptical arc curve commands](https://www.w3.org/TR/SVG11/paths.html#PathDataEllipticalArcCommands)
@@ -43,13 +43,13 @@ parametersには、X軸をx-axis-rotationだけ回転させた楕円とあるの
 中心\\(p\_c\\)を\\((c\_x, c\_y)\\)、x-asis-rotationを\\(\phi\\)とすると
 中心と焦点の距離\\(d\_f\\)は
 <div >
-$$ 
+$$
 \begin{equation}
 d_f = \sqrt{|{r_x}^2 - {r_y}^2|}
 \end{equation}
 $$
 </div>
-焦点\\(p\_{fm}\\)、\\(p\_{fp}\\)は、次のようになる 
+焦点\\(p\_{fm}\\)、\\(p\_{fp}\\)は、次のようになる
 
 <div >
 $$ \begin{align}
@@ -73,17 +73,17 @@ $$
 
 <div >
 $$\begin{align}
-  \overline{{p_0}{p_{fm}}} &= 
-    \sqrt{((c_x - d_f\cos\phi) - x_0)^2 
+  \overline{{p_0}{p_{fm}}} &=
+    \sqrt{((c_x - d_f\cos\phi) - x_0)^2
       + ((c_y - d_f\sin\phi) -  y_0)^2 } \\
-  \overline{{p_0}{p_{fp}}} &= 
+  \overline{{p_0}{p_{fp}}} &=
     \sqrt{((c_x + d_f\cos\phi) - x_0)^2
       + ((c_y + d_f\sin\phi) -  y_0)^2 } \\
-  \overline{{p_1}{p_{fm}}} &= 
+  \overline{{p_1}{p_{fm}}} &=
     \sqrt{((c_x - d_f\cos\phi) - x_1)^2
       + ((c_y - d_f\sin\phi) -  y_1)^2 } \\
-  \overline{{p_1}{p_{fp}}} &= 
-    \sqrt{((c_x + d_f\cos\phi) - x_1)^2 
+  \overline{{p_1}{p_{fp}}} &=
+    \sqrt{((c_x + d_f\cos\phi) - x_1)^2
       + ((c_y + d_f\sin\phi) -  y_1)^2 } \end{align}$$
 </div>
 
@@ -95,7 +95,7 @@ $$\begin{align}
 
 楕円は、円を一方向に座標を伸縮させた図形を考えることができる。円を伸縮させて倍率の逆数をかけるともとの楕円になる。 適当な座標変換を繰り返すと、半径１の円にすることができる。
 
-この時、最初の\\(p\_0\\)、\\(p\_1\\)も、座標変換を経て\\(p\_{0t}\\)、\\(p\_{1t}\\)になる。それは半径1の円周上にある。ここまで行けば簡単だ。円周上の2点から中心を求めるのは、小学生でもコンパスを使って求めることができる。 
+この時、最初の\\(p\_0\\)、\\(p\_1\\)も、座標変換を経て\\(p\_{0t}\\)、\\(p\_{1t}\\)になる。それは半径1の円周上にある。ここまで行けば簡単だ。円周上の2点から中心を求めるのは、小学生でもコンパスを使って求めることができる。
 半径1の円の中心を\\(c\_t(x\_{ct}, y\_{ct})\\)は、逆に戻す座標変換をおこなって、求める楕円の中心とできる。
 
 先にあげたコンパスを使う中心の求め方は、次の計算と同じだ。
@@ -130,10 +130,10 @@ $$
 <div >
 $$\begin{align}
   p_{0t} &= \pmatrix{ 1\over{r_x} & 0 \cr 0 & 1\over{r_y} }
-    \pmatrix{ \cos(-\phi) & -\sin(-\phi)\cr \sin(-\phi) & \cos(-\phi) } 
+    \pmatrix{ \cos(-\phi) & -\sin(-\phi)\cr \sin(-\phi) & \cos(-\phi) }
     \pmatrix{ {x_0} - x_{0m1} \cr {y_0} - y_{0m1} } \\
   p_{1t} &= \pmatrix{ 1\over{r_x} & 0 \cr 0 & 1\over{r_y} }
-    \pmatrix{ \cos(-\phi) & -\sin(-\phi)\cr \sin(-\phi) & \cos(-\phi) } 
+    \pmatrix{ \cos(-\phi) & -\sin(-\phi)\cr \sin(-\phi) & \cos(-\phi) }
     \pmatrix{ {x_1} - x_{0m1} \cr {y_1} - y_{0m1} } \label{p_t}
 \end{align}$$
 </div>
@@ -148,7 +148,7 @@ $$
   p_{0tc} &= \pmatrix{\cos{\pi\over2} & -\sin{\pi\over2} \cr
     \sin{\pi\over2} & \cos{\pi\over2} } p_{0t} \\
   p_{1tc} &= \pmatrix{\cos{\pi\over2} & -\sin{\pi\over2} \cr
-    \sin{\pi\over2} & \cos{\pi\over2} } p_{1t} 
+    \sin{\pi\over2} & \cos{\pi\over2} } p_{1t}
 \end{align}
 $$
 </div>
@@ -170,7 +170,7 @@ $$
 $$
   \begin{equation}
     p_{0tc_e} = \pmatrix{ {1\over{\lVert{p_{0t}}\rVert}} & 0 \cr
-      0 & {1\over{\lVert{p_{0t}}\rVert}}} p_{tc0} \label{p_0tce} 
+      0 & {1\over{\lVert{p_{0t}}\rVert}}} p_{tc0} \label{p_0tce}
   \end{equation}
 $$
 </div>
@@ -205,7 +205,7 @@ $$
 $$
 \begin{align}
   c_{t0} &= \pmatrix{\alpha&0\cr 0&\alpha} p_{0tc_e} \\
-  c_{t1} &= \pmatrix{\alpha&0\cr 0&\alpha} p_{1tc_e} 
+  c_{t1} &= \pmatrix{\alpha&0\cr 0&\alpha} p_{1tc_e}
 \end{align}
 $$
 </div>
@@ -299,7 +299,7 @@ $$
 <div>
 $$
   \begin{align} p_{0tc_e} &= \pmatrix{
-    {1 \over \sqrt{{{{{r_y}^2({{x_1}'})^2}} 
+    {1 \over \sqrt{{{{{r_y}^2({{x_1}'})^2}}
         + {{r_x}^2({{y_1}'})^2}\over{{{r_x}^2}{r_y}^2}} } } &0 \cr
     0 & {1 \over \sqrt{{{{{r_y}^2({{x_1}'})^2}}
         + {{r_x}^2({{y_1}'})^2}\over{{{r_x}^2}{r_y}^2}} } } }
@@ -318,12 +318,12 @@ $$
   \begin {align}
     c_{0t} &=  {\alpha \over \sqrt{{{{{r_y}^2({{x_1}'})^2}}
       + {{r_x}^2({{y_1}'})^2}\over{{{r_x}^2}{r_y}^2}} } }
-      \pmatrix { {{y_0}' \over r_y} \cr -{{x_0}' \over r_x} } 
+      \pmatrix { {{y_0}' \over r_y} \cr -{{x_0}' \over r_x} }
         \label{calc_cd0_from_c0t} \\
     &= {\sqrt{ { {r_x}^2{r_y}^2 - {{r_y}^2}{{x_1}'^2} - {{r_x}^2}{{y_1}'^2} }
         \over { {r_x}^2{r_y}^2 }  } \over
       \sqrt{{{{r_y}^2({{x_1}'})^2}}
-        + {{r_x}^2({{y_1}'})^2}\over{{{r_x}^2}{r_y}^2}}} 
+        + {{r_x}^2({{y_1}'})^2}\over{{{r_x}^2}{r_y}^2}}}
       \pmatrix { {{y_0}' \over r_y} \cr -{{x_0}' \over r_x} } \\
     &= \sqrt{ { {r_x}^2{r_y}^2 - {{r_y}^2}{{x_1}'^2} - {{r_x}^2}{{y_1}'^2} }
         \over {{{r_y}^2({{x_1}'})^2} + {{r_x}^2({{y_1}'})^2}} }
@@ -337,7 +337,7 @@ $$
 <div>
 $$
   \begin{align}
-    {c_0}' &= \pmatrix{r_x&0 \cr 0&r_y} 
+    {c_0}' &= \pmatrix{r_x&0 \cr 0&r_y}
       \pmatrix{
         \sqrt{ { {r_x}^2{r_y}^2 - {{r_y}^2}{{x_1}'^2} - {{r_x}^2}{{y_1}'^2} }
           \over {{{r_y}^2({{x_1}'})^2} + {{r_x}^2({{y_1}'})^2}} }
@@ -354,3 +354,4 @@ $$
 
 \\(\eqref{calc_c0d}\\)は<a href="https://www.w3.org/TR/SVG11/implnote.html#ArcConversionEndpointToCenter">(F.6.5.1)</a>の+側を表す。\\(\eqref{calc_cd0_from_p0te}\\)のところから、\\(c\_{0t}\\)を\\(c\_{1t}\\)と置き換えて計算すると-側になる。
 
+この文書に関連するソースは[こちら](https://rs-app.oc-soft.net/git/?p=rs-app/mswp.git;a=blob;f=src/commonMain/kotlin/net/ocsoft/Path.kt;h=f077cfaa470976c9c7fe97d0dc9013d454629236;hb=HEAD)。
