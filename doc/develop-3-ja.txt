@@ -9,7 +9,7 @@ NGを表すアイコンは、次の方法によっている。
 15. 当該bitmapをWebGLのtextureとする。
 
 この方法は、pathデータを画像クリエイターが用意すれば、処理を変更せずに、表示を変更できる。pathとしているのでアイコンサイズの変更に対しても柔軟性を持っている。
-Chromeでは、予想どおりの結果となった。[Path2Dのコンストラクタのapi](https://developer.mozilla.org/ja/docs/Web/API/Path2D/Path2D#Syntax)をMdnでよく見ると、Edgeが対象外になっていた。Edgeで動作させると、アイコンが消えた。Path2Dの基本図形を表示するapiは当然あるので、SVG pathの構文解析をして、Edgeでも対応するようにすることにした。字句解析レベルで対応できる仕様だとは思うが、人間がテキスト入力してもよいように、いくつかの自動処理が要求されるだろう。SVGの仕様を確認すると、面倒な仕様があった。実装せずにMicrosoftの修正を待つのも一つだが、ChomiumベースのEdgeになるまでサポートされないかもしれない。
+Chromeでは、予想どおりの結果となった。[Path2Dのコンストラクタのapi](https://developer.mozilla.org/ja/docs/Web/API/Path2D/Path2D#Browser_compatibility)をよく見ると、Edgeが対象外になっていた。Edgeで動作させると、アイコンが消えた。Path2Dの基本図形を表示するapiはあるので、SVG pathの構文解析をして、Edgeでも対応するようにすることにした。字句解析レベルで対応できる仕様だとは思うが、人間がテキスト入力してもよいように、いくつかの自動処理が要求されるだろう。SVGの仕様を確認すると、面倒な仕様があった。実装せずにMicrosoftの修正を待つのも一つだが、ChomiumベースのEdgeになるまでサポートされないかもしれない。
 
 
 [8.3.8 The elliptical arc curve commands](https://www.w3.org/TR/SVG11/paths.html#PathDataEllipticalArcCommands)
