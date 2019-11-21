@@ -72,20 +72,19 @@ function doc_render_head($setting) {
 				}
         
 			}
-      
-      if (isset($head['customs'])) {
-        $customs = $head['customs'];
-        if (is_array($customs)) {
-          foreach ($customs as $val) {
-            if (is_array($val)) {
-              $str_val = implode('', $val);
-            } else {
-              $str_val = $val;
-            }
-            echo $str_val;
-          }
-        } 
-      }
+			if (isset($head['customs'])) {
+				$customs = $head['customs'];
+				if (is_array($customs)) {
+					foreach ($customs as $val) {
+						if (is_array($val)) {
+							$str_val = implode('', $val);
+						} else {
+							$str_val = $val;
+						}
+						echo $str_val;
+					}
+				} 
+			}
 			if (isset($head['using'])) {
 				global $using_mapping;
 				foreach($head['using'] as $val) {

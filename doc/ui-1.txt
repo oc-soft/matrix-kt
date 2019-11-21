@@ -1,0 +1,12 @@
+#To select an icon from the setting.
+
+You can change the NG icon (namely mine) with an icon selector dialog.
+The icon is kept in site about 3 days since you play it.
+
+![icon selector](img/mswp-iphone-iconselector.png)
+
+to display above modal dialog, you tap wrench mark
+<i class="fas fa-wrench"></i>
+at left upper.
+
+![wrench mark icon](img/mswp-iphone-settings.png)

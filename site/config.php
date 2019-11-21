@@ -55,6 +55,9 @@ $using_mapping = array(
 		. '</script>',
 	'mathjax' => '<script id="MathJax-script" async '
 		. 'src="https://cdn.jsdelivr.net/npm/mathjax@3/'
-		. 'es5/tex-mml-chtml.js"></script>'
+		. 'es5/tex-mml-chtml.js"></script>',
+	'fontawesome' => '<script src="https://kit.fontawesome.com/a7443310ec.js">'
+		. '</script>'
+
 );
 ?>
