@@ -188,4 +188,40 @@ class Textures {
         }
         this.mineImageTexture = null
     }
+    /**
+     * update main image texture
+     */
+    fun updateMineImageTexture(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        teardownMineImageTexture(gl)
+        setupMineImageTexture(gl, glyph)
+    }
+    /**
+     * update main image texture
+     */
+    fun updateMineImageTexture1(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        val mineImage = glyph.mineImageBlank
+        if (mineImage != null) {
+            if (mineImageTexture != null) {
+                val savedTex = gl.getParameter(
+                    WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    mineImageTexture)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    mineImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    savedTex as WebGLTexture?)
+            }
+        }
+    }
 }

@@ -238,9 +238,9 @@ class Grid(rowCount: Int = 6,
     /**
      * draw scene lately.
      */
-    fun postDrawScene() {
+    fun postDrawScene(gl: WebGLRenderingContext) {
         window.setTimeout({
-            drawScene()
+            drawScene(gl)
         }, 100)
     }
 
@@ -572,7 +572,12 @@ class Grid(rowCount: Int = 6,
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
             glyph.updateMineImage(iconSetting)
-            postDrawScene()
+            val canvasNode = jQuery(canvasId!!)
+            val canvas = canvasNode[0] as HTMLCanvasElement
+            var gl = canvas.getContext("webgl") as WebGLRenderingContext
+
+            textures?.updateMineImageTexture(gl, glyph) 
+            postDrawScene(gl)
         }
     }
 
