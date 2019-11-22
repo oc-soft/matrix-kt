@@ -180,6 +180,16 @@ class Grid(rowCount: Int = 6,
     var nextGameOperation: (() -> Unit)? = null
 
     /**
+     * icon changed handler
+     */
+    var onMineIconChanged: ((Any?, String)->Unit)? = null
+
+    /**
+     * icon setting. you can access this setting while ui is bound.
+     */
+    var iconSetting: IconSetting? = null 
+
+    /**
      * back color for drawing
      */
     val backColorForDrawing = floatArrayOf(0f, 0f, 0f, 1f)
@@ -225,6 +235,15 @@ class Grid(rowCount: Int = 6,
         var gl = canvas.getContext("webgl") as WebGLRenderingContext
         drawScene(gl) 
     }
+    /**
+     * draw scene lately.
+     */
+    fun postDrawScene() {
+        window.setTimeout({
+            drawScene()
+        }, 100)
+    }
+
     /**
      * draw scene
      */
@@ -496,6 +515,13 @@ class Grid(rowCount: Int = 6,
         this.canvasId = settings.canvasId 
         this.gameOverModalId = settings.gameOverModalId
         this.playerWonModalId = settings.playerWonModalId
+        this.onMineIconChanged = {
+            sender, msg ->
+            handleIconChanged(sender, msg)
+        }
+        
+        this.iconSetting = settings.iconSetting
+        this.iconSetting?.addListener(this.onMineIconChanged!!)
         jQuery({
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
@@ -516,11 +542,38 @@ class Grid(rowCount: Int = 6,
             drawScene(gl)
         }) 
     }
+
+
+    /**
+     * disconnect creaged grid from node.
+     */
     fun unbind() {
+        this.iconSetting?.removeListener(this.onMineIconChanged!!)
+        this.onMineIconChanged = null
+        this.iconSetting = null
         val canvasNode = jQuery(this.canvasId!!)
         val canvas = canvasNode[0] as HTMLCanvasElement
         canvas.removeEventListener("click", onClickHandler) 
         this.onClickHandler = null
+    }
+
+    /**
+     * response icon setting changed event.
+     */
+    fun handleIconChanged(sender: Any?, msg: String) {
+        if (msg == IconSetting.MINE_ICON) { 
+            syncIconImageWithSettings()
+        }
+    }
+    /**
+     * synchronize icon image with settings.
+     */
+    fun syncIconImageWithSettings() {
+        val iconSetting = this.iconSetting
+        if (iconSetting != null) {
+            glyph.updateMineImage(iconSetting)
+            postDrawScene()
+        }
     }
 
     /**
