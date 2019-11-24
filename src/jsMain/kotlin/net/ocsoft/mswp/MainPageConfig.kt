@@ -9,7 +9,7 @@ import net.ocsoft.mswp.ui.IconSetting
 data class MainPageConfig(
     /** game grid settings */
     val gridSettings : GridSettings = GridSettings("#game_grid", 
-            "#font_test",
+            "#glyph_workarea",
             "#game_over_modal",
             "#player_won_modal",
             IconSetting()),

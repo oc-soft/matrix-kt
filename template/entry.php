@@ -37,7 +37,7 @@
   </div>
   <div class="setting menu"><div class="menu item"><i class="fas fa-wrench"></i></div></div>
   <canvas id="game_grid" class=play-ground></canvas>
-  <canvas id="font_test" width="256" height="256"></canvas>
+  <canvas id="glyph_workarea" width="256" height="256"></canvas>
   <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
