@@ -1,5 +1,12 @@
 package net.ocsoft.mswp
 
+
+/**
+ * run the program
+ */
+expect fun run(): Unit
+
+
 /**
  * entry point
  */
@@ -11,6 +18,7 @@ fun main(args: Array<String>) {
     mainPage.setupBody(model, boardCam, pointLight)
     mainPage.setup(Settings())
     Context.mainPage = mainPage 
+    run()
 }
 
 	

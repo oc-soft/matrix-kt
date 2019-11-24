@@ -10,7 +10,8 @@ requirejs.config({
 });
 
 requirejs(['mswp', 'fontawesome', 'fontawesome-solid'], 
-function(mswpLib, fa, fas) {
-    mswpLib.net.ocsoft.mswp.Context.mainPage.run(mswpSettings);    
+    function(mswpLib, fa, fas) {
+
 });
+
 
