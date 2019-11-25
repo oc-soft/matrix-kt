@@ -15,7 +15,6 @@ function css() {
         }
         return res;
     }); 
-    console.log(parallel);
     return parallel.apply(null, tasks); 
 }
 

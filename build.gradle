@@ -26,7 +26,6 @@ repositories { // Use jcenter for resolving dependencies.
 kotlin {
     jvm() {
 
-//       print compilations.main.runtimeDependencyFiles
     }
     js() {
         compilations.main.kotlinOptions {
@@ -134,16 +133,8 @@ build.doLast {
         from 'node_modules/@fortawesome/fontawesome-free/js/solid.js'
         into "${web_dir}/fontawesome-free/js"           
     }
-/*
-    copy {
-        includeEmptyDirs false     
-        from 'node_modules/@fortawesome/fontawesome-free/webfonts'
-        into "./webfonts"
-    }
-*/
 }
 clean.doFirst {
     delete "${web_dir}/"
-    delete "./webfonts"
     delete "./css"
 }
