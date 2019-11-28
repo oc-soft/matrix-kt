@@ -30,6 +30,7 @@ class IconSelector(val option : Option) {
         val itemsQuery: String,
         val pagingContainerQuery: String,
         val okQuery: String,
+        val iconKindSelectorQuery: String,
         /**
          * runtime icon item query
          */
@@ -55,12 +56,28 @@ class IconSelector(val option : Option) {
     /**
      * runtime configuration
      */
-    var runtimeConfig: dynamic? = null
+    var runtimeConfig: dynamic = null
 
     /**
      * contents meta information
      */
     var contentsMeta: ContentsMeta? = null
+
+    /**
+     *  icon id to page map
+     */
+    var iconPageMap: Map<Persistence.Icon, Int>? = null
+        get() {
+            var result: Map<Persistence.Icon, Int>? = null
+            if (field == null) {
+                val ctMeta = this.contentsMeta 
+                if (ctMeta != null) {
+                    field = createIconPageMap(ctMeta)
+                }
+            }
+            result = field
+            return result
+        }
 
     /**
      * count of icon items in page
@@ -106,6 +123,12 @@ class IconSelector(val option : Option) {
      */
     var iconItemClickHdlr: ((JQueryEventObject, Any?)->Any)? = null
 
+
+    /**
+     * icon kind change handler
+     */
+    var iconKindChangeHdlr: ((JQueryEventObject, Any?)->Any)? = null
+
     /**
      * called when modal dialog is hidden.
      */
@@ -120,8 +143,47 @@ class IconSelector(val option : Option) {
     /**
      * currently selected icon 
      */
-    var selectedMineIcon: Persistence.Icon? = null
+    var selectedIcon: Persistence.Icon? 
+        get() {
+            var result : Persistence.Icon? = null
+            if (IconSetting.NG_ICON == iconKindUI) {
+                result = selectedNgIcon 
+            } else if (IconSetting.OK_ICON == iconKindUI) {
+                result = selectedOkIcon
+            }
+            return result
+        }
+        set(value) {
+            if (IconSetting.NG_ICON == iconKindUI) {
+                selectedNgIcon = value
+            } else if (IconSetting.OK_ICON == iconKindUI) {
+                selectedOkIcon = value
+            }
+        }
 
+
+
+    /**
+     * currently selected ng icon
+     */
+    var selectedNgIcon: Persistence.Icon? = null
+
+    /**
+     * currently selected ok icon
+     */
+    var selectedOkIcon: Persistence.Icon? = null
+
+    /**
+     * icon kind in which user interface control
+     */
+    val iconKindUI: String?
+        get() {
+            var result : String? = null
+            val selectedItem = jQuery(":selected",
+                option.iconKindSelectorQuery) as JQuery
+            result = selectedItem?.`val`() as String?
+            return result 
+        }
     
     /**
      * bind into html
@@ -151,12 +213,16 @@ class IconSelector(val option : Option) {
         modalHiddenHdlr = { e, arg -> onModalHidden(e, arg) }
         okHdlr = { e, arg -> onOk(e, arg) }
         iconItemClickHdlr = { e, args -> onIconItemClick(e, args) }
- 
+        iconKindChangeHdlr = { e, args -> onIconKindChange(e, args) } 
+       
         val modalQuery = jQuery(option.modalQuery) as JQuery
         jQuery(option.okQuery).on("click", okHdlr!!)
         modalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
-        selectedMineIcon = option.iconSetting.mineIcon 
+        selectedNgIcon = option.iconSetting.ngIcon 
+        selectedOkIcon = option.iconSetting.okIcon
 
+        val iconSelector = jQuery(option.iconKindSelectorQuery) as JQuery
+        iconSelector.on("change", iconKindChangeHdlr!!)
         setupContents()
     }
 
@@ -174,7 +240,13 @@ class IconSelector(val option : Option) {
             jQuery(option.okQuery).off("click", okHdlr!!)
             okHdlr = null
         }
-        selectedMineIcon = null
+        if (iconKindChangeHdlr != null) {
+            jQuery(option.iconKindSelectorQuery).off(
+                "change", iconKindChangeHdlr!!)
+            iconKindChangeHdlr = null
+        }
+        selectedOkIcon = null
+        selectedNgIcon = null
         iconItemClickHdlr = null
     }
 
@@ -209,11 +281,16 @@ class IconSelector(val option : Option) {
      */
     fun doSave() {
         changeUiOkToSync()
-        val selectedIcon = selectedMineIcon!!
-        Persistence.saveIcon(selectedIcon).then({
+        val selectedNgIcon = this.selectedNgIcon!!
+        val selectedOkIcon = this.selectedOkIcon!!
+        val iconMap = HashMap<String, Persistence.Icon>()
+        iconMap[IconSetting.NG_ICON] = selectedNgIcon
+        iconMap[IconSetting.OK_ICON] = selectedOkIcon 
+        Persistence.saveIcon(iconMap).then({
             jQuery(option.modalQuery).asDynamic().modal("hide")
             restoreOkFromSync()
-            option.iconSetting.mineIcon = selectedIcon
+            option.iconSetting.ngIcon = selectedNgIcon
+            option.iconSetting.okIcon = selectedOkIcon
         }, {
             // todo: you have to display waring 
             restoreOkFromSync()   
@@ -259,28 +336,67 @@ class IconSelector(val option : Option) {
             var (colSize, rowSize) = tableSize
             if (colSize != null && rowSize != null) {
                 contentsMeta = ContentsMeta(colSize, rowSize, ids)
-                val pageNumber = findPageSelectedItemIn(contentsMeta!!)
-                updatePage(pageNumber, 
-                    contentsMeta!!)
-                setupPagination(pageNumber)
-                postFocusInNumberPage(pageNumber)
+                val selectedIcon = this.selectedIcon
+                if (selectedIcon != null) {
+                    syncPageWithItem(selectedIcon)
+                }
             }
         }
     }
 
+   
+    /**
+     * synchronize ui page with item
+     */
+    fun syncPageWithItem(item: Persistence.Icon) {
+        val pageNumber = findPageContainingItem(item)
+        updatePage(pageNumber, 
+            contentsMeta!!)
+        setupPagination(pageNumber)
+        postFocusInNumberPage(pageNumber)
+    }
+
+    /**
+     * synchronzie ui page with item lately
+     */
+    fun postSyncPageWithItem(item: Persistence.Icon) {
+        window.setTimeout({
+            syncPageWithItem(item)
+        }, 100) 
+    }
+    
+   
+
     /**
      * find the page in which selected icon is.
      */
-    fun findPageSelectedItemIn(ctMeta: ContentsMeta): Int {
+    fun findPageSelectedItemIn(): Int {
         var result = 0
-        if (selectedMineIcon != null) {
-                
-            val iconPageMap = createIconPageMap(ctMeta) 
-            result = iconPageMap[selectedMineIcon!!] ?: 0
+        val selectedIcon = this.selectedIcon
+        if (selectedIcon != null) {
+            result = findPageContainingItem(selectedIcon)      
         }
         
         return result 
     }
+    /**
+     * find page index in which contains item
+     */ 
+    fun findPageContainingItem(item : Persistence.Icon): Int {
+        var result = 0
+        val iconPageMap = this.iconPageMap
+        if (iconPageMap != null) {
+            val pageIndex = iconPageMap[item]
+            if (pageIndex!= null) {
+                result = pageIndex
+            }
+        }      
+
+        return result
+    }
+
+    
+
     
     /**
      * create icon page map
@@ -433,7 +549,6 @@ class IconSelector(val option : Option) {
         prevPageHdlr = null
         nextPageHdlr = null
         numberCtrlHdlr = null
-        selectedMineIcon = null
      }
 
 
@@ -733,7 +848,7 @@ class IconSelector(val option : Option) {
                 val divNode = jQuery("div", newNode as JQueryStatic)
                 val iNode = jQuery("i", divNode as JQueryStatic)
                 iNode.addClass("${item.prefix} fa-${item.name}")
-                selected = selectedMineIcon == Persistence.Icon(
+                selected = selectedIcon == Persistence.Icon(
                     item.prefix, item.name)
             } else {
                 val newLine = jQuery(option.blankItemTemplateQuery).html()
@@ -772,10 +887,36 @@ class IconSelector(val option : Option) {
     }
 
     /**
+     * handle selector changed event
+     */     
+    fun onIconKindChange(e: JQueryEventObject, args: Any?) {
+        if ("change" == e.type) {
+            postSyncPageWithItem(selectedIcon!!)
+        }
+    }
+
+
+
+    /**
      * handle item click
      */
     fun onIconItemClick(e: JQueryEventObject, args: Any?) {
         postSelectIconNode(e.delegateTarget)
+    }
+    /**
+     * synchronize with icon kind lately.
+     */ 
+    fun postSyncWithIconKindUI() {
+        window.setTimeout({
+            syncWithIconKindUI()
+        }, 100)
+    }
+
+    /**
+     * synchronize with icon kind selector
+     */
+    fun syncWithIconKindUI() {
+        println(iconKindUI)
     }
 
     /**
@@ -798,7 +939,7 @@ class IconSelector(val option : Option) {
             iconNodeJ as JQuery?) 
         val persisIcon = createIconIdFromNode(iconDisplayingNode)
         if (persisIcon != null) {
-            selectedMineIcon = persisIcon!!
+            selectedIcon = persisIcon!!
         }
     }
 

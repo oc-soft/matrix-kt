@@ -23,6 +23,7 @@ data class MainPageConfig(
             "#icon_list .icons li",
             "#icon_list .pagination.container",
             "#icon_list .ok",
+            "#icon-kind-selector",
             "svg.svg-inline--fa",
             "#icon_item_tmpl",
             "#blank_icon_item_tmpl",

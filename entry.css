@@ -55,6 +55,10 @@ body {
   flex-direction: row;
   flex-wrap: wrap;
 }
+.icon.kind {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
 ul.list.icons {
   list-style-type: none;
   margin: 0;

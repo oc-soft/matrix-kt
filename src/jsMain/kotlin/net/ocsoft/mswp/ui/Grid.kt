@@ -561,7 +561,7 @@ class Grid(rowCount: Int = 6,
      * response icon setting changed event.
      */
     fun handleIconChanged(sender: Any?, msg: String) {
-        if (msg == IconSetting.MINE_ICON) { 
+        if (msg == IconSetting.NG_ICON) { 
             syncIconImageWithSettings()
         }
     }

@@ -18,6 +18,7 @@ import kotlin.collections.HashSet
 import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
 import net.ocsoft.mswp.ui.Persistence
+import net.ocsoft.mswp.ui.IconSetting
 
 /**
  * main page display
@@ -113,7 +114,10 @@ actual class MainPage {
             val iconPromises = arrayOf(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
-                        config.gridSettings.iconSetting.mineIcon = it!!
+                        if (IconSetting.NG_ICON in it) {
+                            config.gridSettings.iconSetting.ngIcon = 
+                                it[IconSetting.NG_ICON]!!
+                        }
                     }
                     Unit
                 })) 

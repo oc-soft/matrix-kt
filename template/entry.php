@@ -69,9 +69,19 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-title">Please select NG icon.</div>
+          <div class="modal-title">Please select icon</div>
         </div>
         <div class="modal-body">
+          <div class="input-group icon kind">
+            <select class="custom-select" id="icon-kind-selector">
+              <option value="ok">OK</option>
+              <option value="ng" selected>NG</option>
+            </select>
+            <div class="input-group-append" >
+              <label class="input-group-text"
+                for="icon-kind-selector">Icon</label>
+            </div>
+          </div>
           <ul class="icons list">
           </ul>
           <div class="pagination container"></div>

@@ -7,24 +7,46 @@ import kotlin.collections.MutableList
  * icon setting
  */
 class IconSetting(
-    mineIcon: Persistence.Icon = Persistence.Icon("fas", "skull")) {
+    ngIcon: Persistence.Icon = Persistence.Icon("fas", "skull"),
+    okIcon: Persistence.Icon = Persistence.Icon("fas", "star")) {
 
     /**
      * class instance
      */
     companion object {
-        val MINE_ICON = "mineIcon"
+        /**
+         * NG icon property name
+         */
+        val NG_ICON = "ng"
+        /**
+         * OK icon property name
+         */ 
+        val OK_ICON = "ok"
     }
 
-    var mineIcon: Persistence.Icon = mineIcon
+    /**
+     * NG icon
+     */
+    var ngIcon: Persistence.Icon = ngIcon
         set(value)
             {
                 if (field != value) {
                     field = value
-                    notifyChange(MINE_ICON)
+                    notifyChange(NG_ICON)
                 }
             }
-   
+     
+    /**
+     * OK icon
+     */
+    var okIcon: Persistence.Icon = okIcon
+        set(value)
+            {
+                if (field != value) {
+                    field = value
+                    notifyChange(OK_ICON)
+                }
+            }
     /**
      * event listeners
      */

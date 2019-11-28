@@ -280,7 +280,7 @@ class Glyph(
     fun setupMineImage(ctx: CanvasRenderingContext2D,
         iconSetting : IconSetting) {
     
-        setupMineImage(ctx, iconSetting.mineIcon) 
+        setupMineImage(ctx, iconSetting.ngIcon) 
     }
 
 
