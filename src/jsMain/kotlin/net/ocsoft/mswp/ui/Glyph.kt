@@ -46,14 +46,46 @@ class Glyph(
     var numberImageBlankMap : Map<Int, ImageData>? = null
 
     /**
+     * special image map
+     */
+    var specialImageMap : MutableMap<String, ImageData>? = null
+    
+    /**
+     * special image blank map
+     */
+    var specialImageBlankMap : MutableMap<String, ImageData>? = null
+
+
+    /**
      * mine image
      */
-    var mineImage : ImageData? = null
+    val mineImage : ImageData?
+        get() {
+            val imgMap = this.specialImageMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.NG_ICON in imgMap) {
+                    result = imgMap[IconSetting.NG_ICON]
+                }
+            }
+            return result
+        }
 
     /**
      * mine blank image
      */
-    var mineImageBlank : ImageData? = null
+    val mineImageBlank : ImageData?
+        get() {
+            val imgMap = this.specialImageBlankMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.NG_ICON in imgMap) {
+                    result = imgMap[IconSetting.NG_ICON]
+                }
+            }
+            return result
+        } 
+
     /**
      * connect nodeid into this class
      */
@@ -69,7 +101,7 @@ class Glyph(
     fun setup(ctx : CanvasRenderingContext2D, 
         iconSetting: IconSetting) {
         setupNumbers(ctx)
-        setupMineImages(ctx, iconSetting)
+        setupSpecialImages(ctx, iconSetting)
     }
     /**
      * setup numbers
@@ -99,17 +131,27 @@ class Glyph(
     fun updateMineImage(
         ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting) {
-        setupMineImages(ctx, iconSetting)
+        setupSpecialImages(ctx, iconSetting)
     }
 
     /**
-     * setup mine image
+     * setup special images
      */
-    fun setupMineImages(ctx: CanvasRenderingContext2D,
+    fun setupSpecialImages(ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting) {
-        setupMineImage(ctx, iconSetting)
-        setupMineImage1()
-        // drawScal()
+        specialImageBlankMap = HashMap<String, ImageData>()  
+        specialImageMap = HashMap<String, ImageData>()
+        val iconMap = iconSetting.icons
+        
+        iconMap.forEach( {
+            val imgSrc = createImage(ctx, it.value)
+            val imgBlank = createImageBlank(imgSrc)
+            specialImageMap!![it.key] = imgSrc
+            specialImageBlankMap!![it.key] = imgBlank
+             
+        }) 
+        
+       // drawScal()
     }
 
     /**
@@ -156,64 +198,19 @@ class Glyph(
         ctx.textBaseline = savedBaseline
         ctx.font = savedFont
     }
-    /**
-     * setup mine image
-     */
-    fun setupMineImage(ctx : CanvasRenderingContext2D,
-        mineImageSrc: Image) {
-        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
-        val canvas = ctx.canvas
-        val width = canvas.width
-        val height = canvas.height
-        fun FloatArray.toRgba():String { 
-            val fltArray = this
-            val rgb = IntArray(3) {
-                max(min(round(fltArray[it] * 255), 255f), 0f).toInt()
-            }
-            return "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${fltArray[3]})" 
-        }
-        val imageWidth = mineImageSrc.width.toFloat()
-        val imageHeight  = mineImageSrc.height.toFloat()
-        val imgScale = imgSize / imageHeight   
-        val targetSize = floatArrayOf(imageWidth * imgScale,
-            imageHeight * imgScale)
-        val loc = floatArrayOf((buttonTextureSize - targetSize[0]) / 2,
-            (buttonTextureSize - targetSize[1]) / 2)
-  
-        
-        var colorStr = mineColor.toRgba()
-        // mineImageSrc.style.color = colorStr
-        // mineImageSrc.style.backgroundColor = colorStr
-        // mineImageSrc.style.fill = colorStr
 
-        ctx.drawImage(mineImageSrc, 
-            loc[0].toDouble(), 
-            loc[1].toDouble(), 
-            targetSize[0].toDouble(),
-            targetSize[1].toDouble()) 
 
-        val mineImage = ctx.getImageData(0.0, 0.0,
-            buttonTextureSize.toDouble(),
-            buttonTextureSize.toDouble())
-        ctx.clearRect(0.0, 0.0, 
-            width.toDouble(),
-            height.toDouble())
-        this.mineImage = mineImage 
-        // mineImageSrc.style.color = savedColor
-    }
     /**
-     * setup mine image-blank map
+     * create image and blank data
      */
-    fun setupMineImage1() {
-        val mineImage = this.mineImage
-        if (mineImage != null) {
-            val arr = Uint8ClampedArray(
-                mineImage.width * mineImage.height * 2 * 4) 
-            arr.set(mineImage.data, 0) 
-                            
-            this.mineImageBlank = ImageData(arr, mineImage.width)
-        } 
+    fun createImageBlank(img: ImageData): ImageData {
+        val arr = Uint8ClampedArray(
+            img.width * img.height * 2 * 4) 
+        arr.set(img.data, 0) 
+        return ImageData(arr, img.width) 
     }
+
+
     /**
      * create image with font awesome icon
      */
@@ -274,15 +271,6 @@ class Glyph(
         return result
     }
 
-    /**
-     * create image with icon setting
-     */
-    fun setupMineImage(ctx: CanvasRenderingContext2D,
-        iconSetting : IconSetting) {
-    
-        setupMineImage(ctx, iconSetting.ngIcon) 
-    }
-
 
     /**
      * create path from string
@@ -302,19 +290,20 @@ class Glyph(
     }
 
     /**
-     * create image with font awesome icon
+     * create image from persistence icon
      */
-    fun setupMineImage(ctx: CanvasRenderingContext2D,
-        mineIconRef : Persistence.Icon) {
-        setupMineImage(ctx, createFontawesomeIconDef(
-            mineIconRef.prefix, mineIconRef.iconName))
+    fun createImage(ctx: CanvasRenderingContext2D,
+        icon : Persistence.Icon): ImageData {
+        return createImage(ctx, createFontawesomeIconDef(
+            icon.prefix, icon.iconName))
     }
-        
+
     /**
-     * create image with font awesome icon
+     * create image data from fontawesome icon data.
      */
-    fun setupMineImage(ctx: CanvasRenderingContext2D,
-        iconDef: fontawesome.IconDefinition) {
+    fun createImage(ctx: CanvasRenderingContext2D,
+        iconDef: fontawesome.IconDefinition): ImageData {
+
         val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
         val iconWidth = iconDef.icon[0] as Int
         val iconHeight = iconDef.icon[1] as Int
@@ -339,97 +328,17 @@ class Glyph(
         ctx.fill(path)
         ctx.restore()
         // ctx.setTransform(savedTrans)
-        val img = ctx.getImageData(0.0, 0.0,
+        val result = ctx.getImageData(0.0, 0.0,
             buttonTextureSize.toDouble(),
             buttonTextureSize.toDouble())
         ctx.clearRect(0.0, 0.0, width.toDouble(), height.toDouble())
  
-        this.mineImage = img
-    }   
+        return result
+    }
+    
 
      
-    /**
-     * create image with font awesome icon
-     */
-    fun setupMineImage1(ctx: CanvasRenderingContext2D,
-        iconDef : fontawesome.IconDefinition) {
-        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
-        var fa = window.get("FontAwesome")
-        var icon : fontawesome.Icon = fa.icon(iconDef)
-        if (icon != null) {
-            val abstract = icon.abstract
-            if (abstract != null) {
-                val svgElem = abstract.find( { it.tag == "svg" } )
-                if (svgElem != null) {
-                    val children = svgElem.children
-                    val pathElem = children?.find( { it.tag == "path" })
-                    if (pathElem != null) {
-                        val canvas = ctx.canvas
-                        val width = canvas.width
-                        val height = canvas.height
- 
-                        val attr : fontawesome.Attributes
-                            = pathElem.attributes as fontawesome.Attributes 
-                        val dStr = attr["d"] as String
-                        val pathSrc = Path2D(dStr)
-                        val path = Path2D()
-                        ctx.fill(path)
-                        val img = ctx.getImageData(0.0, 0.0,
-                            buttonTextureSize.toDouble(),
-                            buttonTextureSize.toDouble())
-                        ctx.clearRect(0.0, 0.0, 
-                            width.toDouble(),
-                            height.toDouble())
- 
-                        this.mineImage = img
-                    }
-                }
-            }
-        }
-    }   
 
-    /**
-     * setup mine image
-     */
-    fun setupMineImageOld(ctx : CanvasRenderingContext2D,
-        mineImageSrc: Image) {
-        val savedFont = ctx.font 
-        val savedBaseline: CanvasTextBaseline = ctx.textBaseline
-        val fontSize = round(this.buttonTextureSize + buttonTextRatio).toInt()
-        val canvas = ctx.canvas
-        val width = canvas.width
-        val height = canvas.height
-        fun FloatArray.toRgba():String { 
-            val fltArray = this
-            val rgb = IntArray(3) {
-                max(min(round(fltArray[it] * 255), 255f), 0f).toInt()
-            }
-            return "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${fltArray[3]})" 
-        }
-        var colorStr = mineColor.toRgba()
-        ctx.textBaseline = CanvasTextBaseline.MIDDLE
-        ctx.font = "900 ${fontSize}px 'Font Awesome 5 Pro'"
-        ctx.fillStyle = colorStr 
-        // scal icon
-        // val mineStr = "\uf02b"
-        // val mineStr = String.fromCharCode(0xf26b)
-        val mineStr = "\uf54c"
-        val texMtx = ctx.measureText(mineStr)
-        var xcoord = .0
-        xcoord += (fontSize - texMtx.width) / 2.0
-        val ycoord = buttonTextureSize * .5
-        ctx.fillText(mineStr, xcoord, ycoord) 
-        val mineImage = ctx.getImageData(0.0, 0.0,
-            buttonTextureSize.toDouble(),
-            buttonTextureSize.toDouble())
-        ctx.clearRect(0.0, 0.0, 
-            width.toDouble(),
-            height.toDouble())
-        this.mineImage = mineImage 
-        ctx.textBaseline = savedBaseline
-        ctx.font = savedFont
-    }
- 
     /**
      * setup number image-blank map
      */
@@ -467,16 +376,6 @@ class Glyph(
             result = numberImageMap[number] 
         }
         return result
-    }
-
-    /**
-     * create mine image node
-     */
-    fun createMineImageNode() {
-//        val svgNode = document.createElementNS(
-//            "http://www.w3.org/2000/svg",
-//            "svg") as SVGElement
-//        svgNode.setAttributeNS("http://www.w3.org/1999/xlink", "href", "")
     }
 
     /**

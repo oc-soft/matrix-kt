@@ -2,6 +2,7 @@ package net.ocsoft.mswp.ui
 
 
 import kotlin.collections.MutableList
+import kotlin.collections.HashMap
 
 /**
  * icon setting
@@ -22,31 +23,51 @@ class IconSetting(
          * OK icon property name
          */ 
         val OK_ICON = "ok"
+
+        /**
+         * all icon property names
+         */
+        val allIcons : Array<String>
+            get() {
+                val result = arrayOf(
+                    NG_ICON,
+                    OK_ICON)
+                return result
+            }
     }
 
     /**
      * NG icon
      */
     var ngIcon: Persistence.Icon = ngIcon
-        set(value)
-            {
-                if (field != value) {
-                    field = value
-                    notifyChange(NG_ICON)
-                }
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyChange(NG_ICON)
             }
+        }
      
     /**
      * OK icon
      */
     var okIcon: Persistence.Icon = okIcon
-        set(value)
-            {
-                if (field != value) {
-                    field = value
-                    notifyChange(OK_ICON)
-                }
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyChange(OK_ICON)
             }
+        }
+    /**
+     * snap short of icon mapping
+     */
+    val icons: Map<String, Persistence.Icon>
+        get() {
+            val result = HashMap<String, Persistence.Icon>()
+            result[OK_ICON] = okIcon
+            result[NG_ICON] = ngIcon
+            return result
+        }
+    
     /**
      * event listeners
      */
