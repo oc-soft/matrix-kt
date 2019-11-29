@@ -26,10 +26,15 @@ class Textures {
         = HashMap<Int, WebGLTexture>() 
 
     /**
-     * mine texture
+     * ng texture
      */
-    var mineImageTexture: WebGLTexture? = null
-       
+    var ngImageTexture: WebGLTexture? = null
+
+    /**
+     * ok texture
+     */
+    var okImageTexture: WebGLTexture? = null
+        
     /**
      * to use for dummy
      */
@@ -53,13 +58,15 @@ class Textures {
     fun setup(gl: WebGLRenderingContext, glyph: Glyph) {
         setupTransparentBlackTexture(gl)
         setupNumberImageBlankTexture(gl, glyph)
-        setupMineImageTexture(gl, glyph)
+        setupNgImageTexture(gl, glyph)
+        setupOkImageTexture(gl, glyph)
     }
     /**
      * teardown
      */
     fun teardown(gl: WebGLRenderingContext) {
-        teardownMineImageTexture(gl)
+        teardownOkImageTexture(gl)
+        teardownNgImageTexture(gl)
         teardownNumberImageBlankTexture(gl)
         teardownTransparentBlackTexture(gl) 
     }
@@ -147,17 +154,18 @@ class Textures {
         }
         numberImageBlankTextureMap.clear()
     }
+
     /**
-     * setup mine image texture
+     * setup ok image texture
      */
-    fun setupMineImageTexture(gl : WebGLRenderingContext,
+    fun setupOkImageTexture(gl : WebGLRenderingContext,
         glyph : Glyph) {
         
         val savedTex = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D)
 
-        val mineImage = glyph.mineImageBlank
-        if (mineImage != null) {
+        val okImage = glyph.okImageBlank
+        if (okImage != null) {
             val tex = gl.createTexture();
             if (tex != null) {
                 gl.bindTexture(
@@ -168,9 +176,42 @@ class Textures {
                     WebGLRenderingContext.RGBA,
                     WebGLRenderingContext.RGBA,
                     WebGLRenderingContext.UNSIGNED_BYTE,
-                    mineImage)
+                    okImage)
                 gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-                mineImageTexture = tex
+                okImageTexture = tex
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex as WebGLTexture?)
+
+    }
+
+
+    /**
+     * setup ng image texture
+     */
+    fun setupNgImageTexture(gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+        val ngImage = glyph.mineImageBlank
+        if (ngImage != null) {
+            val tex = gl.createTexture();
+            if (tex != null) {
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    tex)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    ngImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                ngImageTexture = tex
             }
         }
         gl.bindTexture(
@@ -180,40 +221,50 @@ class Textures {
     }
 
     
-
-
     /**
-     * tear down mine image texture
+     * tear down ok image texture
      */
-    fun teardownMineImageTexture(gl: WebGLRenderingContext) {
-        val tex = mineImageTexture
+    fun teardownOkImageTexture(gl: WebGLRenderingContext) {
+        val tex = okImageTexture
         if (tex != null) {
             gl.deleteTexture(tex)
         }
-        this.mineImageTexture = null
+        this.okImageTexture = null
+    }
+ 
+
+    /**
+     * tear down ng image texture
+     */
+    fun teardownNgImageTexture(gl: WebGLRenderingContext) {
+        val tex = ngImageTexture
+        if (tex != null) {
+            gl.deleteTexture(tex)
+        }
+        this.ngImageTexture = null
     }
     /**
      * update main image texture
      */
-    fun updateMineImageTexture(gl: WebGLRenderingContext,
+    fun updateNgImageTexture(gl: WebGLRenderingContext,
         glyph: Glyph) {
-        teardownMineImageTexture(gl)
-        setupMineImageTexture(gl, glyph)
+        teardownNgImageTexture(gl)
+        setupNgImageTexture(gl, glyph)
     }
     /**
-     * update main image texture
+     * update ng image texture
      */
-    fun updateMineImageTexture1(gl: WebGLRenderingContext,
+    fun updateNgImageTexture1(gl: WebGLRenderingContext,
         glyph: Glyph) {
         val mineImage = glyph.mineImageBlank
         if (mineImage != null) {
-            if (mineImageTexture != null) {
+            if (ngImageTexture != null) {
                 val savedTex = gl.getParameter(
                     WebGLRenderingContext.TEXTURE_BINDING_2D)
 
                 gl.bindTexture(
                     WebGLRenderingContext.TEXTURE_2D,
-                    mineImageTexture)
+                    ngImageTexture)
                 gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
                     0,
                     WebGLRenderingContext.RGBA,

@@ -162,7 +162,7 @@ class Buttons(var mineButton : MineButton,
         if (logic != null) {
             val cell = CellIndex(rowIndex, colIndex)
             if (logic.isOver && cell in logic.mineLocations) {
-                result = getMineTexture() 
+                result = getNgTexture() 
             } else {
                 result = getTransparentTexture()
             }
@@ -183,13 +183,13 @@ class Buttons(var mineButton : MineButton,
         return result
     }
     /**
-     * get mine image texture
+     * get ng image texture
      */
-    fun getMineTexture() : WebGLTexture? {
+    fun getNgTexture() : WebGLTexture? {
         var textures = this.textures
         var result : WebGLTexture? = null
         if (textures != null) {
-            result = textures.mineImageTexture 
+            result = textures.ngImageTexture 
         }
         return result
     }

@@ -576,7 +576,7 @@ class Grid(rowCount: Int = 6,
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
 
-            textures?.updateMineImageTexture(gl, glyph) 
+            textures?.updateNgImageTexture(gl, glyph) 
             postDrawScene(gl)
         }
     }

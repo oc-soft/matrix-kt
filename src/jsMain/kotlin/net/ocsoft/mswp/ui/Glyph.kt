@@ -55,7 +55,37 @@ class Glyph(
      */
     var specialImageBlankMap : MutableMap<String, ImageData>? = null
 
+    /**
+     * ok image
+     */
+    val okImage : ImageData?
+        get() {
+            val imgMap = this.specialImageMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.OK_ICON in imgMap) {
+                    result = imgMap[IconSetting.OK_ICON]
+                }
+            }
+            return result
+        }
 
+    /**
+     * ok blank image
+     */
+    val okImageBlank : ImageData?
+        get() {
+            val imgMap = this.specialImageBlankMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.OK_ICON in imgMap) {
+                    result = imgMap[IconSetting.OK_ICON]
+                }
+            }
+            return result
+        } 
+
+ 
     /**
      * mine image
      */
