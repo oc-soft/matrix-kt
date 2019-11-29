@@ -164,7 +164,7 @@ class Buttons(var mineButton : MineButton,
             if (logic.isOver && cell in logic.mineLocations) {
                 result = getNgTexture() 
             } else {
-                result = getTransparentTexture()
+                result = getOkTexture()
             }
         }
         return result
@@ -190,6 +190,18 @@ class Buttons(var mineButton : MineButton,
         var result : WebGLTexture? = null
         if (textures != null) {
             result = textures.ngImageTexture 
+        }
+        return result
+    }
+
+    /**
+     * get ok image texture
+     */
+    fun getOkTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.okImageTexture 
         }
         return result
     }

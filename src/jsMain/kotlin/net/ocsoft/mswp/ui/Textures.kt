@@ -243,6 +243,16 @@ class Textures {
         }
         this.ngImageTexture = null
     }
+
+    /**
+     * update ok image texture
+     */
+    fun updateOkImageTexture(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        teardownOkImageTexture(gl)
+        setupOkImageTexture(gl, glyph)
+    }
+ 
     /**
      * update main image texture
      */
