@@ -141,24 +141,24 @@ class Glyph(
         setupNumbers1()
     }
     /**
-     * update mine image with specied icon setting.
+     * update special image with specied icon setting.
      */
-    fun updateMineImage(
+    fun updateSpecialImage(
         iconSetting: IconSetting) {
         val nodeId = this.nodeId     
         if (nodeId != null) {
             val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
             val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
      
-            updateMineImage(ctx, iconSetting)
+            updateSpecialImage(ctx, iconSetting)
         }
     }
 
 
     /**
-     * update mine image with specied icon setting.
+     * update special image with specied icon setting.
      */
-    fun updateMineImage(
+    fun updateSpecialImage(
         ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting) {
         setupSpecialImages(ctx, iconSetting)

@@ -561,7 +561,9 @@ class Grid(rowCount: Int = 6,
      * response icon setting changed event.
      */
     fun handleIconChanged(sender: Any?, msg: String) {
-        if (msg == IconSetting.NG_ICON) { 
+        
+        if (msg == IconSetting.NG_ICON
+            || msg == IconSetting.OK_ICON) { 
             syncIconImageWithSettings()
         }
     }
@@ -571,7 +573,7 @@ class Grid(rowCount: Int = 6,
     fun syncIconImageWithSettings() {
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
-            glyph.updateMineImage(iconSetting)
+            glyph.updateSpecialImage(iconSetting)
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
