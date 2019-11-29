@@ -74,8 +74,8 @@
         <div class="modal-body">
           <div class="input-group icon kind">
             <select class="custom-select" id="icon-kind-selector">
-              <option value="ok">OK</option>
-              <option value="ng" selected>NG</option>
+              <option value="ok" selected>OK</option>
+              <option value="ng">NG</option>
             </select>
             <div class="input-group-append" >
               <label class="input-group-text"
