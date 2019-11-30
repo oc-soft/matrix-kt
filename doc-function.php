@@ -83,8 +83,32 @@ function doc_render_head($setting) {
 						}
 						echo $str_val;
 					}
-				} 
+                } else {
+                    echo $custom;
+                }
 			}
+            if (isset($head['css'])) {
+                $css_src = $head['css'];
+                $echo_css = function($css_array) {
+                    foreach ($css_array as $val) {
+                        if (is_array($val)) {
+                            $str_val = implode('', $val);
+                        } else {
+                            $str_val = $val;
+                        }
+                        
+                        echo sprintf('<link rel="stylesheet" href="%s">',
+                            $str_val);
+                    }
+                };  
+
+                if (is_array($css_src)) {
+                    $echo_css_param = $css_src;
+                } else {
+                    $echo_css_param = array($css_src);
+                }
+                $echo_css($echo_css_param);
+            }
 			if (isset($head['using'])) {
 				global $using_mapping;
 				foreach($head['using'] as $val) {
@@ -103,11 +127,54 @@ function doc_render_head($setting) {
  * render html body.
  */
 function doc_render_body($setting) {
-	require __DIR__ . '/vendor/autoload.php';
-	$parser = new \cebe\markdown\Markdown();
-  $parser->html5 = true;
+    require __DIR__ . '/vendor/autoload.php';
+    
+    if ($setting['config']['body']) {
+        $body_config = $setting['config']['body'];
+        if (isset($body_config['header'])) {
+            $header = $body_config['header'];
+            if (!is_array($header)) {
+                $header = array($header);
+            }
+        }
+        if (isset($body_config['footer'])) {
+            $footer = $body_config['footer'];
+            if (!is_array($footer)) {
+                $footer = array($footer);
+            }
+        } 
+        if (isset($body_config['markdown-type'])) {
+            $markdown = $body_config['markdown-type'];
+        }
+    }
+    if (isset($markdown)) {
+        if ('github' == $markdown) {
+            $parser = new \cebe\markdown\GithubMarkdown();
+        } else {
+            $parser = new \cebe\markdown\Markdown();
+        }
+    } else {
+        $parser = new \cebe\markdown\Markdown();
+    }
+
+    if (isset($header)) {
+        echo "<header>\n"; 
+        foreach ($header as $header_item) {
+            echo $header_item . "\n";
+        }
+        echo "</header>\n";
+    }
+    $parser->html5 = true;
 	$body_contents = $parser->parse($setting['body']);
 	echo $body_contents;
+
+    if (isset($footer)) {
+        echo "<footer>\n";
+        foreach ($footer as $footer_item) {
+            echo $footer_item . "\n";
+        }
+        echo "</footer>\n";
+    }
 }
 
 ?>
