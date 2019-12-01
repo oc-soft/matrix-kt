@@ -3,11 +3,11 @@
 /**
  * get file contents accoding with localization.
  */
-function l18n_contents_get_by_file($accept_lang, $dir, $file, $ext) {
+function i18n_contents_get_by_file($accept_lang, $dir, $file, $ext) {
 	$contents = NULL;		
 	$saved_error_level = error_reporting(0);	
 
-	l18n_contents_iterate($accept_lang, 
+	i18n_contents_iterate($accept_lang, 
 		function($lang) use($dir, $file, $ext, &$contents) {
 		$file_path = implode('/', array($dir, $file . '-' . $lang . $ext));
 		$f_contents = file_get_contents($file_path);
@@ -31,7 +31,7 @@ function l18n_contents_get_by_file($accept_lang, $dir, $file, $ext) {
 /**
  * iterate accept languages higher request order.
  */
-function l18n_contents_iterate($accept_lang, $iter) {
+function i18n_contents_iterate($accept_lang, $iter) {
 	if (isset($accept_lang)) {
 		$elems = explode(',', $accept_lang);
 		$q_lang_map = array('1' => array());

@@ -12,12 +12,12 @@ function doc_get_contents($accept_lang, $doc_name) {
 			array('doc', $doc_name . '.rc')));
 	error_reporting($saved_error_level);
 	if ($config_base) {
-		require_once 'l18n-contents.php';
-		$doc_contents = l18n_contents_get_by_file($accept_lang, 
+		require_once 'i18n-contents.php';
+		$doc_contents = i18n_contents_get_by_file($accept_lang, 
 			'doc', $doc_name, '.txt');
 		if (isset($doc_contents)) {
 			$config_base_obj = json_decode($config_base, TRUE);
-			$config_lang = l18n_contents_get_by_file($accept_lang,
+			$config_lang = i18n_contents_get_by_file($accept_lang,
 				'doc', $doc_name, '.rc');
 			if (isset($config_lang)) {
 				$config_lang_obj = json_decode($config_lang, TRUE);

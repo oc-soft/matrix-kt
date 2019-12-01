@@ -18,7 +18,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   <link rel="stylesheet" type="text/css" href="about.css">
 
-</head> 
+</head>
 <body>
 <div class="main">
 <h1>動機</h1>
@@ -26,7 +26,7 @@
 <ol>
 <li>androidの開発を見据えてkotlinを使いならすこと。</li>
 <li>gradleによる開発サイクルに慣れること。</li>
-<li>groogyでgradleのスクリプトを拡張して、自分の望んだjavascriptアプリを作成する。</li>
+<li>groovyでgradleのスクリプトを拡張して、自分の望んだjavascriptアプリを作成する。</li>
 <li>webglによるUIの可能性を調べること。</li>
 <li>open glのレンダリングの詳細を理解すること。</li>
 </ol>
