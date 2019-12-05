@@ -32,7 +32,8 @@
 
 <body>
   <div id="splash_pane" class="overlay">
-    <div class="loading text-white"><span>Loading...<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
+    <div class="loading text-white">
+      <span>Loading...<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
     </div>
   </div>
   <div class="setting menu"><div class="menu item"><i class="fas fa-wrench"></i></div></div>

@@ -129,7 +129,7 @@ function doc_render_head($setting) {
 function doc_render_body($setting) {
     require __DIR__ . '/vendor/autoload.php';
     
-    if ($setting['config']['body']) {
+    if (isset($setting['config']['body'])) {
         $body_config = $setting['config']['body'];
         if (isset($body_config['header'])) {
             $header = $body_config['header'];
