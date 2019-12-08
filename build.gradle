@@ -70,10 +70,9 @@ kotlin {
 jsMainClasses.dependsOn gulp_css
 
 task xgetText(type: Exec) {
-
     executable = 'xgettext'
-
 }
+
 
 
 task xgettextphp {
@@ -96,6 +95,44 @@ task xgettextphp {
         mkdir(outDir)        
     }
 
+}
+
+
+task msgfmts {
+    def srcDir = file("${projectDir}/src/i18n")
+    def targetDir = "${buildDir}/i18n"
+
+    def col = layout.files { srcDir.listFiles() }
+    
+    col = col.filter { 
+        def res = it.name != 'messages.po'
+        if (res) {
+            res = it.name.endsWith('.po')
+        }
+        res
+    }
+     
+    doLast {
+        col.each { 
+            def nameWithExt = it.name
+            def name = nameWithExt.substring(0,
+                nameWithExt.length() - '.po'.length()) 
+            def destDir = file(new File(targetDir, name))
+            mkdir destDir
+            def srcPath = it
+
+            exec {
+                executable 'msgfmt'
+                args += '-o'
+                args += new File(destDir, 'messages.mo')
+                args += srcPath
+            }
+        }
+ 
+    }
+
+    // col.collect { relativePath(it) }.each { println it }
+     
 }
 
 task createFigureForDoc(type: JavaExec) {
