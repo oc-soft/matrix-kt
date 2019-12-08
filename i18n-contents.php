@@ -20,6 +20,7 @@ function i18n_contents_get_by_file($accept_lang, $dir, $file, $ext) {
 		return result;
 	});
 	error_reporting($saved_error_level);
+
 	if (!isset($contents)) {
 		$file_path = implode('/', array($dir, $file . $ext));
 		$contents = file_get_contents($file_path);

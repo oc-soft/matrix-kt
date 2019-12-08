@@ -1,0 +1,22 @@
+{
+    "head": {
+        "og": {
+            "title": "About this program -- Mine sweeper",
+            "type": "website",
+            "doc-query": "index.php?doc=about&lang=ja"
+        },
+        "css" : [
+            "doc/about.css"
+        ],
+        "title": "About this program",
+        "using": [
+            "fontawesome"
+        ]
+    },
+    "body" : {
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    }
+}

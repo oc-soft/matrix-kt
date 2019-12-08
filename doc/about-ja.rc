@@ -1,0 +1,15 @@
+{
+    "head": {
+        "og": {
+            "title": "このプログラムについて -- マインスイーパー",
+            "type": "website"
+        },
+        "title": "このプログラムについて"
+    },
+    "body" : {
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">マインスイーパーをする</a>"
+        ]
+    }
+}

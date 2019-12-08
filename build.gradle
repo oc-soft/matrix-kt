@@ -15,7 +15,8 @@ plugins {
 }
 
 ext.web_dir = 'prg'
-
+ext.packageVersion = '0.3.0'
+ext.ocSoftEmail0 = 'toshi@oc-soft.net'
 
 
 repositories { // Use jcenter for resolving dependencies.
@@ -68,6 +69,35 @@ kotlin {
 
 jsMainClasses.dependsOn gulp_css
 
+task xgetText(type: Exec) {
+
+    executable = 'xgettext'
+
+}
+
+
+task xgettextphp {
+    def srcFiles = fileTree(dir: './',
+        include: '**/*.php',
+        excludes: ['vendor/**/*.php'])
+    def outDir = "${projectDir}/src/i18n" 
+    xgetText.workingDir = './'
+    xgetText.args += '-p'
+    xgetText.args += outDir
+    xgetText.args += '--copyright-holder=OC software'
+    xgetText.args += '--package-name=Mine sweeper'
+    xgetText.args += "--package-version=${packageVersion}"
+    xgetText.args += "--msgid-bugs-address=${ocSoftEmail0}" 
+    xgetText.args += '-j'
+    xgetText.args += '--no-location'
+    xgetText.args += srcFiles
+    finalizedBy xgetText
+    doFirst {
+        mkdir(outDir)        
+    }
+
+}
+
 task createFigureForDoc(type: JavaExec) {
 
     def target = kotlin.targets.jvm
@@ -95,6 +125,8 @@ task resolveEllipseCenter(type: JavaExec) {
     main = 'net.ocsoft.geom.EllipseCenterKt'
 
 }
+
+
 
 
 createFigureForDoc.description = 'generate figure for document' 

@@ -13,8 +13,10 @@ if (count($_GET)) {
 		$accept_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 		if (isset($lang)) {
 			$accept_lang = $lang . ',' . $accept_lang;	
-		}
-		$doc_setting = doc_get_contents($accept_lang, $doc_name);
+        } else {
+            $lang = NULL;
+        }
+		$doc_setting = doc_get_contents($accept_lang, $doc_name, $lang);
 		if (isset($doc_setting) && count($doc_setting)) {
 			$contents = 'doc-template.php';
 		}

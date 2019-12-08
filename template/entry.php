@@ -33,7 +33,7 @@
 <body>
   <div id="splash_pane" class="overlay">
     <div class="loading text-white">
-      <span>Loading...<div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
+    <span><?php echo _("Loading...");?><div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
     </div>
   </div>
   <div class="setting menu"><div class="menu item"><i class="fas fa-wrench"></i></div></div>
@@ -41,13 +41,19 @@
   <canvas id="glyph_workarea" width="256" height="256"></canvas>
   <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">
+      <div class="modal-content">2
         <div class="modal-body">
-          <p>Game over</p>
-          <a href="./about.php" class="badge badge-primary">About this Project</a>
+          <p><?php echo _("Game over"); ?></p>
+          <a href="index.php?doc=about"
+          class="badge badge-primary"><?php 
+            echo _("About this Project"); ?></a>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Play again</button>
+          <button type="button"
+            class="btn btn-primary"
+            data-dismiss="modal"><?php
+              echo _("Play again");
+            ?></button>
         </div>
       </div>
     </div>
@@ -57,10 +63,17 @@
       <div class="modal-content">
         <div class="modal-body">
           <p>You won the game</p>
-          <a href="./about.php" class="badge badge-primary">About this Project</a>
+          <a href="./about.php"
+            class="badge badge-primary"><?php
+              echo _("About this Project");
+          ?></a>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Play again</button>
+          <button type="button"
+            class="btn btn-primary"
+            data-dismiss="modal"><?php
+              echo _("Play again");
+            ?></button>
         </div>
       </div>
     </div>
@@ -70,17 +83,18 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-title">Please select icon</div>
+          <div class="modal-title"><?php 
+            echo _("Please select icons"); ?></div>
         </div>
         <div class="modal-body">
           <div class="input-group icon kind">
             <select class="custom-select" id="icon-kind-selector">
-              <option value="ok" selected>OK</option>
-              <option value="ng">NG</option>
+              <option value="ok" selected><?php echo _("OK"); ?></option>
+              <option value="ng"><?php echo _("NG"); ?></option>
             </select>
             <div class="input-group-append" >
               <label class="input-group-text"
-                for="icon-kind-selector">Icon</label>
+                for="icon-kind-selector"><?php echo _("Icon"); ?></label>
             </div>
           </div>
           <ul class="icons list">
@@ -88,8 +102,11 @@
           <div class="pagination container"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary ok">OK</button>
-          <button type="button" data-dismiss="modal" class="btn btn-secondary">Cacel</button>
+          <button type="button"
+            class="btn btn-primary ok"><?php echo _("OK"); ?></button>
+          <button type="button"
+            data-dismiss="modal" 
+            class="btn btn-secondary"><?php echo _("Cacel"); ?></button>
         </div>
       </div>
     </div>

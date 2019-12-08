@@ -5,7 +5,7 @@ require_once implode('/', array('site', 'config.php'));
 /**
  * get body contents and header settings.
  */
-function doc_get_contents($accept_lang, $doc_name) {
+function doc_get_contents($accept_lang, $doc_name, $lang) {
 	$saved_error_level = error_reporting(0);
 
 	$config_base = file_get_contents(implode('/', 
@@ -21,15 +21,22 @@ function doc_get_contents($accept_lang, $doc_name) {
 				'doc', $doc_name, '.rc');
 			if (isset($config_lang)) {
 				$config_lang_obj = json_decode($config_lang, TRUE);
-				$config = array_replace_recursive($config_base_obj,
-					$config_lang_obj);
+                if (is_array($config_lang_obj)) {
+				    $config = array_replace_recursive($config_base_obj,
+					    $config_lang_obj);
+                } else {
+                    $config = $config_base;
+                }
 			} else {
 				$config = $config_base;
 			}	
 			$result = array(
 				'body' => $doc_contents,
 				'config' => $config,
-				'doc_name' => $doc_name);
+                'doc_name' => $doc_name);
+            if (isset($lang)) {
+                $result['lang'] = $lang;
+            }
 		}
 	}
 	return $result;
@@ -64,10 +71,14 @@ function doc_render_head($setting) {
 					$str .= 'content="' . $og['type'] . '">';
   					echo $str; 
 				}
-				if (isset($setting['doc_name'])) {
+                if (isset($setting['doc_name'])) {
 					$str = '<meta property="og:url" ';
 					$str .= 'content="' . $mswp_settings['siteUrl'];
-		   			$str .= '/index.php?doc=' . $setting['doc_name'] . '">';
+		   			$str .= '/index.php?doc=' . $setting['doc_name'];
+                    if (isset($setting['lang'])) {
+                        $str .= '&lang=' . $setting['lang'];
+                    }
+                    $str .= '">';
   					echo $str; 
 				}
         
