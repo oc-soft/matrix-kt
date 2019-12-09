@@ -41,7 +41,7 @@
   <canvas id="glyph_workarea" width="256" height="256"></canvas>
   <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">2
+      <div class="modal-content">
         <div class="modal-body">
           <p><?php echo _("Game over"); ?></p>
           <a href="index.php?doc=about"
@@ -62,7 +62,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-body">
-          <p>You won the game</p>
+          <p><?php echo _("You won the game"); ?></p>
           <a href="./about.php"
             class="badge badge-primary"><?php
               echo _("About this Project");

@@ -2,7 +2,7 @@
 	
 if (count($_GET)) {
 	if (isset($_GET['doc'])) {
-		require('doc-function.php');
+		require 'doc-function.php';
 		if (isset($_GET['doc'])) {
 			$doc_name = $_GET['doc'];
 		}

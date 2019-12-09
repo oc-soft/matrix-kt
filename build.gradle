@@ -100,7 +100,7 @@ task xgettextphp {
 
 task msgfmts {
     def srcDir = file("${projectDir}/src/i18n")
-    def targetDir = "${buildDir}/i18n"
+    def targetDir = "${projectDir}/i18n"
 
     def col = layout.files { srcDir.listFiles() }
     
@@ -117,7 +117,7 @@ task msgfmts {
             def nameWithExt = it.name
             def name = nameWithExt.substring(0,
                 nameWithExt.length() - '.po'.length()) 
-            def destDir = file(new File(targetDir, name))
+            def destDir = new File(new File(targetDir, name), 'LC_MESSAGES')
             mkdir destDir
             def srcPath = it
 
@@ -131,8 +131,6 @@ task msgfmts {
  
     }
 
-    // col.collect { relativePath(it) }.each { println it }
-     
 }
 
 task createFigureForDoc(type: JavaExec) {
