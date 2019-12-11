@@ -1,5 +1,8 @@
 <?php
 	
+function mswp_is_debug() {
+	return isset($_GET['mswp_dbg']);
+}
 if (count($_GET)) {
 	if (isset($_GET['doc'])) {
 		require 'doc-function.php';

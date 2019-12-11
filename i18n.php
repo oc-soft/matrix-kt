@@ -7,7 +7,7 @@
 function i18n_bind_textdomain($accept_lang = NULL, $dommain = NULL) {
     if (!isset($domain)) {
         $domain = 'messages';
-    } 
+	}
     if (!isset($accept_lang)) {
         $lang = NULL;
         if (isset($_REQUEST['lang'])) {
@@ -31,6 +31,10 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
         return FALSE;
     };
     i18n_iterate_accept_languages($accept_lang, $lang_iter);
+    if (function_exists('mswp_is_debug') && mswp_is_debug()) {
+        var_dump('I am debuging'); 
+    }
+
     if (count($langs)) {
         if (defined('LC_MESSAGES')) { 
             putenv(sprintf('LC_MESSAGES=%s', $langs[0]));
