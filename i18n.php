@@ -31,22 +31,42 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
         return FALSE;
     };
     i18n_iterate_accept_languages($accept_lang, $lang_iter);
-    if (function_exists('mswp_is_debug') && mswp_is_debug()) {
-        var_dump('I am debuging'); 
-    }
 
     if (count($langs)) {
-        if (defined('LC_MESSAGES')) { 
+        /* putenv(sprintf('LANG=%s', $langs[0])); */
+        /* putenv(sprintf('LANGUAGES=%s', $langs[0]));	*/
+
+        if (defined('LC_MESSAGES')) {
+            /* $state = i18n_set_locale(LC_MESSAGES, $langs[0]); */
             putenv(sprintf('LC_MESSAGES=%s', $langs[0]));
-            $state = setlocale(LC_MESSAGES, $langs[0]);
+            setlocale(LC_MESSAGES, $langs[0]);
         } else {
+            /* $state = i18n_set_locale(LC_ALL, $langs[0]); */
             putenv(sprintf('LC_ALL=%s', $langs[0]));
             $state = setlocale(LC_ALL, $langs[0]);
         }
         bindtextdomain($domain, implode('/', array(__DIR__, 'i18n')));
+        if (function_exists('mswp_is_debug') && mswp_is_debug()) {
+            var_dump($state);
+            /* phpinfo(); */
+        }
+
     }
 }
 
+/**
+ * set locale with LOCPATH environement.
+ */
+function i18n_set_locale(category, locale) {
+    $result = setlocale(catetory, locale);
+    if (!$result) {
+        putenv(sprintf('LOCPATH=%s',
+            implode('/', array(__DIR__, 'locale'))));
+        $result = setlocale(category, locale);
+        putenv(sprintf('LOCPATH'));
+    }
+    return $result;
+}
 
 
 /**
