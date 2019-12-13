@@ -37,13 +37,13 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
         /* putenv(sprintf('LANGUAGES=%s', $langs[0]));	*/
 
         if (defined('LC_MESSAGES')) {
-            /* $state = i18n_set_locale(LC_MESSAGES, $langs[0]); */
+            $state = i18n_set_locale(LC_MESSAGES, $langs[0]); 
             putenv(sprintf('LC_MESSAGES=%s', $langs[0]));
-            setlocale(LC_MESSAGES, $langs[0]);
+            /*setlocale(LC_MESSAGES, $langs[0]); */
         } else {
-            /* $state = i18n_set_locale(LC_ALL, $langs[0]); */
+            $state = i18n_set_locale(LC_ALL, $langs[0]); 
             putenv(sprintf('LC_ALL=%s', $langs[0]));
-            $state = setlocale(LC_ALL, $langs[0]);
+            /* $state = setlocale(LC_ALL, $langs[0]); */
         }
         bindtextdomain($domain, implode('/', array(__DIR__, 'i18n')));
         if (function_exists('mswp_is_debug') && mswp_is_debug()) {
@@ -57,8 +57,8 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
 /**
  * set locale with LOCPATH environement.
  */
-function i18n_set_locale(category, locale) {
-    $result = setlocale(catetory, locale);
+function i18n_set_locale($category, $locale) {
+    $result = setlocale($catetory, $locale);
     if (!$result) {
         putenv(sprintf('LOCPATH=%s',
             implode('/', array(__DIR__, 'locale'))));
