@@ -33,20 +33,66 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
     i18n_iterate_accept_languages($accept_lang, $lang_iter);
 
     if (count($langs)) {
-
-        if (defined('LC_MESSAGES')) {
-            $state = i18n_set_locale(LC_MESSAGES, $langs[0]); 
-            putenv(sprintf('LC_MESSAGES=%s', $langs[0]));
-        } else {
-            $state = i18n_set_locale(LC_ALL, $langs[0]); 
-            putenv(sprintf('LC_ALL=%s', $langs[0]));
-        }
-        bindtextdomain($domain, implode('/', array(__DIR__, 'i18n')));
-	bind_textdomain_codeset($domain, 'UTF-8');
-        if (function_exists('mswp_is_debug') && mswp_is_debug()) {
+        $state = i18n_bind_textdomain_i0($langs[0], $domain);
+        if (!$state) { 
+            $match_state = preg_match('/([a-zA-Z0-9]+)(_|-)(\w+)/',
+                $langs[0], $matches);
+            if ($match_state) {
+                $state = i18n_bind_textdomain_i0($matches[1], $domain);
+            }
         }
     }
 }
+
+/**
+ * setup text domain for gettext
+ */
+function i18n_bind_textdomain_i0($lang, $domain) {
+
+    $result = FALSE;
+    if (defined('LC_MESSAGES')) {
+        i18n_set_locale(LC_MESSAGES, $lang); 
+        putenv(sprintf('LC_MESSAGES=%s', $lang));
+    } else {
+        i18n_set_locale(LC_ALL, $lang); 
+        putenv(sprintf('LC_ALL=%s', $lang));
+    }
+    $result = i18n_bindtextdomain(
+        $domain, implode('/', array(__DIR__, 'i18n')));
+    i18n_bind_textdomain_codeset($domain, 'UTF-8');
+    return $result;
+}
+
+
+/**
+ * bindtextdomain wrapper.
+ * some php system is not installed gettext library.
+ */
+function i18n_bindtextdomain($domain, $directory) {
+    if (function_exists('bindtextdomain')) {
+        bindtextdomain($domain, $directory);
+    } else {
+        if (!function_exists('gettext')) {
+            function gettext($str) {
+                return $str;
+            }
+            function _($str) {
+                return $str;
+            }
+        }
+    }
+}
+
+/**
+ * bind_textdomain_codeset wrapper.
+ * some php system is not installed gettext library.
+ */
+function i18n_bind_textdomain_codeset($domain, $codeset) {
+    if (function_exists('bind_textdomain_codeset')) {
+        bind_textdomain_codeset($domain, codeset);
+    }
+}
+
 
 /**
  * set locale with LOCPATH environement.
