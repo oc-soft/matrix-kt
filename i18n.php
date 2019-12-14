@@ -40,6 +40,9 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
             if ($match_state) {
                 $state = i18n_bind_textdomain_i0($matches[1], $domain);
             }
+            if (function_exists(mswp_is_debug) && mswp_is_debug()) { 
+                var_dump($state);
+            }
         }
     }
 }
@@ -69,8 +72,12 @@ function i18n_bind_textdomain_i0($lang, $domain) {
  * some php system is not installed gettext library.
  */
 function i18n_bindtextdomain($domain, $directory) {
+    $result = FALSE;
     if (function_exists('bindtextdomain')) {
-        bindtextdomain($domain, $directory);
+        $result = bindtextdomain($domain, $directory);
+        if (function_exists(mswp_is_debug) && mswp_is_debug()) { 
+            var_dump($result);
+        }
     } else {
         if (!function_exists('gettext')) {
             function gettext($str) {
@@ -81,6 +88,7 @@ function i18n_bindtextdomain($domain, $directory) {
             }
         }
     }
+    return $result;
 }
 
 /**
