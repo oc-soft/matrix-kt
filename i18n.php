@@ -40,9 +40,6 @@ function i18n_bind_textdomain_i($accept_lang, $domain) {
             if ($match_state) {
                 $state = i18n_bind_textdomain_i0($matches[1], $domain);
             }
-            if (function_exists(mswp_is_debug) && mswp_is_debug()) { 
-                var_dump($state);
-            }
         }
     }
 }
@@ -65,19 +62,14 @@ function i18n_bind_textdomain_i0($lang, $domain) {
     i18n_bind_textdomain_codeset($domain, 'UTF-8');
     return $result;
 }
-
-
 /**
  * bindtextdomain wrapper.
  * some php system is not installed gettext library.
  */
 function i18n_bindtextdomain($domain, $directory) {
-    $result = FALSE;
+
     if (function_exists('bindtextdomain')) {
-        $result = bindtextdomain($domain, $directory);
-        if (function_exists(mswp_is_debug) && mswp_is_debug()) { 
-            var_dump($result);
-        }
+        bindtextdomain($domain, $directory);
     } else {
         if (!function_exists('gettext')) {
             function gettext($str) {
@@ -88,7 +80,6 @@ function i18n_bindtextdomain($domain, $directory) {
             }
         }
     }
-    return $result;
 }
 
 /**
@@ -97,7 +88,7 @@ function i18n_bindtextdomain($domain, $directory) {
  */
 function i18n_bind_textdomain_codeset($domain, $codeset) {
     if (function_exists('bind_textdomain_codeset')) {
-        bind_textdomain_codeset($domain, codeset);
+        bind_textdomain_codeset($domain, $codeset);
     }
 }
 
