@@ -29,4 +29,5 @@ function i18n_contents_get_by_file($accept_lang, $dir, $file, $ext) {
 	$result = $contents;
 	return $result;
 }
+/* vi: se ts=4 sw=4 et: */
 ?>

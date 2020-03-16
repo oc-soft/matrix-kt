@@ -155,4 +155,5 @@
   </template>
 </body>
 
-</html>
+</html><?php
+/* vi: se sw=2 ts=2 et: */

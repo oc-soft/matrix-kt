@@ -4,12 +4,9 @@
  * This generated file contains a sample Kotlin application project to get you started.
  */
 
-import org.apache.commons.codec.binary.Base64 
-
-
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.multiplatform' version '1.3.41'
+    id 'org.jetbrains.kotlin.multiplatform' version '1.3.70'
     id 'com.moowork.node' version '1.3.1'
     id 'com.moowork.gulp' version '1.2.0'
 }
@@ -24,13 +21,23 @@ repositories { // Use jcenter for resolving dependencies.
     jcenter()
 }
 
+
+
+
+
+
 kotlin {
     jvm() {
 
     }
     js() {
+        browser() {
+            webpackTask() {
+                output.libraryTarget = 'commonjs' 
+            }
+        } 
         compilations.main.kotlinOptions {
-            moduleKind='amd'
+            moduleKind='commonjs'
         }
     }
     sourceSets {
@@ -128,9 +135,7 @@ task msgfmts {
                 args += srcPath
             }
         }
- 
     }
-
 }
 
 build.dependsOn msgfmts
@@ -211,3 +216,4 @@ clean.doFirst {
     delete "./css"
     delete "${projectDir}/i18n"
 }
+/* vi: se ts=4 sw=4 et: */

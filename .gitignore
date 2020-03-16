@@ -10,8 +10,9 @@ prg/
 config.php
 .htaccess
 TextureText.txt
-composer.json
-composer.lock
 composer.phar
 node_modules/
 vendor/
+php.ini
+webfonts/
+composer-setup.php
