@@ -338,24 +338,7 @@ class PathTest {
         assertEquals(data[1], dataRes)
     }
    
-    @Test
-    fun parseFloatNumber() {
-        val data = doubleArrayOf(1.0, 201.0, -34.0)
 
-        val strData = Array<String>(data.size) {
-            "%.2f".format(data[it])
-        }
-        val dataRes = ArrayList<Double>()
-        val res = Path.parseCoordinateSequence(
-            Path.Stream(strData.joinToString(" ")),
-            dataRes) 
-        assertTrue(res)
-        assertEquals(data.size, dataRes.size)
-        dataRes.forEachIndexed {
-            idx, elm -> 
-            assertEquals(data[idx], elm)
-        }
-    }
     @Test
     fun parseRelativeCurvetoSequence() { 
         val data = "c0 70.1 36.9 132.6 94.5 173.7 9.6 6.9 15.2 18.1 13.5 29.9"
@@ -427,3 +410,4 @@ class PathTest {
 
     }
 }
+/* vi: se ts=4 sw=4 et: */

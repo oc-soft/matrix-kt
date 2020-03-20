@@ -67,6 +67,11 @@ kotlin {
                 implementation kotlin('stdlib') 
             }
         }
+        jvmTest {
+            dependencies {
+                implementation kotlin('test-junit')
+            }
+        }
     }
     targets.all {
         
