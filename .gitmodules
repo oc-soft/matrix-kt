@@ -1,0 +1,3 @@
+[submodule "webpack-cdn-plugin"]
+	path = webpack-cdn-plugin
+	url = https://toshiyuki-rs@github.com/toshiyuki-rs/webpack-cdn-plugin.git
