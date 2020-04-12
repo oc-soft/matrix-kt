@@ -15,6 +15,7 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
+
 external interface JQueryAjaxSettings {
     var accepts: Any? get() = definedExternally; set(value) = definedExternally
     var async: Boolean? get() = definedExternally; set(value) = definedExternally

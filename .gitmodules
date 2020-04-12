@@ -1,3 +1,6 @@
 [submodule "webpack-cdn-plugin"]
 	path = webpack-cdn-plugin
 	url = https://toshiyuki-rs@github.com/toshiyuki-rs/webpack-cdn-plugin.git
+[submodule "find-style"]
+	path = find-style
+	url = ../../npm/find-style.git

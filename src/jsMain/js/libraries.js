@@ -1,3 +1,2 @@
 
-import 'jquery';
-
+// import 'jquery';

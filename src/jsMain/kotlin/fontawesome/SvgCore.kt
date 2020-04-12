@@ -15,7 +15,8 @@ class SvgCore {
     companion object {
         val instance : dynamic
             get() {
-                return js("require('fontawesome-svg-core')");    
+                return js("require('@fortawesome/fontawesome-svg-core')");    
             } 
     }	
 }
+/* vi: se ts=4 sw=4 et: */

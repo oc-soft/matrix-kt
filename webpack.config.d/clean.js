@@ -1,5 +1,8 @@
 
-class Mode {
+/**
+ * webpack working directory
+ */
+class Clean {
 
   /**
    * constructor
@@ -7,25 +10,22 @@ class Mode {
   constructor() {
   }
 
+
   /**
    * setup webpack configuration
    */
   setupWebpack(config) {
-    config.mode = 'development';
+    const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+    config.plugins.push(new CleanWebpackPlugin());
   }
-
-}
-
-if (typeof createWebpackConfig === 'function') {
-  
-
 }
 
 (function(config) {
   const path = require('path');
   const confName = path.basename(__filename);
   if (confName == 'webpack.config.js') {
-    (new Mode()).setupWebpack(config);
+    (new Clean()).setupWebpack(config);
   }
 })(config);
-// vi: se ts=2 sw=2 et:
+
+/* vi: se ts=2 sw=2 et: */
