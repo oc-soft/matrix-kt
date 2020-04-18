@@ -20,6 +20,12 @@ class Modules {
     config.externals.push('gl-matrix');
     config.externals.push('bootstrap');
     config.externals.push('@popperjs/core');
+    config.externals.push('@fortawesome/fontawesome-free');
+    config.externals.push('@fortawesome/fontawesome-svg-core');
+    config.externals.push('@fortawesome/fontawesome-free/css/fontawesome.css');
+    config.externals.push('@fortawesome/fontawesome-free/css/solid.css');
+    config.externals.push('@fortawesome/fontawesome-free/js/solid.js');
+    config.externals.push('webfontloader');
     config.externals.push(
       function(contextRequest, cb) {
         let context = undefined;

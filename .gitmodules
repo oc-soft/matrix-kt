@@ -4,3 +4,6 @@
 [submodule "find-style"]
 	path = find-style
 	url = ../../npm/find-style.git
+[submodule "find-package"]
+	path = find-package
+	url = ../../npm/find-package.git

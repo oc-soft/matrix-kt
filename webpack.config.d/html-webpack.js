@@ -47,16 +47,32 @@ class HtmlWebpack {
     const cdnPluginConfig = {
       modules: [
         {
+          name: 'webfontloader'
+        },
+        {
           name: 'jquery'
         },
         {
           name: 'gl-matrix'
         },
         {
-          name: 'bootstrap'
+          name: 'bootstrap',
+          styles: [
+            'css/bootstrap.min.css'
+          ]
         },
         {
           name: '@popperjs/core'
+        },
+        {
+          name: '@fortawesome/fontawesome-free',
+          styles: [
+            'css/fontawesome.css',
+            'css/solid.css'
+          ]
+        },
+        {
+          name: '@fortawesome/fontawesome-svg-core'
         }
       ]
     };

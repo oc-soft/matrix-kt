@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": ">=1.0.0",
+    "find-package": "file:find-package",
     "find-style": "file:find-style",
     "js-beautify": "^1.10.2",
     "less": "^3.10.3",
@@ -10,7 +11,6 @@
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.10.2",
     "bootstrap": "^4.3.1",
-    "gulp": "^4.0.2",
     "gulp-less": "^4.0.1",
     "jquery": "^3.4.1",
     "webpack": "^4.42.1"

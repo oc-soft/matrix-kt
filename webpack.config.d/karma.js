@@ -32,7 +32,8 @@ class Karma {
       new Entries(),
       new Mode(),
       new Css(),
-      new Resolve()
+      new Resolve(),
+      new Fonts()
     ];
     entries.forEach(it => it.setupWebpack(config)); 
   }

@@ -16,12 +16,18 @@ ext.web_dir = 'prg'
 ext.packageVersion = '0.3.0'
 ext.ocSoftEmail0 = 'toshi@oc-soft.net'
 
+ext.webpackSetting = [
+    gradleBuildJs: 'gradle-build.js' 
+]
+ext.webpackSetting.gradleBuildPath =
+    new File(new File(projectDir, "webpack.config.d"),
+         webpackSetting.gradleBuildJs)
+
 
 repositories { // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
 }
-
 
 kotlin {
     jvm {
@@ -30,13 +36,9 @@ kotlin {
     js {
         browser {
             webpackTask {
-                output.libraryTarget = 'umd' 
+                output.libraryTarget = 'umd'
             }
         } 
-        compilations.main.kotlinOptions {
-            
-        }
-
     }
     sourceSets {
         commonMain {
@@ -65,6 +67,7 @@ kotlin {
                 implementation npm('mini-css-extract-plugin', '0.9.0')
                 implementation npm('css-loader','3.5.2')
                 implementation npm('less-loader', '5.0.0')
+                implementation npm('null-loader', '4.0.0')
 
                 implementation npm('bootstrap', '4.4.1')
                 implementation npm('@popperjs/core', '2.2.3')
@@ -73,6 +76,7 @@ kotlin {
                 implementation npm('jquery', '3.5.0')
                 implementation npm('@fortawesome/fontawesome-svg-core',
                     '1.2.28')
+                implementation npm('@fortawesome/fontawesome-free', '5.13.0')
             }
         }
         jvmMain {
@@ -86,13 +90,39 @@ kotlin {
             }
         }
     }
-    targets.all {
-        
-    }
 }
 
 task xgetText(type: Exec) {
     executable = 'xgettext'
+}
+
+jsBrowserProductionWebpack{
+    doFirst {
+        def jsName = 'gradle-build.js'
+        def gradleBuildSrc = new File(new File(projectDir, "tools"), jsName)    
+        def binding = [
+            config: """{
+    programDir: '$web_dir'
+}"""
+        ]
+        def tmp = new groovy.text.StreamingTemplateEngine()
+        tmp = tmp.createTemplate(gradleBuildSrc) 
+        def gradleBuildDestDir = new File(projectDir, "webpack.config.d")    
+        def gradleBuildDest = new File(gradleBuildDestDir, jsName) 
+        webpackSetting.gradleBuildPath.text = tmp.make(binding)
+
+    }
+    doLast {
+        def destDir = destinationDirectory 
+        copy { 
+            from jsProcessResources.destinationDir
+            into new File(destDir, web_dir)
+        }
+    } 
+}
+
+clean.doFirst {
+    delete webpackSetting.gradleBuildPath
 }
 
 task runMainJvm(type: JavaExec) {
@@ -102,8 +132,8 @@ task runMainJvm(type: JavaExec) {
 
     classpath += compilation.runtimeDependencyFiles
     classpath += files(jvmJar.archivePath)
-
 }
+
 
 runMainJvm.dependsOn jvmJar
 
@@ -166,6 +196,11 @@ task msgfmts {
 
 build.dependsOn msgfmts
 
+task cleanMsgfmts(type: Delete) {
+    delete "${projectDir}/i18n"
+}
+clean.dependsOn cleanMsgfmts
+
 task createFigureForDoc(type: JavaExec) {
     def target = kotlin.targets.jvm
     def compilation = target.compilations.main
@@ -192,64 +227,70 @@ task resolveEllipseCenter(type: JavaExec) {
 }
 
 
-task webpackJsDeploy(type: Copy) {
+task webpackDeploy(type: Copy) {
     def distDir = null
-    kotlin {
-        js {
-            browser {
-                distribution {
-                    distDir =  directory
-                }
-            } 
-        }
-    }
-
+    distDir = jsBrowserDistributeResources.destinationDir
 
     from distDir
-    include '**/*.js'
+    exclude '**/*.php'
     into projectDir
     // todo: you need to have a switch whether development or prduction
+    // jsBrowserProductionWebpack.mode
     if (true) {
-        include '**/*.js.map'
+        // include '**/*.js.map'
     }
 }
 
+task cleanWebpackDeploy(type: Delete) {
+    delete web_dir 
+    delete new File(projectDir, 'css')
+}
+clean.dependsOn cleanWebpackDeploy
+
 task webpackViewDeploy(type: Copy) {
     def distDir = null
-    kotlin {
-        js {
-            browser {
-                distribution {
-                    distDir =  directory
-                }
-            } 
-        }
-    }
+    distDir = jsBrowserDistributeResources.destinationDir
+
     from distDir
     include '*.php'
     into new File(projectDir, 'template')
 }
 
-task webpackCssDeploy(type: Copy) {
-    def distDir = null
-    kotlin {
-        js {
-            browser {
-                distribution {
-                    distDir =  directory
-                }
-            } 
-        }
+task cleanWebpackViewDeploy(type: Delete) {
+    delete "${projectDir}/template/entry.php"
+}
+clean.dependsOn cleanWebpackViewDeploy
+
+//task webpackCssDeploy(type: Copy) {
+//    def distDir = null
+//    distDir = jsBrowserDistributeResources.destinationDir
+//    from distDir
+//    include 'css/**/*.css'
+//    into projectDir
+//}
+
+//task jsDeployResources(type: Copy) {
+//    def target = kotlin.targets.js
+//    def compilation = target.compilations.main
+//
+//    includeEmptyDirs false
+//    from compilation.output.resourcesDir
+//    into "${web_dir}/mswp"
+//}
+
+
+jsBrowserTest {
+    doFirst {
+        // println compilation.processResourcesTaskName
+        // println compilation.npmProject.dir
     }
-    from distDir
-    include 'css/**/*.css'
-    into projectDir
 }
 
 
-jsMainClasses.dependsOn webpackJsDeploy
+jsMainClasses.dependsOn webpackDeploy
 jsMainClasses.dependsOn webpackViewDeploy
-jsMainClasses.dependsOn webpackCssDeploy
+// jsMainClasses.dependsOn webpackCssDeploy
+// jsMainClasses.dependsOn jsDeployResources
 
 createFigureForDoc.description = 'generate figure for document' 
 createFigureForDoc.group = 'Documentation'
@@ -259,43 +300,4 @@ resolveEllipseCenter.description = 'resolve ellipse center from two points on el
 resolveEllipseCenter.group = 'Calculation'
 resolveEllipseCenter.dependsOn jvmJar
 
-build.doLast {
-    /*
-    copy {
-        includeEmptyDirs false
-        from 'build/distributions' 
-        exclude 'mswp/'
-        into "${web_dir}"
-    }
-    copy {
-        includeEmptyDirs false
-        exclude 'kotlin-test/'
-        from 'build/js/packages_imported/'
-        into "${web_dir}"
-    }
-   */
-    copy {
-        includeEmptyDirs false
-        from 'build/processedResources/js/main/'
-        into "${web_dir}/mswp"
-    }
-    copy {
-        includeEmptyDirs false
-        from 'node_modules/@fortawesome/fontawesome-free/js/fontawesome.js'
-        into "${web_dir}/fontawesome-free/js"
-    }
-    copy {
-        includeEmptyDirs false     
-        from 'node_modules/@fortawesome/fontawesome-free/js/solid.js'
-        into "${web_dir}/fontawesome-free/js"           
-    }
-}
-
-
-
-clean.doFirst {
-    delete "${web_dir}/"
-    delete "./css"
-    delete "${projectDir}/i18n"
-}
 /* vi: se ts=4 sw=4 et: */

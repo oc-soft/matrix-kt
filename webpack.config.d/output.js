@@ -32,7 +32,7 @@ class Output {
         } else {
           result = chunkData.chunk.name;
         }
-        result = `prg/${result}-[contenthash].js`;
+        result = `${GradleBuild.config.programDir}/${result}-[contenthash].js`;
         return result;
       };
     }

@@ -18,7 +18,32 @@ class Resolve {
     config.resolve.alias = config.resolve.alias || {};
     // config.resolve.alias['popper.js'] = require.resolve('@popperjs/core');
     config.resolve.alias['popper.js'] = '@popperjs/core';
+    this.setupFontAwesome(config);
   }
+
+
+  /**
+   * setup fontawesome 
+   */
+  setupFontAwesome(config) {
+    const FindPackage = require('find-package');
+    const pathLib = require('path');
+    const pkgInfo = 
+      (new FindPackage).find('@fortawesome/fontawesome-free');
+    const submodules = [
+      'css/fontawesome.css',
+      'css/solid.css',
+      'js/fontawesome.js',
+      'js/solid.js',
+    ];
+    const prefix = '@fortawesome/fontawesome-free';
+
+    submodules.forEach(submodule=> {
+      config.resolve.alias[`${prefix}/${submodule}`]
+        = pathLib.join(pkgInfo.pathInfo.dir, submodule);
+    });
+  }
+
 }
 
 (config=>{
