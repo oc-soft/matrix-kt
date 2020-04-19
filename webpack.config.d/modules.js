@@ -17,7 +17,6 @@ class Modules {
     if (!config.externals) {
       config.externals = [];
     } 
-    config.externals.push('gl-matrix');
     config.externals.push('bootstrap');
     config.externals.push('@popperjs/core');
     config.externals.push('@fortawesome/fontawesome-free');
@@ -25,7 +24,6 @@ class Modules {
     config.externals.push('@fortawesome/fontawesome-free/css/fontawesome.css');
     config.externals.push('@fortawesome/fontawesome-free/css/solid.css');
     config.externals.push('@fortawesome/fontawesome-free/js/solid.js');
-    config.externals.push('webfontloader');
     config.externals.push(
       function(contextRequest, cb) {
         let context = undefined;
@@ -40,6 +38,8 @@ class Modules {
         }
         if (request == 'jquery') {
           cb(undefined, 'jQuery', 'window');
+        } else if (request == 'webfontloader') {
+          cb(undefined, 'WebFont', 'window');
         } else {
           cb();
         }

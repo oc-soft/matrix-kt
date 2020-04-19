@@ -53,26 +53,31 @@ class HtmlWebpack {
           name: 'jquery'
         },
         {
-          name: 'gl-matrix'
-        },
-        {
           name: 'bootstrap',
           styles: [
-            'css/bootstrap.min.css'
+            'dist/css/bootstrap.min.css'
           ]
         },
         {
-          name: '@popperjs/core'
+          name: '@popperjs/core',
+          prodUrl: '//unpkg.com/:name@:version'
         },
         {
           name: '@fortawesome/fontawesome-free',
+          cdn: 'font-awesome',
+          paths: [
+            'js/fontawesome.min.js',
+            'js/solid.js'
+          ],
+          prodUrl: '//cdnjs.cloudflare.com/ajax/libs/:name/:version/:path',
           styles: [
             'css/fontawesome.css',
             'css/solid.css'
           ]
         },
         {
-          name: '@fortawesome/fontawesome-svg-core'
+          name: '@fortawesome/fontawesome-svg-core',
+          prodUrl: '//unpkg.com/:name@:version'
         }
       ]
     };

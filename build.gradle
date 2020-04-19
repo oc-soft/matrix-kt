@@ -9,13 +9,9 @@ plugins {
     id 'org.jetbrains.kotlin.multiplatform' version '1.3.70'
 }
 
-
-
-
 ext.web_dir = 'prg'
 ext.packageVersion = '0.3.0'
 ext.ocSoftEmail0 = 'toshi@oc-soft.net'
-
 ext.webpackSetting = [
     gradleBuildJs: 'gradle-build.js' 
 ]
@@ -116,7 +112,7 @@ jsBrowserProductionWebpack{
         def destDir = destinationDirectory 
         copy { 
             from jsProcessResources.destinationDir
-            into new File(destDir, web_dir)
+            into new File(new File(destDir, web_dir), 'mswp')
         }
     } 
 }
@@ -240,6 +236,7 @@ task webpackDeploy(type: Copy) {
         // include '**/*.js.map'
     }
 }
+jsMainClasses.dependsOn webpackDeploy
 
 task cleanWebpackDeploy(type: Delete) {
     delete web_dir 
@@ -255,6 +252,7 @@ task webpackViewDeploy(type: Copy) {
     include '*.php'
     into new File(projectDir, 'template')
 }
+jsMainClasses.dependsOn webpackViewDeploy
 
 task cleanWebpackViewDeploy(type: Delete) {
     delete "${projectDir}/template/entry.php"
@@ -287,8 +285,7 @@ jsBrowserTest {
 }
 
 
-jsMainClasses.dependsOn webpackDeploy
-jsMainClasses.dependsOn webpackViewDeploy
+
 // jsMainClasses.dependsOn webpackCssDeploy
 // jsMainClasses.dependsOn jsDeployResources
 
