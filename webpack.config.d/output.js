@@ -32,7 +32,8 @@ class Output {
         } else {
           result = chunkData.chunk.name;
         }
-        result = `${GradleBuild.config.programDir}/${result}-[contenthash].js`;
+        const programDir = GradleBuild.config.programDir;
+        result = `${programDir}/${result}-[contenthash].js`;
         return result;
       };
     }

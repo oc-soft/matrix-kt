@@ -35,9 +35,10 @@ class Css {
         'less-loader'
       ],
     });
+    const cssDir = GradleBuild.config.cssDir;
     config.plugins.push(
       new ExtractCss({
-        filename: 'css/[name]-[contenthash].css',
+        filename: `${cssDir}/[name]-[contenthash].css`,
         chunkFilename: '[id].css'
       }));
   }
