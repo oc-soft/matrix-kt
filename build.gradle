@@ -106,7 +106,7 @@ jsBrowserProductionWebpack{
         def tmp = new groovy.text.StreamingTemplateEngine()
         tmp = tmp.createTemplate(gradleBuildSrc) 
         def gradleBuildDestDir = new File(projectDir, "webpack.config.d")    
-        def gradleBuildDest = new File(gradleBuildDestDir, jsName) 
+        def gradleBuildDest = new File(gradleBuildDestDir, "_${jsName}") 
         webpackSetting.gradleBuildPath.text = tmp.make(binding)
 
     }
