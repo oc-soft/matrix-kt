@@ -23,11 +23,9 @@ class Entries {
     if (libMod) {
       config.entry.libs = libMod;
     }
-    config.entry.kotlin = require.resolve('kotlin');
-
-    config.entry.main.push(require.resolve('bootstrap'));
-    config.entry.main.push((new FindStyle()).find('bootstrap'));
-    config.entry.main.push(FindFile.sync('entry.less'));
+    config.entry.kotlin = ['kotlin'];
+    config.entry.main.push('bootstrap');
+    config.entry.main.push(FindFile.sync('src/jsMain/less/entry.less'));
   }
     
 }
