@@ -24,26 +24,20 @@ class Modules {
     config.externals.push('@fortawesome/fontawesome-free/css/fontawesome.css');
     config.externals.push('@fortawesome/fontawesome-free/css/solid.css');
     config.externals.push('@fortawesome/fontawesome-free/js/solid.js');
-    config.externals.push(
-      function(contextRequest, cb) {
-        let context = undefined;
-        let request = undefined;
-        if (contextRequest.request) {
-          context = contextRequest.context;
-          request = contextRequest.request;
-        } else {
-          context = contextRequest;
-          request = cb; 
-          cb = arguments[2];
-        }
-        if (request == 'jquery') {
-          cb(undefined, 'jQuery', 'window');
-        } else if (request == 'webfontloader') {
-          cb(undefined, 'WebFont', 'window');
-        } else {
-          cb();
-        }
-      });
+    config.externals.push({
+      jquery:{
+        commonjs: 'jquery',
+        commonjs2:'jquery',
+        root: 'jQuery'
+      }
+    });
+    config.externals.push({
+      webfontloader: {
+        commonjs: 'webfontloader',
+        commonjs2: 'webfontloader',
+        root: 'WebFont'
+      }
+    });
   }
 }
 
