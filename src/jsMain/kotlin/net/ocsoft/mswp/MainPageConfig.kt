@@ -19,11 +19,14 @@ data class MainPageConfig(
     val splashPaneId : String = "#splash_pane",
     /** application settings */
     val appSettings : AppSettings.Option = AppSettings.Option(
-        GameSettings.Queries(
-            ".setting.menu",
-            ".setting.menu.contents",
-            "#label-setting",
-            "#lighting-setting"),
+        GameSettings.Option(
+            GameSettings.Option.Queries(
+                ".setting.menu .menu.item",
+                ".setting.menu.contents",
+                "#label-setting",
+                "#lighting-setting"),
+            GameSettings.Option.Menu(
+                arrayOf(0, 20))),
         IconSelector.Option("#icon_list",
             "#icon_list .icons", 
             "#icon_list .icons li",

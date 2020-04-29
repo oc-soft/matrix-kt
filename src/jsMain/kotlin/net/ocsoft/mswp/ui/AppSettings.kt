@@ -12,7 +12,7 @@ class AppSettings(val option : Option) {
      * option
      */
     data class Option(
-	val gameSettingsQueries: GameSettings.Queries, 
+        val gameSettingsOption: GameSettings.Option, 
         val iconOption : IconSelector.Option)
 
     /**
@@ -36,7 +36,7 @@ class AppSettings(val option : Option) {
      */
     fun bind() {
         unbind()
-        gameSettings = GameSettings(option.gameSettingsQueries)
+        gameSettings = GameSettings(option.gameSettingsOption)
         gameSettings?.bind(this)
         iconSelector = IconSelector(option.iconOption)
         iconSelector?.runtimeConfig = runtimeConfig
