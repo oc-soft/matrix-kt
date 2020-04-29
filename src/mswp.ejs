@@ -21,9 +21,23 @@
     <span><?php echo _("Loading...");?><div class="spinner-grow text-white" role="status"><span class="sr-only"></span></div></span>
     </div>
   </div>
-  <div class="setting menu"><div class="menu item"><i class="fas fa-wrench"></i></div></div>
+  <div class="setting menu"><div class="menu item"><i class="fas fa-users-cog"></i></div></div>
   <canvas id="game_grid" class=play-ground></canvas>
   <canvas id="glyph_workarea" width="256" height="256"></canvas>
+  <div class="setting menu contents">
+    <table>
+      <tbody>
+        <tr id="label-setting">
+          <td><i class="fas fa-wrench"></i></td>
+          <td><?php echo _("Labels ..."); ?></td>
+        </tr>
+        <tr>
+          <td><i class="fas fa-sun"></i></td>
+          <td><?php echo _("Lighting"); ?></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <div id="game_over_modal" class="modal" tabindx="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">

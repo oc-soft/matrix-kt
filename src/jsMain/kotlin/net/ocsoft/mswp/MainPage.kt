@@ -79,7 +79,6 @@ actual class MainPage {
     /**
      * run program
      */ 
-    @JsName("run")
     fun run(settings: Any) {
         var settingObj : dynamic? = null 
         if (settings != null) {

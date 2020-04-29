@@ -26,6 +26,8 @@ repositories { // Use jcenter for resolving dependencies.
     jcenter()
 }
 
+
+
 kotlin {
     jvm {
 
@@ -242,6 +244,7 @@ jsMainClasses.dependsOn webpackDeploy
 
 task cleanWebpackDeploy(type: Delete) {
     delete web_dir 
+    delete site_dir
     delete new File(projectDir, 'css')
 }
 clean.dependsOn cleanWebpackDeploy

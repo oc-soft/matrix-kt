@@ -7,3 +7,6 @@
 [submodule "find-package"]
 	path = find-package
 	url = ../../npm/find-package.git
+[submodule "dukat"]
+	path = dukat
+	url = https://github.com/Kotlin/dukat.git

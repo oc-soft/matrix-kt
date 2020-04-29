@@ -18,7 +18,13 @@ class Modules {
       config.externals = [];
     } 
     config.externals.push('bootstrap');
-    config.externals.push('@popperjs/core');
+    config.externals.push({
+      '@popperjs/core': {
+        commonjs: '@popperjs/core',
+        commonjs2: '@popperjs/core',
+        root: 'Popper'
+      }
+    });
     config.externals.push('@fortawesome/fontawesome-free');
     config.externals.push('@fortawesome/fontawesome-svg-core');
     config.externals.push('@fortawesome/fontawesome-free/css/fontawesome.css');

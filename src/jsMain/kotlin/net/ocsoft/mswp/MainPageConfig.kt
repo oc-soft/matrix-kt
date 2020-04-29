@@ -3,6 +3,8 @@ import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
 import net.ocsoft.mswp.ui.IconSelector
 import net.ocsoft.mswp.ui.IconSetting
+import net.ocsoft.mswp.ui.GameSettings
+
 /**
  * main page configuration
  */
@@ -17,7 +19,11 @@ data class MainPageConfig(
     val splashPaneId : String = "#splash_pane",
     /** application settings */
     val appSettings : AppSettings.Option = AppSettings.Option(
-        ".setting.menu",
+        GameSettings.Queries(
+            ".setting.menu",
+            ".setting.menu.contents",
+            "#label-setting",
+            "#lighting-setting"),
         IconSelector.Option("#icon_list",
             "#icon_list .icons", 
             "#icon_list .icons li",
@@ -34,3 +40,5 @@ data class MainPageConfig(
             "#synchronizing_icon",
             gridSettings.iconSetting))) {
 }
+
+// vi: se ts=4 sw=4 et: 

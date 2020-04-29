@@ -11,13 +11,9 @@ class AppSettings(val option : Option) {
     /**
      * option
      */
-    data class Option(val settingItemNode : String,
+    data class Option(
+	val gameSettingsQueries: GameSettings.Queries, 
         val iconOption : IconSelector.Option)
-
-    /**
-     * handle click event on setting item
-     */
-    var settingItemHandler : ((JQueryEventObject, Any) -> Any)? = null
 
     /**
      * runtime configuration
@@ -28,15 +24,20 @@ class AppSettings(val option : Option) {
      * icon selector
      */
     var iconSelector : IconSelector? = null
+
+    /**
+     * game setting
+     */
+    var gameSettings: GameSettings? = null
+
      
     /**
      * bind to html
      */
     fun bind() {
         unbind()
-        val settingItem = jQuery(option.settingItemNode)
-        settingItemHandler = { evt, args -> onClickOnSettingItem(evt, args) }
-        settingItem.on("click", settingItemHandler!!)
+        gameSettings = GameSettings(option.gameSettingsQueries)
+        gameSettings?.bind(this)
         iconSelector = IconSelector(option.iconOption)
         iconSelector?.runtimeConfig = runtimeConfig
         iconSelector?.bind()
@@ -46,26 +47,10 @@ class AppSettings(val option : Option) {
      * unbind from html
      */
     fun unbind() {
-        val settingItem = jQuery(option.settingItemNode)
-        if (settingItemHandler != null) {
-            settingItem.off("click", settingItemHandler!!)
-            settingItemHandler = null
-        }
-        if (iconSelector != null) {
-            iconSelector!!.unbind()
-            iconSelector = null 
-        }
+        gameSettings?.unbind()
+        gameSettings = null
+        iconSelector?.unbind()
+        iconSelector = null
     }
-
-    /**
-     * handle setting item
-     */
-    fun onClickOnSettingItem(eventObj : JQueryEventObject, args: Any) : Any {
-        iconSelector?.show()
-        return false 
-    }
-
-    
-
-    
 }
+// vi: se ts=4 sw=4 et: 
