@@ -124,7 +124,7 @@ class RenderingCtx() {
     var animationNormalMatrices: MutableList<Array<FloatArray>>? = null
 
     /**
-     * bload location
+     * board location
      */
     var boardMatrix : FloatArray? = null
 
@@ -261,3 +261,5 @@ class RenderingCtx() {
 
 
 }
+
+// vi: se ts=4 sw=4 et:

@@ -100,7 +100,15 @@ class GameSettings(val option: Option) {
     fun onClickOnLabelSettingItem(
         eventObj : JQueryEventObject, args: Any) : Any {
         appSettings?.iconSelector?.show()
+        hideDropdown()
         return false 
+    }
+
+    /**
+     * hide dropdown
+     */
+    fun hideDropdown() {
+        dropdown.visibledDropdown = false
     }
 }
 // vi: se ts=4 sw=4 et: 
