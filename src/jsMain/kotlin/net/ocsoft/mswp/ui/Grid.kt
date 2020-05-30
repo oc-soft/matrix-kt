@@ -34,6 +34,11 @@ class Grid(rowCount: Int = 6,
      */
     var shaderPrograms : ShaderPrograms? = null
 
+    /**
+     * glrs interface
+     */
+    var glrs : glrs.InitOutput? = null
+
     var camera : Camera? = null
         set(value) {
             if (field != value) {
@@ -869,38 +874,30 @@ class Grid(rowCount: Int = 6,
     private fun updateCamera(gl: WebGLRenderingContext) {
         val cam = this.camera
         val shaderProg = this.renderingCtx.shaderProgram
+        val glrs = this.glrs
 
-        if (cam != null && shaderProg != null) {
+        if (cam != null && shaderProg != null && glrs != null) {
             gl.useProgram(shaderProg)
-            val projMat = mat4.create()
-            val viewMat = mat4.create()
-            val uProjMat = gl.getUniformLocation(shaderProg, 
-                "uProjectionMatrix")    
-            
-            
             val camCenter = cam.center
             val camEye = cam.eye
             val camUp = cam.up
-            val camCenterForGl = vec3.create()
-            val camEyeForGl = vec3.create()
-            val camUpForGl = vec3.create()
-
-            vec3.set(camCenterForGl, camCenter[0], camCenter[1], camCenter[2])
-            vec3.set(camEyeForGl, camEye[0], camEye[1], camEye[2])
-            vec3.set(camUpForGl, camUp[0], camUp[1], camUp[2])
-              
-            mat4.lookAt(viewMat, 
-                camEyeForGl,
-                camCenterForGl,
-                camUpForGl)
-            
-            mat4.perspective(projMat, cam.fieldOfView,
+ 
+            val projMat = glrs.matrix_new_look_at(
+                camEye[0], camEye[1], camEye[2],
+                camCenter[0], camCenter[1], camCenter[2],
+                camUp[0], camUp[1], camUp[2]);
+            glrs.matrix_perspective_mut(
+                projMat, cam.fieldOfView,
                 cam.aspect, cam.zNear, cam.zFar)
 
-            mat4.multiply(projMat, projMat, viewMat)  
+            val uProjMat = gl.getUniformLocation(shaderProg, 
+                "uProjectionMatrix")    
             
-            gl.uniformMatrix4fv(uProjMat, false,
-                projMat as Float32Array)
+            val matArray = glrs.matrix_get_components_col_order_32(projMat)
+            glrs.matrix_release(projMat)
+            
+            gl.uniformMatrix4fv(uProjMat, 
+                false, matArray as Float32Array)
         }
     }
     /**
@@ -1234,4 +1231,4 @@ class Grid(rowCount: Int = 6,
         }
     }
 }
-
+// vi: se ts=4 sw=4 et:

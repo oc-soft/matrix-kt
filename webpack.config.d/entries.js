@@ -18,7 +18,7 @@ class Entries {
     const FindFile = require('find-file-up');
     const FindStyle = require('find-style');
    
-    let libMod = FindFile.sync('src/jsMain/js/libraries.js');
+    let libMod = './libraries.js';
     config.entry = config.entry || { };
     if (libMod) {
       config.entry.libs = libMod;

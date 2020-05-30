@@ -3,15 +3,35 @@ package net.ocsoft.mswp.ui
 import kotlin.math.*
 
 class ColorMap {
-       
+    /**
+     * already resserved index
+     */
+    enum class ReservedIndex(val index: Int) {
+        /**
+         * lighting marker to move light origin.
+         */
+        LIGHTING(0x1fff)
+    }
+    
     companion object {
+        
+
+        /**
+         * Why is the maximum of range 5bits ?
+         * It came from RGB5_A1. The each color component has 5 bits.
+         * RGB5_5 is used for renderbufferStorage
+         */
         val ColorRange = byteArrayOf(
-            0, 0b11111
+            0,
+            0b11111 
         )
+        /**
+         * color keys indecies for button
+         */
         val ButtonsColorRangeIndices = intArrayOf(
             0b0, 0xfff
         )
-        
+       
 
         val displacement : Float
             = 1 / (ColorRange[1] - ColorRange[0]).toFloat()
@@ -144,3 +164,5 @@ class ColorMap {
     } 
      
 } 
+
+// vi: se ts=4 sw=4 et:

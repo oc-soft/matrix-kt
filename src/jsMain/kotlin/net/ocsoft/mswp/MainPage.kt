@@ -106,11 +106,19 @@ actual class MainPage {
             val shaders = arrayOf(
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
+            var promises = ArrayList<Promise<Any>>()
+            promises.add(
+                window.fetch(
+                    "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls")
+                .then({ it.text() }))
+            promises.add(
+                window.fetch(
+                    "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
+                .then({ it.text() }))
 
-            val shaderPromises = Array<Promise<Response>>(shaders.size) {
-                window.fetch(shaders[it])
-            }
-            val iconPromises = arrayOf(
+            promises.add(
+                glrs.init("${rootDir}/prg/glrs_bg.wasm"))
+            promises.add(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
                         if (IconSetting.NG_ICON in it) {
@@ -119,25 +127,17 @@ actual class MainPage {
                         }
                     }
                     Unit
-                })) 
-                    
-            var promises = Array<Promise<Any>>(shaders.size
-                + iconPromises.size) {
-                i -> 
-                var promiseRes : Promise<Any>? = null 
-                if (i < shaders.size) {
-                    promiseRes = shaderPromises[i].then({ res -> res.text() })
-                } else {
-                    promiseRes = iconPromises[i - shaders.size]
-                }
-                promiseRes!!
+                }))
+            val promisesArray = Array<Promise<Any>>(promises.size) {
+                promises[it]
             }
-             
-            Promise.all(promises).then({
+
+            Promise.all(promisesArray).then({
                 responses : Array<out Any> -> 
                 var shaderPrograms = ShaderPrograms(
                     responses[0] as String, 
                     responses[1] as String)
+                grid.glrs = responses[2] as glrs.InitOutput
                 grid.bind(config.gridSettings,
                     model, camera, 
                     pointLight, shaderPrograms)
@@ -176,3 +176,5 @@ actual class MainPage {
         return result
     }
 }
+
+// vi: se ts=4 sw=4 et:
