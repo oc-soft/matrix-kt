@@ -95,12 +95,9 @@ task xgetText(type: Exec) {
     executable = 'xgettext'
 }
 
-task wasmPack(type: Exec) {
-    executable = 'wasm-pack'
-}
 
-jsBrowserProductionWebpack {
-    doFirst {
+task webpackGradleBuild {
+    doLast {
         def jsName = 'gradle-build.js'
         def gradleBuildSrc = new File(new File(projectDir, "tools"), jsName)    
         def binding = [
@@ -114,16 +111,12 @@ jsBrowserProductionWebpack {
         def gradleBuildDestDir = new File(projectDir, "webpack.config.d")    
         def gradleBuildDest = new File(gradleBuildDestDir, "${jsName}") 
         webpackSetting.gradleBuildPath.text = tmp.make(binding)
-
     }
-    doLast {
-        def destDir = destinationDirectory 
-        copy { 
-            from jsProcessResources.destinationDir
-            into new File(new File(destDir, web_dir), site_dir)
-        }
-    } 
 }
+
+jsBrowserProductionWebpack.dependsOn webpackGradleBuild
+jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
+
 
 clean.doFirst {
     delete webpackSetting.gradleBuildPath
@@ -163,16 +156,37 @@ task xgettextphp {
     }
 }
 
-task glrsBuild {
+task buildGlrsLib(type: Exec) {
+    executable = 'cargo'
+    args += "build"
+    args += "--lib"
+    args += "--manifest-path"
+    args += new File(new File(projectDir, "glrs"), "Cargo.toml")
+    args += "--target-dir"
+    args += new File(buildDir, "rust")
+    args += "--target"
+    args += "wasm32-unknown-unknown"
+}
+
+task buildGlrsPkg(type: Exec) {
     def pkgname = 'glrs@latest'
     def pkgdir = new File(kotlinNodeJs.rootPackageDir, pkgname)   
-    wasmPack.args += "build"
-    wasmPack.args += "-d"
-    wasmPack.args += "${pkgdir}"
-    wasmPack.args += "-t"
-    wasmPack.args += "no-modules"
-    wasmPack.args += new File(projectDir, "glrs")
-    finalizedBy wasmPack 
+    def rustBuildDir = new File(buildDir, "rust")
+    def targetDir = new File(rustBuildDir, "wasm32-unknown-unknown")
+    def wasmDir = new File(targetDir, "debug")
+    def wasmPath = new File(wasmDir, "glrs.wasm")
+    executable = 'wasm-bindgen'
+    args += "--out-dir"
+    args += pkgdir
+    args += "--target"
+    args += "web-bundler"
+    args += wasmPath
+}
+
+buildGlrsPkg.dependsOn buildGlrsLib
+
+task glrsBuild {
+    finalizedBy buildGlrsPkg
 }
 
 kotlinNpmInstall.dependsOn glrsBuild
@@ -185,6 +199,8 @@ task jsLibraries(type: Copy) {
 }
 
 jsBrowserProductionWebpack.dependsOn jsLibraries
+jsBrowserDevelopmentWebpack.dependsOn jsLibraries
+
 
 task msgfmts {
     def srcDir = file("${projectDir}/src/i18n")
@@ -266,6 +282,31 @@ task webpackDeploy(type: Copy) {
     }
 }
 jsMainClasses.dependsOn webpackDeploy
+
+task deployResources0(type: Copy) {
+    def distDir = jsBrowserDistributeResources.destinationDir
+    from jsProcessResources.destinationDir
+    into new File(new File(distDir, web_dir), site_dir)
+}
+
+webpackDeploy.dependsOn deployResources0
+
+task deployResources1(type: Copy) {
+    def distDir = jsBrowserDistributeResources.destinationDir
+    def pkgname = 'glrs@latest'
+    def src = new File(
+        new File(kotlinNodeJs.rootPackageDir, pkgname),
+        "glrs_bg.wasm")
+ 
+    from  src
+    into new File(new File(distDir, web_dir), site_dir)
+}
+
+webpackDeploy.dependsOn deployResources1
+
+
+
+
 
 task cleanWebpackDeploy(type: Delete) {
     delete web_dir 

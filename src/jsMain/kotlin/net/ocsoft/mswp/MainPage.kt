@@ -117,7 +117,7 @@ actual class MainPage {
                 .then({ it.text() }))
 
             promises.add(
-                glrs.init("${rootDir}/prg/glrs_bg.wasm"))
+                glrs.init("${rootDir}/prg/mswp/glrs_bg.wasm"))
             promises.add(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
