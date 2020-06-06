@@ -19,6 +19,7 @@ ext.webpackSetting = [
 ext.webpackSetting.gradleBuildPath =
     new File(new File(projectDir, "webpack.config.d"),
          "_${webpackSetting.gradleBuildJs}")
+ext.rustBinDir = new File(new File(buildDir, "rust"), "bin")
 
 repositories { // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -156,6 +157,17 @@ task xgettextphp {
     }
 }
 
+task installWasmBindGen(type: Exec) {
+    executable = 'cargo'
+    args += 'install'
+    args += '--root'
+    args += new File(buildDir, "rust")
+    args += '--git'
+    args += 'https://github.com/toshiyuki-rs/wasm-bindgen.git'
+    args += 'wasm-bindgen-cli'
+}
+
+
 task buildGlrsLib(type: Exec) {
     executable = 'cargo'
     args += "build"
@@ -175,15 +187,27 @@ task buildGlrsPkg(type: Exec) {
     def targetDir = new File(rustBuildDir, "wasm32-unknown-unknown")
     def wasmDir = new File(targetDir, "debug")
     def wasmPath = new File(wasmDir, "glrs.wasm")
-    executable = 'wasm-bindgen'
+    executable = new File(rustBinDir, 'wasm-bindgen')
     args += "--out-dir"
     args += pkgdir
     args += "--target"
     args += "web-bundler"
     args += wasmPath
+
+    doLast {
+        new File(pkgdir, 'package.json').text = """{
+    "name": "glrs",
+    "version": "0.1.0",
+    "main": "glrs.js", 
+    "files": ["glrsd.ts", "glrs_bg.d.ts", "glrs_bg.wasm"]
+}
+"""
+    }
 }
 
 buildGlrsPkg.dependsOn buildGlrsLib
+buildGlrsPkg.dependsOn installWasmBindGen
+
 
 task glrsBuild {
     finalizedBy buildGlrsPkg
