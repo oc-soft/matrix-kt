@@ -872,34 +872,78 @@ class Grid(rowCount: Int = 6,
     }
    
     private fun updateCamera(gl: WebGLRenderingContext) {
-        val cam = this.camera
         val shaderProg = this.renderingCtx.shaderProgram
-        val glrs = this.glrs
 
-        if (cam != null && shaderProg != null && glrs != null) {
+        if (shaderProg != null) {
             gl.useProgram(shaderProg)
-            val camCenter = cam.center
-            val camEye = cam.eye
-            val camUp = cam.up
- 
-            val projMat = glrs.matrix_new_look_at(
-                camEye[0], camEye[1], camEye[2],
-                camCenter[0], camCenter[1], camCenter[2],
-                camUp[0], camUp[1], camUp[2]);
-            glrs.matrix_perspective_mut(
-                projMat, cam.fieldOfView,
-                cam.aspect, cam.zNear, cam.zFar)
+            
+            val camMatrix = createCameraMatrix();
 
             val uProjMat = gl.getUniformLocation(shaderProg, 
                 "uProjectionMatrix")    
-            
-            val matArray = glrs.matrix_get_components_col_order_32(projMat)
-            glrs.matrix_release(projMat)
-            
-            gl.uniformMatrix4fv(uProjMat, 
-                false, matArray as Float32Array)
+            if (camMatrix != null) { 
+                gl.uniformMatrix4fv(uProjMat, false,
+                    camMatrix as Float32Array)
+            }
         }
     }
+    
+    private fun createCameraMatrixOld(): Float32Array? {
+        val cam = this.camera
+        var result: Float32Array? = null
+        if (cam != null) {
+            val projMat = mat4.create()
+            val viewMat = mat4.create()
+       
+            val camCenter = cam.center
+            val camEye = cam.eye
+            val camUp = cam.up
+            
+            val camCenterForGl = vec3.create()
+            val camEyeForGl = vec3.create()
+            val camUpForGl = vec3.create()
+
+            vec3.set(camCenterForGl, camCenter[0], camCenter[1], camCenter[2])
+            vec3.set(camEyeForGl, camEye[0], camEye[1], camEye[2])
+            vec3.set(camUpForGl, camUp[0], camUp[1], camUp[2])
+                  
+            mat4.lookAt(viewMat, 
+                camEyeForGl, camCenterForGl, camUpForGl)
+                
+            mat4.perspective(projMat, cam.fieldOfView,
+                cam.aspect, cam.zNear, cam.zFar)
+
+            mat4.multiply(projMat, projMat, viewMat) 
+            result = projMat as Float32Array
+        }
+            
+        return result
+    }
+
+    private fun createCameraMatrix(): Float32Array? {
+        val cam = camera
+        val glrs = this.glrs
+        var result: Float32Array? = null
+        if (cam != null && glrs != null) {
+            val camCenter = cam.center
+            val camEye = cam.eye
+            val camUp = cam.up
+
+            val projMat = glrs.matrix_new_perspective(
+                cam.fieldOfView, cam.aspect, cam.zNear, cam.zFar)
+
+            glrs.matrix_look_at_mut(projMat,
+                camEye[0], camEye[1], camEye[2],
+                camCenter[0], camCenter[1], camCenter[2],
+                camUp[0], camUp[1], camUp[2])
+
+            result = glrs.matrix_get_components_col_order_32(projMat)
+
+            glrs.matrix_release(projMat)
+        }
+        return result
+    }
+
     /**
      * enable lighting related Attribute
      */

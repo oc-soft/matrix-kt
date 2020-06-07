@@ -52,8 +52,6 @@ external interface ArrayConstructor {
     fun <T> from(iterable: ArrayLike<T>): Array<T>
     fun <T, U> from(iterable: Iterable<T>, mapfn: (v: T, k: Number) -> U, thisArg: Any = definedExternally): Array<U>
     fun <T, U> from(iterable: ArrayLike<T>, mapfn: (v: T, k: Number) -> U, thisArg: Any = definedExternally): Array<U>
-    fun <T> from(arrayLike: ArrayLike<T>): Array<T>
-    fun <T, U> from(arrayLike: ArrayLike<T>, mapfn: (v: T, k: Number) -> U, thisArg: Any = definedExternally): Array<U>
     fun <T> of(vararg items: T): Array<T>
     @nativeInvoke
     operator fun invoke(arrayLength: Number = definedExternally): Array<Any>
