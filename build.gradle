@@ -70,7 +70,6 @@ kotlin {
 
                 implementation npm('bootstrap', '4.4.1')
                 implementation npm('@popperjs/core', '2.2.3')
-                implementation npm('gl-matrix', '3.3.0')
                 implementation npm('webfontloader', '1.6.28')
                 implementation npm('jquery', '3.5.0')
                 implementation npm('@fortawesome/fontawesome-svg-core',
