@@ -105,16 +105,14 @@ actual class MainPage {
             val grid = Grid()
             val shaders = arrayOf(
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls",
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-vertex.gls", 
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-fragment.gls")
             var promises = ArrayList<Promise<Any>>()
-            promises.add(
-                window.fetch(
-                    "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls")
-                .then({ it.text() }))
-            promises.add(
-                window.fetch(
-                    "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls")
-                .then({ it.text() }))
+
+            shaders.forEach {
+                promises.add(window.fetch(it).then({ it.text() }));
+            }
 
             promises.add(
                 glrs.init("${rootDir}/prg/mswp/glrs_bg.wasm"))
@@ -136,8 +134,10 @@ actual class MainPage {
                 responses : Array<out Any> -> 
                 var shaderPrograms = ShaderPrograms(
                     responses[0] as String, 
-                    responses[1] as String)
-                grid.glrs = responses[2] as glrs.InitOutput
+                    responses[1] as String,
+                    responses[2] as String,
+                    responses[3] as String)
+                grid.glrs = responses[4] as glrs.InitOutput
                 grid.bind(config.gridSettings,
                     model, camera, 
                     pointLight, shaderPrograms)

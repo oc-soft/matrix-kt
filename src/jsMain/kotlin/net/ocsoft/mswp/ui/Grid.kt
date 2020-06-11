@@ -361,22 +361,26 @@ class Grid(rowCount: Int = 6,
 
 
     fun setupShaderProgram(gl: WebGLRenderingContext) {
-        val vertexShader : WebGLShader? = createVertexShader(gl)
-        var fragmentShader : WebGLShader? = createFragmentShader(gl)
-        if (this.renderingCtx.shaderProgram != null) {
-            gl.deleteProgram(this.renderingCtx.shaderProgram)
-            this.renderingCtx.shaderProgram = null
-        }
-        if (vertexShader != null 
-            && fragmentShader != null) { 
-            val shaderProg = gl.createProgram()  
-            if (shaderProg != null) {
-                gl.attachShader(shaderProg, vertexShader)
-                gl.attachShader(shaderProg, fragmentShader)
-                gl.linkProgram(shaderProg)
- 
-                renderingCtx.shaderProgram = 
-                    assertLinkError(gl, shaderProg)
+        val vertexShaders = createVertexShaders(gl)
+        var fragmentShaders = createFragmentShaders(gl)
+        this.renderingCtx.teardownShaderProgram(gl)
+        if (vertexShaders != null && fragmentShaders != null) {  
+            this.renderingCtx.shaderPrograms = Array<WebGLProgram?>(
+                minOf(vertexShaders.size, fragmentShaders.size)) {
+                val vertexShader = vertexShaders[it]
+                val fragmentShader = fragmentShaders[it] 
+                var shaderProg: WebGLProgram? = null
+                if (vertexShader != null 
+                    && fragmentShader != null) { 
+                    shaderProg = gl.createProgram()  
+                    if (shaderProg != null) {
+                        gl.attachShader(shaderProg, vertexShader)
+                        gl.attachShader(shaderProg, fragmentShader)
+                        gl.linkProgram(shaderProg)
+                        assertLinkError(gl, shaderProg)
+                    }
+                }
+                shaderProg
             }
         }
     }
@@ -968,26 +972,54 @@ class Grid(rowCount: Int = 6,
             result = prog
         }
         return result 
-    }  
-    private fun createVertexShader(gl: WebGLRenderingContext): WebGLShader? {
+    } 
+    private fun createVertexShaders(
+        gl: WebGLRenderingContext): Array<WebGLShader?> {
         val shaderProg = this.shaderPrograms!!
-        val prog = shaderProg.vertexShader
+        val strProg = arrayOf(
+            shaderProg.vertexShader,
+            shaderProg.pointVertexShader) 
+        val result = Array<WebGLShader?>(strProg.size) {
+            createVertexShader(gl, strProg[it])
+        }
+        return result 
+    }
+    private fun createFragmentShaders(
+        gl: WebGLRenderingContext): Array<WebGLShader?> {
+        val shaderProg = this.shaderPrograms!!
+        val strProg = arrayOf(
+            shaderProg.fragmentShader,
+            shaderProg.pointFragmentShader) 
+        val result = Array<WebGLShader?>(strProg.size) {
+            createFragmentShader(gl, strProg[it])
+        }
+        return result 
+    }
+    /**
+     * compile vertex shader program
+     */
+    private fun createVertexShader( 
+        gl: WebGLRenderingContext,
+        shaderProgram: String): WebGLShader? {
         var result : WebGLShader? = null
         val shader = gl.createShader(WebGLRenderingContext.VERTEX_SHADER)
         if (shader != null) {
-            gl.shaderSource(shader, prog)
+            gl.shaderSource(shader, shaderProgram)
             gl.compileShader(shader)
             result = assertCompileError(gl, shader)
         }
         return result
     } 
-    private fun createFragmentShader(gl: WebGLRenderingContext): WebGLShader? {
-        val shaderProg = this.shaderPrograms!!
-        val prog = shaderProg.fragmentShader
+    /**
+     * compile fragment shader program
+     */
+    private fun createFragmentShader(
+        gl: WebGLRenderingContext,
+        shaderProgram: String): WebGLShader? {
         var result : WebGLShader? = null
         val shader = gl.createShader(WebGLRenderingContext.FRAGMENT_SHADER)
         if (shader != null) {
-            gl.shaderSource(shader, prog)
+            gl.shaderSource(shader, shaderProgram)
             gl.compileShader(shader)
             result = assertCompileError(gl, shader)
         }

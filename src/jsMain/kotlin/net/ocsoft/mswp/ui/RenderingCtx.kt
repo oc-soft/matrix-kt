@@ -4,9 +4,38 @@ import org.khronos.webgl.*
 
 class RenderingCtx() {
     /**
-     * shader program
+     * shader programs
      */
-    var shaderProgram: WebGLProgram? = null
+    var shaderPrograms: Array<WebGLProgram?>? = null
+
+    /**
+     * main shader program
+     */
+    val shaderProgram: WebGLProgram?
+        get() {
+            var result: WebGLProgram? = null
+            val shaderPrograms = this.shaderPrograms
+            if (shaderPrograms != null
+                && shaderPrograms.size > 0) {
+                result = shaderPrograms[0]
+            }
+            return result 
+        }
+
+    /**
+     * program for rendering point
+     */
+    val pointShaderProgram: WebGLProgram?
+        get() {
+            var result: WebGLProgram? = null
+            val shaderPrograms = this.shaderPrograms
+            if (shaderPrograms != null
+                && shaderPrograms.size > 1) {
+                result = shaderPrograms[1]
+            }
+            return result 
+        } 
+
     /**
      * vertex buffer for button 
      */
@@ -186,18 +215,22 @@ class RenderingCtx() {
      * free shader program
      */
     fun teardownShaderProgram(gl: WebGLRenderingContext) {
-        val shaderProgram = this.shaderProgram
-        if (shaderProgram != null) {
-            val shaders = gl.getAttachedShaders(shaderProgram)
-            if (shaders != null) {
-                shaders.forEach({
-                    shader->
-                    gl.detachShader(shaderProgram, shader)
-                    gl.deleteShader(shader)
-                })
+        val shaderPrograms = this.shaderPrograms
+        if (shaderPrograms != null) {
+            shaderPrograms.forEach {
+                if (it != null) {
+                    val shaders = gl.getAttachedShaders(it)
+                    if (shaders != null) {
+                        shaders.forEach({
+                            shader->
+                            gl.detachShader(it, shader)
+                            gl.deleteShader(shader)
+                        })
+                    }
+                    gl.deleteProgram(it)
+                }
             }
-            gl.deleteProgram(shaderProgram)
-            this.shaderProgram = null
+            this.shaderPrograms = null
         } 
     }
     /**

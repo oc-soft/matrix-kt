@@ -1,0 +1,14 @@
+attribute vec4 aVertexPosition;
+attribute float aPointSize;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+varying vec2 vTextureCoord;
+
+void main() {
+    vPosition = uModelViewMatrix * aVertexPosition;
+    gl_Position = uProjectionMatrix * vPosition;
+    gl_PointSize = aPointSize;
+}
+
+
+// vi: se ts=4 sw=4 et:

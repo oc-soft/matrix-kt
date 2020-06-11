@@ -1,0 +1,10 @@
+
+uniform sampler2D uSampler;
+
+void main() {
+    vec4 texColor;
+    texColor = texture2D(uSampler, gl_PointCoord);
+    gl_FragColor = texColor; 
+}
+
+// vi: se ts=4 sw=4 et:
