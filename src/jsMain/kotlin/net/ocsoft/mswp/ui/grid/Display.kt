@@ -294,6 +294,60 @@ class Display(var renderingCtx : RenderingCtx,
                 }))
         }
     }
+
+    /**
+     * calculate buttons coordinate
+     */
+    fun calcButtonsCoordinate() :Array<FloatArray> {
+        val coordArray = ArrayList<FloatArray>()
+        for (rowIndex in 0 until rowCount) {
+            for (colIndex in 0 until columnCount) { 
+                val coord = calcButtonCoordinate(rowIndex, colIndex)
+                coord.forEach{ coordArray.add(it) } 
+            }
+        }
+        val result = Array<FloatArray>(coordArray.size) { coordArray[it] }
+        return result
+    }
+   
+    
+    /**
+     * calculate button coordinate
+     */
+    fun calcButtonCoordinate(rowIndex :Int, columnIndex: Int):
+        Array<FloatArray> {
+        val mat = renderingCtx.buttonMatricesForDrawing!![
+            rowIndex * columnCount + columnIndex]
+        val glrs = renderingCtx.glrs!!
+        
+        val matRef = glrs.matrix_create_with_components_col_order(
+            Float64Array(
+                Array<Double>(mat.size) { i -> mat[i].toDouble() })) 
+        val vertices = buttons.mineButton.vertices 
+
+        val coordList = ArrayList<FloatArray>()
+        for (i in 0 until vertices.size / 3) {
+            val vecRef0 = glrs.vector_create(
+                Float64Array(arrayOf(vertices[3 * i].toDouble(), 
+                    vertices[3 * i + 1].toDouble(),
+                    vertices[3 * i + 2].toDouble(), 
+                    1.0)))
+        
+            val vecRef1 = glrs.matrix_apply_r_with_vec(matRef, vecRef0)
+            val vec = glrs.vector_get_components_32(vecRef1)
+            if (vec != null) {
+                coordList.add(FloatArray(vec.length) { vec[it] })
+            }
+            glrs.vector_release(vecRef1)
+            glrs.vector_release(vecRef0)
+        }
+        glrs.matrix_release(matRef)
+
+        val result = Array<FloatArray>(coordList.size) { coordList[it] }
+        return result 
+    }
+    
+
     /**
      * update board rendered image.
      */
@@ -366,7 +420,7 @@ class Display(var renderingCtx : RenderingCtx,
             gl.bindBuffer(
                 WebGLRenderingContext.ARRAY_BUFFER,
                 renderingCtx.boardBuffer)
-            val mat =  renderingCtx.boardMatrix!!
+            val mat = renderingCtx.boardMatrix!!
             gl.uniformMatrix4fv(uModelMat, false, 
                 Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
             val normalVecMat = renderingCtx.boardNormalVecMatrix!!
@@ -386,6 +440,42 @@ class Display(var renderingCtx : RenderingCtx,
              
         }
     }
+
+    /**
+     * calculate board coordinate
+     */
+    fun calcBoardCoordinate(): Array<Float32Array> {
+        val mat = renderingCtx.boardMatrix!!
+        val glrs = renderingCtx.glrs!!
+        
+        val matRef = glrs.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(mat.size) { mat[it].toDouble() })) 
+ 
+        val vertices = board.vertices
+        val coordList = ArrayList<Float32Array>()
+        for (i in 0 until vertices.size / 3) {
+
+            val vecRef0 = glrs.vector_create(
+                Float64Array(arrayOf(vertices[3 * i].toDouble(), 
+                    vertices[3 * i + 1].toDouble(), 
+                    vertices[3 * i + 2].toDouble(), 
+                    1.0)))
+            
+            val vecRef1 = glrs.matrix_apply_r_with_vec(matRef, vecRef0)
+            val vec = glrs.vector_get_components_32(vecRef1)
+            if (vec != null) {
+                coordList.add(vec)
+            }
+            glrs.vector_release(vecRef1)
+            glrs.vector_release(vecRef0)
+        }
+        glrs.matrix_release(matRef)
+
+        val result = Array<Float32Array>(coordList.size) { coordList[it] }
+        return result 
+    }
+    
 }
 
+/* vi: se ts=4 sw=4 et: */
 

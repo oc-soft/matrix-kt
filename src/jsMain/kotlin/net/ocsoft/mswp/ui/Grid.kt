@@ -37,7 +37,13 @@ class Grid(rowCount: Int = 6,
     /**
      * glrs interface
      */
-    var glrs : glrs.InitOutput? = null
+    var glrs : glrs.InitOutput? 
+        get() {
+            return renderingCtx.glrs
+        }
+        set(value) {
+            renderingCtx.glrs = value
+        }
 
     var camera : Camera? = null
         set(value) {
@@ -52,7 +58,7 @@ class Grid(rowCount: Int = 6,
             }
         }
   
-    var pointLight: PointLight? = null
+    var pointLight: net.ocsoft.mswp.PointLight? = null
         set(value) {
             if (field != value) {
                 field = value 
@@ -509,7 +515,7 @@ class Grid(rowCount: Int = 6,
         settings: GridSettings,
         model: Model,
         camera: Camera,
-        pointLight: PointLight,
+        pointLight: net.ocsoft.mswp.PointLight,
         shaderPrograms: ShaderPrograms) {
         
         model.logic.rowSize = rowCount
@@ -872,6 +878,10 @@ class Grid(rowCount: Int = 6,
             updateCamera(gl)
             enableLightingContext(gl, lightingContextEnabled)
             display.drawScene(gl)
+        }
+        val pointShaderProg = this.renderingCtx.pointShaderProgram
+        if (pointShaderProg != null) {
+            gl.useProgram(pointShaderProg)
         }
     }
    

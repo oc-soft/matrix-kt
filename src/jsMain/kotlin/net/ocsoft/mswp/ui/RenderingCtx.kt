@@ -37,6 +37,12 @@ class RenderingCtx() {
         } 
 
     /**
+     * glrs interface
+     */
+    var glrs : glrs.InitOutput? = null
+
+ 
+    /**
      * vertex buffer for button 
      */
     var buttonBuffer : WebGLBuffer? = null

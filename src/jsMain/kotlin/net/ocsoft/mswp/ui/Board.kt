@@ -34,6 +34,14 @@ class Board(
         }
 
     /**
+     * point on board
+     */
+    val pointOnBoard: FloatArray
+        get() {
+            return this.vertices.sliceArray(0..2)
+        }
+
+    /**
      * normal vector's cache
      */
     private var normalVecCache : FloatArray? = null
@@ -56,8 +64,16 @@ class Board(
                 i -> normalVectors[i]
             })
             return result 
- 
         }
+
+    /**
+     * normal vector
+     */ 
+    val normalVector: FloatArray
+        get() {
+            return normalVectors.sliceArray(0..2)
+        }
+
 
     /**
      * vertex colors
@@ -163,3 +179,4 @@ class Board(
         return result
     }
 }
+// vi: se ts=4 sw=4 et:
