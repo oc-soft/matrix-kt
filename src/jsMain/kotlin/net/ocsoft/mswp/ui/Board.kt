@@ -34,11 +34,18 @@ class Board(
         }
 
     /**
-     * point on board
+     * (left, bottom) - (right, top) on board
      */
-    val pointOnBoard: FloatArray
+    val bounds: Pair<FloatArray, FloatArray>
         get() {
-            return this.vertices.sliceArray(0..2)
+            val vertices = this.vertices
+            val vertexCount = vertices.size / 3
+            val triangleCount = vertexCount / 3
+            val lastTriangleStart = (triangleCount - 1) * 3
+            val leftBottom = vertices.sliceArray(0..2)
+            val topRight = vertices.sliceArray(
+                lastTriangleStart..lastTriangleStart + 2)
+            return Pair(leftBottom, topRight)
         }
 
     /**

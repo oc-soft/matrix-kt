@@ -22,6 +22,10 @@ class PointLight(
      */
     var normalVector: FloatArray? = null
 
+    /**
+     * point light
+     */
+    var pointLight: net.ocsoft.mswp.PointLight? = null
    
     /**
      * setup projection plane for editting light point
@@ -30,19 +34,21 @@ class PointLight(
         val renderingCtx = display.renderingCtx
         val glrs = renderingCtx.glrs 
 
+        pointOnPlane = null
+        normalVector = null
         if (glrs != null) {
             val board = display.board
             val buttonsCoord = display.calcButtonsCoordinate() 
              
             val normal = board.normalVector  
-            val ptOnPlane = board.pointOnBoard
+            val (leftBottom, topRight)  = board.bounds
             val planeRef = glrs.plane_create(
                 Float64Array(
                     Array<Double>(normal.size) 
                         { normal[it].toDouble() }), 
                 Float64Array(
-                    Array<Double>(ptOnPlane.size)
-                        { ptOnPlane[it].toDouble() }))
+                    Array<Double>(leftBottom.size)
+                        { leftBottom[it].toDouble() }))
             
             val distanceIdxRef = glrs.plane_sort_points(
                 planeRef, buttonsCoord) 
@@ -88,6 +94,27 @@ class PointLight(
 
         return result
     }
+
+
+    /**
+     * project point on plane
+     */
+    /*
+    fun projectOnPlane(
+        glrs: glrs.InitOutput,
+        normal: FloatArray,
+        pointOnPlane: FloatArray,
+        point: FloatArray): FloatArray {
+    }
+
+
+    fun projectOnPlane(
+        glrs: glrs.InitOutput,
+        planeRef: Number,
+        point: FloatArray): FloatArray {
+        
+    }
+    */
 }
 
 // vi: se ts=4 sw=4 et:
