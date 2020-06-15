@@ -23,6 +23,7 @@ class Grid(rowCount: Int = 6,
     val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
         floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
     board: Board = Board(),
+    pointLightEdit: PointLight = PointLight(),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
     val glyph: Glyph = Glyph(),
@@ -45,6 +46,9 @@ class Grid(rowCount: Int = 6,
             renderingCtx.glrs = value
         }
 
+    /**
+     * camera
+     */
     var camera : Camera? = null
         set(value) {
             if (field != value) {
@@ -57,13 +61,30 @@ class Grid(rowCount: Int = 6,
                 }
             }
         }
+    /**
+     * viewport 
+     */
+    val viewport : IntArray?
+        get() {
+            val id = canvasId
+            var result: IntArray? = null
+            if (id != null) {
+                val canvas = document.querySelector(id) as HTMLCanvasElement
+                result = intArrayOf(0, 0, canvas.width, canvas.height) 
+            }
+            return result
+        }
   
+    /**
+     * point lighting
+     */
     var pointLight: net.ocsoft.mswp.PointLight? = null
         set(value) {
             if (field != value) {
                 field = value 
             }
         }
+
     /**
      * buttons row count
      */
@@ -84,7 +105,16 @@ class Grid(rowCount: Int = 6,
      */
     var board = board 
 
-    var display = Display(renderingCtx, buttons, board)
+    /**
+     * display
+     */
+    var display = Display(renderingCtx, buttons, board, pointLightEdit)
+
+    /**
+     * point light editor
+     */
+    var pointLightEdit = pointLightEdit
+    
     /**
      * total button size
      */
@@ -307,7 +337,19 @@ class Grid(rowCount: Int = 6,
     } 
     fun endDrawing(gl: WebGLRenderingContext) {
     } 
-     
+
+    /**
+     * prepare rendering context for light edit
+     */
+    fun beginDrawingForLightEdit(gl: WebGLRenderingContext) {
+    }
+
+    /**
+     * finished rendering context for light edit
+     */
+    fun endDrawingForLightEdit(gl: WebGLRenderingContext) {
+    }
+      
     fun setup(gl: WebGLRenderingContext)  {
         setupSceneBuffer(gl)
         setupShaderProgram(gl)
@@ -427,7 +469,6 @@ class Grid(rowCount: Int = 6,
             canvasId!!) as HTMLCanvasElement
         val gl = canvas.getContext("webgl") as WebGLRenderingContext
 
-
         handleUserInput(gl, round(x).toInt(), round(y).toInt())
     } 
     fun handleUserInput(gl: WebGLRenderingContext,
@@ -469,6 +510,19 @@ class Grid(rowCount: Int = 6,
             }
         }
         endDrawingForPicking(gl)
+    }
+    fun handleUserInputForLightEdit(glo: WebGLRenderingContext,
+        x: Int, y: Int) {
+        beginDrawingForLightEdit(glo)
+        val buffer = Uint8Array(4)
+        glo.readPixels(x, y, 1, 1,
+            WebGLRenderingContext.RGBA, 
+            WebGLRenderingContext.UNSIGNED_BYTE, 
+            buffer)
+
+        gl.ColorCodec.decodeFloat(buffer) 
+        
+        endDrawingForLightEdit(glo)
     }
     
     /**
@@ -660,6 +714,8 @@ class Grid(rowCount: Int = 6,
         renderingCtx.boardTextureCoordinateBuffer =
             createBoardTextureCoordinateBuffer(gl) 
     }
+
+
     private fun setupBufferForWorking(gl: WebGLRenderingContext) {
         renderingCtx.buttonPickingColorBuffer = 
             createButtonColorBufferForPicking(gl)
@@ -670,6 +726,14 @@ class Grid(rowCount: Int = 6,
         renderingCtx.pickingBuffer = createPickingBuffer(gl)
         renderingCtx.depthBufferForWorking = 
             createDepthBufferForWorking(gl) 
+    }
+
+    /**
+     * setup buffer for point light editing
+     */
+    private fun setupBufferForPointLightEditing(
+        gl: WebGLRenderingContext) {
+        renderingCtx.lightingTableBuffer = createLightEditTableBuffer(gl)
     }
 
     /**
@@ -861,13 +925,33 @@ class Grid(rowCount: Int = 6,
             gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
                 WebGLRenderingContext.DEPTH_COMPONENT16,
                 gl.canvas.width, gl.canvas.height);
-  
+            //gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+            //    WebGLRenderingContext.RGBA4,
+            //    gl.canvas.width, gl.canvas.height);
+   
             gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
                 WebGLRenderingContext.DEPTH_ATTACHMENT, 
                 WebGLRenderingContext.RENDERBUFFER, result)
         }  
         return result
     }
+    /**
+     * light editing vertex buffer
+     */
+    private fun createLightEditTableBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        if (result != null) {
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
+                result)
+            val dataSource = this.pointLightEdit.lightEditingTableArray!!
+            gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+                dataSource, 
+                WebGLRenderingContext.STATIC_DRAW) 
+        }
+        return result
+    }
+ 
     private fun updateView(gl: WebGLRenderingContext) {
         val cam = this.camera
         val shaderProg = this.renderingCtx.shaderProgram
@@ -901,7 +985,7 @@ class Grid(rowCount: Int = 6,
             }
         }
     }
-    private fun createCameraMatrix(): Float32Array? {
+    fun createCameraMatrix(): Float32Array? {
         val cam = camera
         val glrs = this.glrs
         var result: Float32Array? = null
@@ -988,7 +1072,8 @@ class Grid(rowCount: Int = 6,
         val shaderProg = this.shaderPrograms!!
         val strProg = arrayOf(
             shaderProg.vertexShader,
-            shaderProg.pointVertexShader) 
+            shaderProg.pointVertexShader,
+            shaderProg.depthVertexShader) 
         val result = Array<WebGLShader?>(strProg.size) {
             createVertexShader(gl, strProg[it])
         }
@@ -999,7 +1084,8 @@ class Grid(rowCount: Int = 6,
         val shaderProg = this.shaderPrograms!!
         val strProg = arrayOf(
             shaderProg.fragmentShader,
-            shaderProg.pointFragmentShader) 
+            shaderProg.pointFragmentShader,
+            shaderProg.depthFragmentShader) 
         val result = Array<WebGLShader?>(strProg.size) {
             createFragmentShader(gl, strProg[it])
         }
@@ -1184,7 +1270,7 @@ class Grid(rowCount: Int = 6,
         val curPort = gl.getParameter(
             WebGLRenderingContext.VIEWPORT) as Int32Array
         
-        val portNew = intArrayOf(0, 0, canvas.width, canvas.height)
+        val portNew = this.viewport!!
         if (portNew[0] != curPort[0] || portNew[1] != curPort[1]
             || portNew[2] != curPort[2] || portNew[3] != curPort[3]) {
             gl.viewport(portNew[0], portNew[1], portNew[2], portNew[3])

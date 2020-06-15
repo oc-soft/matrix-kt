@@ -1,0 +1,32 @@
+precision mediump float;
+
+/**
+ * float to vector4
+ */
+vec4
+floatToVec4(
+    float value);
+
+void main() {
+    gl_FragColor = floatToVec4(gl_FragCoord.z);
+}
+
+/**
+ * float to vector4
+ */
+vec4
+floatToVec4(
+    float value)
+{
+    vec4 result;
+    for (int i = 0; i < 4; i++) {
+        mediump int valI;
+        float tmpVal;
+        tmpVal = mod(value * 0xf * i, float(0xf));
+        valI = int(tmpVal);
+        result[i] = float(valI) / 0xf;
+    }
+    return result;
+}
+
+// vi: se ts=4 sw=4 et:

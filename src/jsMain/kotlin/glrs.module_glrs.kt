@@ -1,7 +1,8 @@
 @file:JsModule("glrs")
 @file:JsNonModule
 @file:Suppress("INTERFACE_WITH_SUPERCLASS", "OVERRIDING_FINAL_MEMBER", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "CONFLICTING_OVERLOADS", "EXTERNAL_DELEGATION")
-package glrs;
+package glrs
+
 import kotlin.js.*
 import kotlin.js.Json
 import org.khronos.webgl.*
@@ -16,7 +17,7 @@ import org.w3c.notifications.*
 import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
-import tsstdlib.WebAssembly.Module
+import glrs.WebAssembly.Module
 
 external interface InitOutput {
     fun vector_array_create(): Number
@@ -26,6 +27,10 @@ external interface InitOutput {
     fun vector_array_size(v: Number): Number?
     fun vector_array_add_0(va: Number, v: Number): Boolean
     fun vector_array_add_1(va: Number, v: Float64Array): Boolean
+    fun float_vec_retain(vec: Number): Number
+    fun float_vec_release(vec: Number): Number
+    fun float_vec_size(vec: Number): Number
+    fun float_vec_get(vec: Number, idx: Number): Number
     fun vector_create(components: Float64Array): Number
     fun vector_get_components(v: Number): Float64Array?
     fun vector_get_components_32(v: Number): Float32Array?
@@ -40,8 +45,20 @@ external interface InitOutput {
     fun plane_get_dimension(p: Number): Number?
     fun plane_distance_0(p: Number, v: Number): Number?
     fun plane_distance(p: Number, v: Float64Array): Number?
-    fun plane_sort_points_0(p: Number, va: Number): Number
-    fun plane_sort_points(p: Number, point_container: Any): Number
+    fun plane_project_0(p: Number, v: Number): Float64Array?
+    fun plane_project(p: Number, v: Float64Array): Float64Array?
+    fun plane_sort_points_0_i(p: Number, va: Number): Number
+    fun plane_sort_points_0(p: Number, point_container: Any): Number
+    fun plane_sort_points_1_i(p: Number, va: Number): Number
+    fun plane_sort_points_1(p: Number, point_container: Any): Number
+    fun float_indices_retain(fi: Number): Number
+    fun float_indices_release(fi: Number): Number
+    fun float_indices_get_float_keys(fi: Number): Number
+    fun float_indices_get_indices(fi: Number, float_obj: Number): Uint32Array?
+    fun float_create(value: Number): Number
+    fun float_retain(float_obj: Number): Number
+    fun float_release(float_obj: Number): Number
+    fun float_get_value(float_obj: Number): Number?
     fun distances_retain(distances: Number): Number
     fun distances_release(distances: Number): Number
     fun distances_size(distances: Number): Number

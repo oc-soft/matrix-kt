@@ -34,21 +34,6 @@ class Board(
         }
 
     /**
-     * (left, bottom) - (right, top) on board
-     */
-    val bounds: Pair<FloatArray, FloatArray>
-        get() {
-            val vertices = this.vertices
-            val vertexCount = vertices.size / 3
-            val triangleCount = vertexCount / 3
-            val lastTriangleStart = (triangleCount - 1) * 3
-            val leftBottom = vertices.sliceArray(0..2)
-            val topRight = vertices.sliceArray(
-                lastTriangleStart..lastTriangleStart + 2)
-            return Pair(leftBottom, topRight)
-        }
-
-    /**
      * normal vector's cache
      */
     private var normalVecCache : FloatArray? = null
@@ -107,6 +92,22 @@ class Board(
      * board size
      */
     val size : FloatArray = floatArrayOf(1.0f, 1.0f)
+
+    /**
+     * (left, bottom) - (right, bottom) - (right, top) - (left, top)  on board
+     */
+    val bounds: Array<FloatArray>
+        get() {
+            return arrayOf(
+                floatArrayOf(
+                    - size[0] / 2.0f, - size[1] / 2.0f, 0.0f),
+                floatArrayOf(
+                    size[0] / 2.0f, - size[1] / 2.0f, 0.0f),
+                floatArrayOf(
+                    size[0] / 2.0f, size[1] / 2.0f, 0.0f),
+                floatArrayOf(
+                    - size[0] / 2.0f, size[1] / 2.0f, 0.0f)) 
+        }
 
     /**
      * polygon factor

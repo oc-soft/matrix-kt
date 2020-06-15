@@ -35,6 +35,19 @@ class RenderingCtx() {
             }
             return result 
         } 
+    /**
+     * program for storing depth data
+     */
+    val depthShaderProgram: WebGLProgram?
+        get() {
+            var result: WebGLProgram? = null
+            val shaderPrograms = this.shaderPrograms
+            if (shaderPrograms != null
+                && shaderPrograms.size > 2) {
+                result = shaderPrograms[2]
+            }
+            return result
+        }
 
     /**
      * glrs interface
@@ -79,6 +92,13 @@ class RenderingCtx() {
      * vertex buffer for board
      */
     var boardBuffer : WebGLBuffer? = null
+
+
+    /**
+     * vertex buffer for lighting editing
+     */
+    var lightingTableBuffer: WebGLBuffer? = null
+
 
     /**
      * board color buffer for display 
@@ -167,6 +187,12 @@ class RenderingCtx() {
      * board normal vector matrix
      */
     var boardNormalVecMatrix : FloatArray? = null
+
+
+    /**
+     * lighting table model matrix
+     */
+    var lightingTableMatrix : Float32Array? = null
     /**
      * main scene render buffer
      */

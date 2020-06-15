@@ -1,0 +1,12 @@
+attribute vec4 aVertexPosition;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+void main() {
+    vPosition = uModelViewMatrix * aVertexPosition;
+    gl_Position = uProjectionMatrix * vPosition;
+}
+
+
+
+// vi: se ts=4 sw=4 et:

@@ -107,8 +107,10 @@ actual class MainPage {
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls",
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-vertex.gls", 
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-fragment.gls")
-            var promises = ArrayList<Promise<Any>>()
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-fragment.gls",
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/depth-vertex.gls", 
+                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/depth-fragment.gls")
+             var promises = ArrayList<Promise<Any>>()
 
             shaders.forEach {
                 promises.add(window.fetch(it).then({ it.text() }));
@@ -136,8 +138,10 @@ actual class MainPage {
                     responses[0] as String, 
                     responses[1] as String,
                     responses[2] as String,
-                    responses[3] as String)
-                grid.glrs = responses[4] as glrs.InitOutput
+                    responses[3] as String,
+                    responses[4] as String,
+                    responses[5] as String)
+                grid.glrs = responses[6] as glrs.InitOutput
                 grid.bind(config.gridSettings,
                     model, camera, 
                     pointLight, shaderPrograms)
