@@ -21,12 +21,15 @@ import glrs.WebAssembly.Module
 
 external interface InitOutput {
     fun vector_array_create(): Number
+    fun vector_array_from_js_array(array: Array<Any>): Number
     fun vector_array_retain(v: Number): Number
     fun vector_array_release(v: Number): Number
     fun vector_array_dimension(v: Number): Number?
     fun vector_array_size(v: Number): Number?
     fun vector_array_add_0(va: Number, v: Number): Boolean
     fun vector_array_add_1(va: Number, v: Float64Array): Boolean
+    fun vector_array_get_components_as_array_array64(va: Number): Array<Any>?
+    fun vector_array_get_components_as_array_array32(va: Number): Array<Any>?
     fun float_vec_retain(vec: Number): Number
     fun float_vec_release(vec: Number): Number
     fun float_vec_size(vec: Number): Number
@@ -39,7 +42,9 @@ external interface InitOutput {
     fun vector_release(v: Number): Number
     fun vector_dimension(v: Number): Number
     fun plane_create_0(n: Number, c: Number): Number
+    fun plane_create_with_2d_0(p1: Number, p2: Number): Number
     fun plane_create(n: Float64Array, c: Float64Array): Number
+    fun plane_create_with_2d(p1: Float64Array, p2: Float64Array): Number
     fun plane_retain(p: Number): Number
     fun plane_release(p: Number): Number
     fun plane_get_dimension(p: Number): Number?
@@ -72,6 +77,44 @@ external interface InitOutput {
     fun distance_indices_release(di: Number): Number
     fun distance_indices_get_distances(di: Number): Number
     fun distance_indices_get_indices(di: Number, distance: Number): Uint32Array?
+    fun geom_d2_offset_points_00(offset: Number, p1: Number, p2: Number, tolerance: Number): Number
+    fun geom_d2_offset_points_01(offset: Number, p1: Float64Array, p2: Float64Array, tolerance: Number): Number
+    fun geom_d2_offset_points_02(offset: Number, p1: Float64Array, p2: Float64Array, tolerance: Number): Array<Any>?
+    fun geom_d2_offset_points_10(offset: Number, p1: Number, p2: Number): Number
+    fun geom_d2_offset_points_11(offset: Number, p1: Float64Array, p2: Float64Array): Number
+    fun geom_d2_offset_points_12(offset: Number, p1: Float64Array, p2: Float64Array): Array<Any>?
+    fun geom_2d_offset_points_vec_00(offset: Number, points: Number, close: Boolean, tolerance: Number): Number
+    fun geom_2d_offset_points_vec_01(offset: Number, points: Array<Any>, close: Boolean, tolerance: Number): Number
+    fun geom_2d_offset_points_vec_02(offset: Number, points: Array<Any>, close: Boolean, tolerance: Number): Array<Any>?
+    fun geom_2d_offset_points_vec_10(offset: Number, points: Number, close: Boolean): Number
+    fun geom_2d_offset_points_vec_11(offset: Number, points: Array<Any>, close: Boolean): Number
+    fun geom_2d_offset_points_vec_12(offset: Number, points: Array<Any>, close: Boolean): Array<Any>?
+    fun segment_retain(seg: Number): Number
+    fun segment_release(seg: Number): Number
+    fun segment_create_00(d: Number, c: Number, t0: Number, t1: Number): Number
+    fun segment_create_01(d: Float64Array, c: Float64Array, t0: Number, t1: Number): Number
+    fun segment_create_10(p1: Number, p2: Number): Number
+    fun segment_create_11(p1: Float64Array, p2: Float64Array): Number
+    fun segment_p1_0(seg: Number): Number
+    fun segment_p1(seg: Number): Float64Array?
+    fun segment_p2_0(seg: Number): Number
+    fun segment_p2(seg: Number): Float64Array?
+    fun segment_direction_0(seg: Number): Number
+    fun segment_direction(seg: Number): Float64Array?
+    fun segment_point_on_t_0(seg: Number, t: Number): Number
+    fun segment_point_on_t(seg: Number, t: Number): Float64Array?
+    fun segment_get_parameter_range_0(seg: Number): Number
+    fun segment_get_parameter_range(seg: Number): Float64Array?
+    fun segment_point_on_line_0(seg: Number): Number
+    fun segment_point_on_line(seg: Number): Float64Array?
+    fun segment_cross_point_parameter_2d_00(seg_1: Number, seg_2: Number, tolerance: Number): Number
+    fun segment_cross_point_parameter_2d_01(seg_1: Number, seg_2: Number, tolerance: Number): Float64Array?
+    fun segment_cross_point_parameter_2d_10(seg_1: Number, seg_2: Number): Number
+    fun segment_cross_point_parameter_2d_11(seg_1: Number, seg_2: Number): Float64Array?
+    fun segment_cross_point_2d_parameter_exact_00(seg_1: Number, seg_2: Number, tolerance: Number): Number
+    fun segment_cross_point_2d_parameter_exact_01(seg_1: Number, seg_2: Number, tolerance: Number): Float64Array?
+    fun segment_cross_point_2d_parameter_exact_10(seg_1: Number, seg_2: Number): Number
+    fun segment_cross_point_2d_parameter_exact_11(seg_1: Number, seg_2: Number): Float64Array?
     fun matrix_create_with_components_row_order(components: Float64Array): Number
     fun matrix_create_with_components_col_order(components: Float64Array): Number
     fun matrix_create_with_dimension(dim: Number): Number

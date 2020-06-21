@@ -251,15 +251,17 @@ class PointLight(
         projectionMatrix: Float32Array, 
         viewport: IntArray): Array<Float32Array> {
          
-        val result = Array<Float32Array>(lightEditingTable.size) {
-            gl.Matrix.project(glrs, 
-                lightEditingTable[it][0],
-                lightEditingTable[it][1],
-                lightEditingTable[it][2],
-                modelMatrix,
-                projectionMatrix,
-                viewport)!!
+        
+        val coordinates = gl.Matrix.project(glrs, 
+            lightEditingTableArray!!,
+            modelMatrix,
+            projectionMatrix,
+            viewport)!!
+         
+        val result = Array<Float32Array>(coordinates.length / 3) {
+            coordinates.subarray(it * 3, it * 3 + 3)
         }
+        
         return result 
     }
 
@@ -270,6 +272,10 @@ class PointLight(
         grid: Grid, 
         gl: WebGLRenderingContext,
         xw: Int, yw: Int, zw: Float) {
+        if (isInTable(grid.glrs!!, xw.toFloat(), yw.toFloat())) {
+                
+        } else {
+        }
     }
          
 
@@ -283,14 +289,32 @@ class PointLight(
         var result = false
         val lightEditViewTable = this.lightEditViewTable
         if (lightEditViewTable != null) {
+            result = true
+            val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble())) 
             for (idx in 0 .. lightEditViewTable.size - 1) {
+                val p1 = lightEditViewTable[idx] 
+                val p2 = lightEditViewTable[
+                    (idx + 1) % lightEditViewTable.size]
+               
+                val planeRef = glrs.plane_create_with_2d(
+                    Float64Array(Array<Double>(p1.length) 
+                        { p1[it].toDouble() }), 
+                    Float64Array(Array<Double>(p2.length)
+                        { p2[it].toDouble() }))
+                if (planeRef != null) {
+                    result = glrs.plane_distance(planeRef, pt)!!.toDouble() > 0.0
+                } else {
+                    result = false
+                }
+                if (planeRef != null) {
+                    glrs.plane_release(planeRef)
+                }
+                if (!result) {
+                    break
+                }
             } 
         }
         return result
     }
-
-    
-
-
 }
 // vi: se ts=4 sw=4 et:
