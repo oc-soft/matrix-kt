@@ -111,10 +111,10 @@ external interface InitOutput {
     fun segment_cross_point_parameter_2d_01(seg_1: Number, seg_2: Number, tolerance: Number): Float64Array?
     fun segment_cross_point_parameter_2d_10(seg_1: Number, seg_2: Number): Number
     fun segment_cross_point_parameter_2d_11(seg_1: Number, seg_2: Number): Float64Array?
-    fun segment_cross_point_2d_parameter_exact_00(seg_1: Number, seg_2: Number, tolerance: Number): Number
-    fun segment_cross_point_2d_parameter_exact_01(seg_1: Number, seg_2: Number, tolerance: Number): Float64Array?
-    fun segment_cross_point_2d_parameter_exact_10(seg_1: Number, seg_2: Number): Number
-    fun segment_cross_point_2d_parameter_exact_11(seg_1: Number, seg_2: Number): Float64Array?
+    fun segment_cross_point_parameter_2d_exact_00(seg_1: Number, seg_2: Number, tolerance: Number): Number
+    fun segment_cross_point_parameter_2d_exact_01(seg_1: Number, seg_2: Number, tolerance: Number): Float64Array?
+    fun segment_cross_point_parameter_2d_exact_10(seg_1: Number, seg_2: Number): Number
+    fun segment_cross_point_parameter_2d_exact_11(seg_1: Number, seg_2: Number): Float64Array?
     fun matrix_create_with_components_row_order(components: Float64Array): Number
     fun matrix_create_with_components_col_order(components: Float64Array): Number
     fun matrix_create_with_dimension(dim: Number): Number

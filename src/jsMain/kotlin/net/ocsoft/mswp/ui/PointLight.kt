@@ -1,4 +1,5 @@
 package net.ocsoft.mswp.ui
+import kotlin.collections.ArrayList
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.Float64Array
 import org.khronos.webgl.Float32Array
@@ -181,6 +182,7 @@ class PointLight(
         }
     } 
 
+
     /**
      * calculate point moved offset from point 
      */
@@ -287,34 +289,126 @@ class PointLight(
         xw: Float, yw: Float): Boolean {
 
         var result = false
+
+        val distances = calcEachDistancesFromBounds(glrs, xw, yw)
+        result = distances!!.all { it != null && it > 0  } 
+        return result
+    }
+
+    /**
+     * find out bound lines
+     */
+    fun calcEachDistancesFromBounds(
+        glrs: glrs.InitOutput,
+        xw: Float, yw: Float): Array<Double?>? {
+
         val lightEditViewTable = this.lightEditViewTable
-        if (lightEditViewTable != null) {
-            result = true
-            val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble())) 
-            for (idx in 0 .. lightEditViewTable.size - 1) {
-                val p1 = lightEditViewTable[idx] 
+ 
+        var result = Array<Double?>(lightEditViewTable!!.size) { 
+            if (lightEditViewTable != null) {
+                val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble())) 
+                val p1 = lightEditViewTable[it] 
                 val p2 = lightEditViewTable[
-                    (idx + 1) % lightEditViewTable.size]
+                    (it + 1) % lightEditViewTable.size]
                
                 val planeRef = glrs.plane_create_with_2d(
                     Float64Array(Array<Double>(p1.length) 
                         { p1[it].toDouble() }), 
                     Float64Array(Array<Double>(p2.length)
                         { p2[it].toDouble() }))
+                var res: Double? = null
                 if (planeRef != null) {
-                    result = glrs.plane_distance(planeRef, pt)!!.toDouble() > 0.0
-                } else {
-                    result = false
+                    res = glrs.plane_distance(
+                        planeRef, pt)!!.toDouble()
                 }
                 if (planeRef != null) {
                     glrs.plane_release(planeRef)
                 }
-                if (!result) {
-                    break
-                }
+                res
+            } else {
+                null
             } 
         }
         return result
     }
+
+
+    /**
+     * calculate light position from a point which is not in light editer table
+     * bounds.
+     */
+    fun calcNewLightPointLocation(
+        glrs: glrs.InitOutput,
+        xw: Float, yw: Float): FloatArray {
+
+        val distances = calcEachDistancesFromBounds(glrs, xw, yw)
+        var indices = ArrayList<Pair<Int, Double>>()
+        distances!!.forEachIndexed({ idx, dis -> 
+            if (dis != null && dis < 0) {
+                indices.add(Pair(idx, dis)) 
+            }
+        })
+        var result: FloatArray? = null
+        if (indices.size == 2) {
+            var pt: Float32Array? = null
+            if ((indices[0].first + 1) % lightEditViewTable!!.size
+                    == indices[1].first) {
+                pt = lightEditViewTable!![indices[1].first]
+                
+            } else {
+                pt = lightEditViewTable!![indices[0].first]
+            }
+            result = floatArrayOf(pt[0], pt[1])
+        } else if (indices.size == 1) {
+            val seg1 = glrs.segment_create_11(
+                Float64Array(
+                    Array<Double>(2) {
+                        lightEditViewTable!![indices[0].first][it].toDouble()
+                    }),
+                 Float64Array(
+                    Array<Double>(2) {
+                        lightEditViewTable!![(indices[0].first + 1)
+                        % lightEditViewTable!!.size][it].toDouble()
+                    }))
+            val curLight = calcLightPointOnPlane(glrs)!! 
+            
+            val seg2 = glrs.segment_create_11(
+                Float64Array(arrayOf(xw.toDouble(),
+                    yw.toDouble())),
+                Float64Array(arrayOf(curLight[0].toDouble(),
+                    curLight[1].toDouble())))
+
+            val params = glrs.segment_cross_point_parameter_2d_exact_11(
+                seg1, seg2)
+            if (params != null) {
+                val pt = glrs.segment_point_on_t(seg1, params[0])!!
+                result = floatArrayOf(pt[0].toFloat(), pt[1].toFloat())
+            } else {
+                result = curLight
+            }
+
+            glrs.segment_release(seg2)
+            glrs.segment_release(seg1)
+        } else {
+            result = floatArrayOf(xw, yw) 
+        }
+        return result!!
+    }          
+
+    
+
+
+
+    /**
+     * calculate projected light point on editor plane
+     */
+    fun calcLightPointOnPlane(
+        glrs: glrs.InitOutput): FloatArray {
+        return projectOnPlane(glrs,
+            normalVector!!, 
+            pointOnPlane!!,
+            pointLight!!.point)!!
+    }
+
 }
 // vi: se ts=4 sw=4 et:
