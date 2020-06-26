@@ -9,7 +9,8 @@ import kotlin.collections.HashMap
  */
 class IconSetting(
     ngIcon: Persistence.Icon = Persistence.Icon("fas", "skull"),
-    okIcon: Persistence.Icon = Persistence.Icon("fas", "star")) {
+    okIcon: Persistence.Icon = Persistence.Icon("fas", "star"),
+    lightMarkerIcon: Persistence.Icon = Persistence.Icon("fas", "lightbulb")) {
 
     /**
      * class instance
@@ -25,13 +26,19 @@ class IconSetting(
         val OK_ICON = "ok"
 
         /**
+         * light origin marker
+         */
+        val LIGHT_MARKER = "light-marker"
+
+        /**
          * all icon property names
          */
         val allIcons : Array<String>
             get() {
                 val result = arrayOf(
                     NG_ICON,
-                    OK_ICON)
+                    OK_ICON,
+                    LIGHT_MARKER)
                 return result
             }
     }
@@ -58,6 +65,17 @@ class IconSetting(
             }
         }
     /**
+     * light origin marker icon
+     */
+    var lightMarkerIcon: Persistence.Icon = lightMarkerIcon
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyChange(LIGHT_MARKER)
+            }
+        } 
+
+    /**
      * snap short of icon mapping
      */
     val icons: Map<String, Persistence.Icon>
@@ -65,6 +83,7 @@ class IconSetting(
             val result = HashMap<String, Persistence.Icon>()
             result[OK_ICON] = okIcon
             result[NG_ICON] = ngIcon
+            result[LIGHT_MARKER] = lightMarkerIcon
             return result
         }
     
@@ -78,14 +97,14 @@ class IconSetting(
     /**
      * add listener
      */ 
-    fun addListener(listener: ((Any?, String)->Unit)) {
+    fun addListener(listener: (Any?, String)->Unit) {
         listeners.add(listener) 
     }
     /**
      * remove listener
      */
-    fun removeListener(listener: ((Any?, String)->Unit)) {
-        val idx = listeners.indexOfLast({ it == listener })
+    fun removeListener(listener: (Any?, String)->Unit) {
+        val idx = listeners.indexOfLast { it == listener }
         if (idx >= 0) {
             listeners.removeAt(idx)
         }
@@ -100,3 +119,4 @@ class IconSetting(
         listeners.forEach { it(this, name) }
     }
 }
+// vi: se ts=4 sw=4 et:

@@ -17,9 +17,19 @@ import kotlin.math.*
 import net.ocsoft.mswp.ColorScheme
 import fontawesome.SvgCore;
 
+/**
+ * glyph setting
+ */
 class Glyph(
     val numberColor: FloatArray = ColorScheme.colors[0].copyOf(),
     val mineColor: FloatArray = numberColor) {
+
+    /**
+     * this class is used for generating texture image
+     */
+    data class ImageParameter(
+        val textureSize: Int,
+        val contentsRatio: Float) 
 
     /**
      * button texture pixel size
@@ -31,6 +41,43 @@ class Glyph(
      */
     var buttonTextRatio : Float = .8f
 
+    /**
+     * light marker texture pixel size
+     */
+    var lightMarkerTextureSize: Int = 0x40
+    
+    /**
+     * light marker texture image in point sprite
+     */
+    var lightMarkerImageRatio: Float = .8f 
+
+
+    /**
+     * default texture size
+     */
+    val defaultTextureSize: Int
+        get() {
+            return this.buttonTextureSize
+        }
+    /**
+     * defaultTextureRatio
+     */
+    val defaultTextureRatio: Float
+        get() {
+            return buttonTextRatio
+        }
+    /**
+     * special image parameter map
+     */
+    val specialImageParameterMap : Map<String, ImageParameter> 
+        get() {
+            val result = mapOf(
+                IconSetting.LIGHT_MARKER to
+                    ImageParameter(
+                        lightMarkerTextureSize,
+                        lightMarkerImageRatio))
+            return result
+        }
     /**
      * node id to draw glyph
      */
@@ -172,14 +219,22 @@ class Glyph(
         specialImageBlankMap = HashMap<String, ImageData>()  
         specialImageMap = HashMap<String, ImageData>()
         val iconMap = iconSetting.icons
-        
-        iconMap.forEach( {
-            val imgSrc = createImage(ctx, it.value)
+        val paramMap =  specialImageParameterMap
+        iconMap.forEach { 
+            var textureSize: Int = defaultTextureSize
+            var textureRatio: Float = defaultTextureRatio
+            if (it.key in paramMap) {
+                val param = paramMap[it.key]
+                textureSize = param!!.textureSize
+                textureRatio = param!!.contentsRatio 
+            } 
+            val imgSrc = createImage(ctx, it.value,
+                textureSize, textureRatio)
             val imgBlank = createImageBlank(imgSrc)
             specialImageMap!![it.key] = imgSrc
             specialImageBlankMap!![it.key] = imgBlank
              
-        }) 
+        } 
         
        // drawScal()
     }
@@ -187,10 +242,13 @@ class Glyph(
     /**
      * setup numbers
      */
-    fun setupNumbers0(ctx : CanvasRenderingContext2D) {
+    fun setupNumbers0(
+        ctx : CanvasRenderingContext2D,
+        textureSize: Int = defaultTextureSize,
+        textureRatio: Float = defaultTextureRatio) {
         val savedFont = ctx.font 
         val savedBaseline: CanvasTextBaseline = ctx.textBaseline
-        val fontSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        val fontSize = round(textureSize * textureRatio).toInt()
         val canvas = ctx.canvas
         val width = canvas.width
         val height = canvas.height
@@ -213,12 +271,12 @@ class Glyph(
             val texMtx = ctx.measureText(numStr)
             var xcoord = .0
             
-            xcoord += (this.buttonTextureSize - texMtx.width) / 2.0
+            xcoord += (textureSize - texMtx.width) / 2.0
             val ycoord = buttonTextureSize * .5
             ctx.fillText(numStr, xcoord, ycoord) 
             val img = ctx.getImageData(0.0, 0.0,
-               buttonTextureSize.toDouble(),
-               buttonTextureSize.toDouble())
+               textureSize.toDouble(),
+               textureSize.toDouble())
             numberImageMap[number] = img
             ctx.clearRect(0.0, 0.0, 
                 width.toDouble(),
@@ -323,23 +381,29 @@ class Glyph(
      * create image from persistence icon
      */
     fun createImage(ctx: CanvasRenderingContext2D,
-        icon : Persistence.Icon): ImageData {
-        return createImage(ctx, createFontawesomeIconDef(
-            icon.prefix, icon.iconName))
+        icon : Persistence.Icon,
+        textureSize: Int,
+        textureRatio: Float): ImageData {
+        return createImage(ctx, 
+            createFontawesomeIconDef(
+                icon.prefix, icon.iconName),
+                textureSize, textureRatio)
     }
 
     /**
      * create image data from fontawesome icon data.
      */
     fun createImage(ctx: CanvasRenderingContext2D,
-        iconDef: fontawesome.IconDefinition): ImageData {
-
-        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
+        iconDef: fontawesome.IconDefinition,
+        textureSize: Int = defaultTextureSize,
+        textureRatio: Float = defaultTextureRatio): ImageData {
+       
+        val imgSize = textureSize.toDouble() * textureRatio
         val iconWidth = iconDef.icon[0] as Int
         val iconHeight = iconDef.icon[1] as Int
-        val scale = imgSize.toDouble() / max(iconWidth, iconHeight)
+        val scale = imgSize / max(iconWidth, iconHeight)
         val sizeDisplaying = arrayOf(scale * iconWidth, scale * iconHeight) 
-        val displacement = (this.buttonTextureSize * (1 - buttonTextRatio)) / 2 
+        val displacement = (textureSize * (1 - textureRatio)) / 2 
         val ms = createScaleMatrix(scale)
         val mt = createTranslateMatrix(displacement.toDouble(), 
             displacement.toDouble())
@@ -359,8 +423,8 @@ class Glyph(
         ctx.restore()
         // ctx.setTransform(savedTrans)
         val result = ctx.getImageData(0.0, 0.0,
-            buttonTextureSize.toDouble(),
-            buttonTextureSize.toDouble())
+            textureSize.toDouble(),
+            textureSize.toDouble())
         ctx.clearRect(0.0, 0.0, width.toDouble(), height.toDouble())
  
         return result
@@ -424,3 +488,5 @@ class Glyph(
         ctx.putImageData(img!!, 10.0, 10.0)         
     }
 }
+
+// vi: se ts=4 sw=4 et:

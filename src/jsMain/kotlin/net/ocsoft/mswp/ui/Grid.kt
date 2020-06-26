@@ -276,6 +276,7 @@ class Grid(rowCount: Int = 6,
         var gl = canvas.getContext("webgl") as WebGLRenderingContext
         drawScene(gl) 
     }
+    
     /**
      * draw scene lately.
      */

@@ -306,6 +306,7 @@ task webpackDeploy(type: Copy) {
 }
 jsMainClasses.dependsOn webpackDeploy
 
+
 task deployResources0(type: Copy) {
     def distDir = jsBrowserDistributeResources.destinationDir
     from jsProcessResources.destinationDir
