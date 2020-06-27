@@ -87,13 +87,13 @@ actual class MainPage {
             settingObj = Settings()
         }
         val promise = loadFont(settingObj.textureText)
-        promise.then({ 
+        promise.then { 
             setupBodyI(model!!, 
             camera!!, 
             pointLight!!,
             settingObj!!.rootDir,
             settingObj!!.ui) 
-        })
+        }
     }
     fun setupBodyI(model : Model, 
         camera: Camera, 
@@ -101,7 +101,7 @@ actual class MainPage {
         rootDir: String,
         uiSetting: Json) {
         appSettings.runtimeConfig = uiSetting
-        jQuery({ 
+        jQuery { 
             val grid = Grid()
             val shaders = arrayOf(
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
@@ -132,7 +132,7 @@ actual class MainPage {
                 promises[it]
             }
 
-            Promise.all(promisesArray).then({
+            Promise.all(promisesArray).then {
                 responses : Array<out Any> -> 
                 var shaderPrograms = ShaderPrograms(
                     responses[0] as String, 
@@ -144,12 +144,13 @@ actual class MainPage {
                 grid.glrs = responses[6] as glrs.InitOutput
                 grid.bind(config.gridSettings,
                     model, camera, 
-                    pointLight, shaderPrograms)
+                    pointLight, shaderPrograms,
+                    appSettings)
                 appSettings.bind()
                 readyToPlay() 
  
-            })
-        })
+            }
+        }
     }
 
     /**
@@ -163,7 +164,7 @@ actual class MainPage {
      * load font
      */
     fun loadFont(textToLoad : String) : Promise<Unit> {
-        val result = Promise<Unit>({
+        val result = Promise<Unit> {
             resolve, reject -> Unit  
             val activeCallback = {
                 resolve(Unit) 
@@ -176,7 +177,7 @@ actual class MainPage {
                 inactiveCallback,
                 textToLoad)
             WebFont.load(config)
-        })
+        }
         return result
     }
 }

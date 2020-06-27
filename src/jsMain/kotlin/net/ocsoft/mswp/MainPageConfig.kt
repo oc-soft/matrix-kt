@@ -14,6 +14,8 @@ data class MainPageConfig(
             "#glyph_workarea",
             "#game_over_modal",
             "#player_won_modal",
+            "#back-to-main",
+            ".setting.menu .menu.item",
             IconSetting()),
     /** splash pane */
     val splashPaneId : String = "#splash_pane",
@@ -21,7 +23,7 @@ data class MainPageConfig(
     val appSettings : AppSettings.Option = AppSettings.Option(
         GameSettings.Option(
             GameSettings.Option.Queries(
-                ".setting.menu .menu.item",
+                ".setting.menu .menu.item", 
                 ".setting.menu.contents",
                 "#label-setting",
                 "#lighting-setting"),

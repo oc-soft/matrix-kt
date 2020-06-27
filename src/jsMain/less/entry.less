@@ -69,6 +69,16 @@ body {
     cursor: default;
 }
 
+#back-to-main {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    svg {
+        color: @text-color;
+    }
+}
+
 .icons {
     display: flex;
     flex-direction: row;
@@ -139,6 +149,7 @@ li.icon-item svg.svg-inline--fa {
 li.icon-item svg.svg-inline--fa path {
     fill: #1B1B1B 
 }
+
 
 @import "responsive";
 

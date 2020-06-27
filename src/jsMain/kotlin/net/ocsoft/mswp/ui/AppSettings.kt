@@ -30,6 +30,11 @@ class AppSettings(val option : Option) {
      */
     var gameSettings: GameSettings? = null
 
+    /**
+     * handle to edit lighting
+     */
+    var handleToEditLighting: (()->Unit)? = null 
+
      
     /**
      * bind to html
@@ -51,6 +56,17 @@ class AppSettings(val option : Option) {
         gameSettings = null
         iconSelector?.unbind()
         iconSelector = null
+    }
+
+
+    /**
+     * edit point light
+     */
+    fun editPointLight() {
+        val handler = handleToEditLighting       
+        if (handler != null) {
+            handler()
+        }
     }
 }
 // vi: se ts=4 sw=4 et: 

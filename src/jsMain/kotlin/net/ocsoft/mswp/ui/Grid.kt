@@ -36,6 +36,26 @@ class Grid(rowCount: Int = 6,
     var shaderPrograms : ShaderPrograms? = null
 
     /**
+     * application settings
+     */
+    var appSettings: AppSettings? = null
+        set(value) {
+            if (value != field) {
+                val oldAppSettings = field 
+                if (oldAppSettings != null) {
+                    oldAppSettings.handleToEditLighting = null
+                }
+                field = value
+                if (value != null) {
+                    value.handleToEditLighting = { 
+                        onEditLightSetting()
+                    }                               
+                }
+
+            }
+        }
+
+    /**
      * glrs interface
      */
     var glrs : glrs.InitOutput? 
@@ -111,10 +131,21 @@ class Grid(rowCount: Int = 6,
     var display = Display(renderingCtx, buttons, board, pointLightEdit)
 
     /**
-     * point light editor
+     * instance to edit point light 
      */
-    var pointLightEdit = pointLightEdit
-    
+    var pointLightEdit = pointLightEdit 
+      
+    /**
+     * the editor for point light
+     */
+    val pointLightSetting: PointLightSetting
+        get() {
+            val result = PointLightSetting()
+            result.grid = this
+            return result
+        }  
+
+
     /**
      * total button size
      */
@@ -192,6 +223,16 @@ class Grid(rowCount: Int = 6,
      * player won the game daialog
      */
     var playerWonModalId : String? = null
+
+    /**
+     * menu setting item query for html dom node
+     */
+    var mainMenuItemQuery : String? = null
+
+    /**
+     * back to main interface ui html node id
+     */
+    var backToMainQuery: String? = null
 
     /**
      * event handler
@@ -293,7 +334,9 @@ class Grid(rowCount: Int = 6,
         drawSceneI(gl)
     }
 
-
+    /**
+     * draw scene internal
+     */
     fun drawSceneI(gl: WebGLRenderingContext) {
     
         val renderingOperations: Array<Array<(WebGLRenderingContext) -> Unit>>
@@ -305,12 +348,12 @@ class Grid(rowCount: Int = 6,
                     { glctx -> beginDrawing(glctx) },
                     { glctx -> endDrawing(glctx) })
            )
-        renderingOperations.forEach({ elem ->
+        renderingOperations.forEach { elem ->
             elem[0](gl)
             setupEnv(gl)
             updateView(gl)
             elem[1](gl)
-        })
+        }
     }
 
     fun beginDrawingForPicking(gl: WebGLRenderingContext) {
@@ -343,6 +386,7 @@ class Grid(rowCount: Int = 6,
      * prepare rendering context for light edit
      */
     fun beginDrawingForLightEdit(gl: WebGLRenderingContext) {
+
     }
 
     /**
@@ -408,7 +452,9 @@ class Grid(rowCount: Int = 6,
         textures.setup(gl, glyph)
     }
 
-
+    /**
+     * setup shader programs
+     */
     fun setupShaderProgram(gl: WebGLRenderingContext) {
         val vertexShaders = createVertexShaders(gl)
         var fragmentShaders = createFragmentShaders(gl)
@@ -514,16 +560,7 @@ class Grid(rowCount: Int = 6,
     }
     fun handleUserInputForLightEdit(glo: WebGLRenderingContext,
         x: Int, y: Int) {
-        beginDrawingForLightEdit(glo)
-        val buffer = Uint8Array(4)
-        glo.readPixels(x, y, 1, 1,
-            WebGLRenderingContext.RGBA, 
-            WebGLRenderingContext.UNSIGNED_BYTE, 
-            buffer)
-
-        gl.ColorCodec.decodeFloat(buffer) 
-        
-        endDrawingForLightEdit(glo)
+        pointLightEdit.handleUserInput(this, glo, x, y)
     }
     
     /**
@@ -571,7 +608,8 @@ class Grid(rowCount: Int = 6,
         model: Model,
         camera: Camera,
         pointLight: net.ocsoft.mswp.PointLight,
-        shaderPrograms: ShaderPrograms) {
+        shaderPrograms: ShaderPrograms,
+        appSettings: AppSettings) {
         
         model.logic.rowSize = rowCount
         model.logic.columnSize = columnCount
@@ -585,6 +623,9 @@ class Grid(rowCount: Int = 6,
         this.canvasId = settings.canvasId 
         this.gameOverModalId = settings.gameOverModalId
         this.playerWonModalId = settings.playerWonModalId
+        this.backToMainQuery = settings.backToMainQuery
+        this.mainMenuItemQuery = settings.mainMenuItemQuery
+        this.appSettings = appSettings
         this.onMineIconChanged = {
             sender, msg ->
             handleIconChanged(sender, msg)
@@ -592,7 +633,7 @@ class Grid(rowCount: Int = 6,
         
         this.iconSetting = settings.iconSetting
         this.iconSetting?.addListener(this.onMineIconChanged!!)
-        jQuery({
+        jQuery {
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
@@ -610,7 +651,7 @@ class Grid(rowCount: Int = 6,
             glyph.bind(settings.glyphCanvasId, settings.iconSetting)
             setup(gl)
             drawScene(gl)
-        }) 
+        } 
     }
 
 
@@ -625,6 +666,7 @@ class Grid(rowCount: Int = 6,
         val canvas = canvasNode[0] as HTMLCanvasElement
         canvas.removeEventListener("click", onClickHandler) 
         this.onClickHandler = null
+        this.appSettings = null
     }
 
     /**
@@ -967,6 +1009,7 @@ class Grid(rowCount: Int = 6,
         val pointShaderProg = this.renderingCtx.pointShaderProgram
         if (pointShaderProg != null) {
             gl.useProgram(pointShaderProg)
+
         }
     }
    
@@ -1369,6 +1412,14 @@ class Grid(rowCount: Int = 6,
             }  
             drawScene()             
         }
+    }
+
+    /**
+     * edit light settings
+     */
+    private fun onEditLightSetting() {
+        val pointLightSetting = this.pointLightSetting
+        pointLightSetting.show()
     }
 }
 // vi: se ts=4 sw=4 et:

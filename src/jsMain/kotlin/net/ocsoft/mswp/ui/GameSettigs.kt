@@ -15,6 +15,11 @@ class GameSettings(val option: Option) {
     var labelSettingItemHandler : ((JQueryEventObject, Any) -> Any)? = null
 
     /**
+     * handle click event on editting light origin
+     */
+    var lightEditItemHandler: ((JQueryEventObject, Any) -> Any)? = null
+
+    /**
      * dropdown handler
      */
     var dropdown = Dropdown()
@@ -57,14 +62,19 @@ class GameSettings(val option: Option) {
     fun bind(appSettings: AppSettings) {
         this.appSettings = appSettings
         val labelSettingItem = jQuery(option.queries.labelSetting)
-
+        val lightSettingItem = jQuery(option.queries.lightSetting)
         labelSettingItemHandler = {
             evt, args ->
             onClickOnLabelSettingItem(evt, args)
         }
+        lightEditItemHandler = {
+            evt, args ->
+            onClickOnLightEditItem(evt, args)
+        }
         // settingItem.on("click", settingItemHandler!!)
         dropdown.bind(option.queries.setting, option.queries.dropdown)
         labelSettingItem?.on("click", labelSettingItemHandler!!)
+        lightSettingItem?.on("click", lightEditItemHandler!!) 
         popperInstance = Popper.createPopper(labelSettingItem!![0],
             jQuery(option.queries.dropdown)!![0]!!,
             object {
@@ -102,6 +112,17 @@ class GameSettings(val option: Option) {
         appSettings?.iconSelector?.show()
         hideDropdown()
         return false 
+    }
+
+
+    /**
+     * handle setting item for light editting
+     */
+    fun onClickOnLightEditItem(
+        eventObj: JQueryEventObject, args: Any) : Any {
+        hideDropdown()
+        appSettings?.editPointLight()
+        return false
     }
 
     /**

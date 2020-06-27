@@ -162,7 +162,22 @@ class Glyph(
             }
             return result
         } 
+    /**
+     * light marker image
+     */
+    val lightMarkerImage : ImageData?
+        get() {
+            val imgMap = this.specialImageMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.LIGHT_MARKER in imgMap) {
+                    result = imgMap[IconSetting.LIGHT_MARKER]
+                }
+            }
+            return result
+        }
 
+ 
     /**
      * connect nodeid into this class
      */
