@@ -144,6 +144,13 @@ class Grid(rowCount: Int = 6,
             result.grid = this
             return result
         }  
+    /**
+     * is editing point light
+     */
+    val isEditingPointLight: Boolean
+        get() {
+            return pointLightSetting.isEditing
+        }
 
 
     /**
@@ -356,6 +363,18 @@ class Grid(rowCount: Int = 6,
         }
     }
 
+    /**
+     * set up depth frame buffer for editing point light
+     */
+    fun setupDepthFrameBufferForEditingLight(
+        gl: WebGLRenderingContext) {
+        beginForLightEditDepthFrame(gl)
+        setupEnv(gl)
+        pointLightEdit.drawForDepthBuffer(gl, renderingCtx)
+        endForLightEditDepthFrame(gl)
+    }
+
+
     fun beginDrawingForPicking(gl: WebGLRenderingContext) {
         gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
             renderingCtx.workableFramebuffer)
@@ -380,19 +399,23 @@ class Grid(rowCount: Int = 6,
     fun beginDrawing(gl: WebGLRenderingContext) {
     } 
     fun endDrawing(gl: WebGLRenderingContext) {
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            null)
     } 
 
     /**
      * prepare rendering context for light edit
      */
-    fun beginDrawingForLightEdit(gl: WebGLRenderingContext) {
-
+    fun beginForLightEditDepthFrame(gl: WebGLRenderingContext) {
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            renderingCtx.pointLightEditDepthFramebuffer)
     }
 
     /**
      * finished rendering context for light edit
      */
-    fun endDrawingForLightEdit(gl: WebGLRenderingContext) {
+    fun endForLightEditDepthFrame(gl: WebGLRenderingContext) {
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null)
     }
       
     fun setup(gl: WebGLRenderingContext)  {
@@ -422,6 +445,9 @@ class Grid(rowCount: Int = 6,
         } 
     }
 
+    /**
+     * set up frame buffer for picking
+     */
     fun setupWorkingFrameBuffer(gl: WebGLRenderingContext) {
         renderingCtx.workableFramebuffer = gl.createFramebuffer() 
         val savedFramebuffer = gl.getParameter(
@@ -439,11 +465,16 @@ class Grid(rowCount: Int = 6,
         gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
             savedFramebuffer) 
     }
+
+    /**
+     * set up scene buffer
+     */
     fun setupSceneBuffer(gl: WebGLRenderingContext) {
         renderingCtx.sceneBuffer = gl.getParameter(
             WebGLRenderingContext.RENDERBUFFER_BINDING)
                 as WebGLRenderbuffer?
     }
+
     /**
      * setup textrues
      */
@@ -515,8 +546,12 @@ class Grid(rowCount: Int = 6,
         val canvas = document.querySelector(
             canvasId!!) as HTMLCanvasElement
         val gl = canvas.getContext("webgl") as WebGLRenderingContext
-
-        handleUserInput(gl, round(x).toInt(), round(y).toInt())
+        if (!isEditingPointLight) {
+            handleUserInput(gl, round(x).toInt(), round(y).toInt())
+        } else {
+            handleUserInputForLightEdit(gl, round(x).toInt(), round(y).toInt())
+        }
+        
     } 
     fun handleUserInput(gl: WebGLRenderingContext,
         x: Int, y: Int) {
@@ -558,9 +593,13 @@ class Grid(rowCount: Int = 6,
         }
         endDrawingForPicking(gl)
     }
-    fun handleUserInputForLightEdit(glo: WebGLRenderingContext,
+
+    /**
+     * handle user input for editing point-light
+     */
+    fun handleUserInputForLightEdit(wgl: WebGLRenderingContext,
         x: Int, y: Int) {
-        pointLightEdit.handleUserInput(this, glo, x, y)
+        pointLightEdit.handleUserInput(this, wgl, x, y)
     }
     
     /**
@@ -646,10 +685,12 @@ class Grid(rowCount: Int = 6,
 
             setupGameOverModal()
             setupPlayerWonModal()
-            syncCanvasWithClientSize({ syncViewportWithCanvasSize() })
+            syncCanvasWithClientSize { syncViewportWithCanvasSize() }
             canvas.addEventListener("click", onClickHandler)
             glyph.bind(settings.glyphCanvasId, settings.iconSetting)
             setup(gl)
+            pointLightEdit.setupLightUiPlane(this) 
+            setupDepthFrameBufferForEditingLight(gl)
             drawScene(gl)
         } 
     }
@@ -755,9 +796,9 @@ class Grid(rowCount: Int = 6,
         renderingCtx.boardNormalVecBuffer = createBoardNormalVecBuffer(gl)
         renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
         renderingCtx.boardTextureCoordinateBuffer =
-            createBoardTextureCoordinateBuffer(gl) 
+            createBoardTextureCoordinateBuffer(gl)
+        setupBufferForPointLightEditing(gl)
     }
-
 
     private fun setupBufferForWorking(gl: WebGLRenderingContext) {
         renderingCtx.buttonPickingColorBuffer = 
@@ -776,7 +817,7 @@ class Grid(rowCount: Int = 6,
      */
     private fun setupBufferForPointLightEditing(
         gl: WebGLRenderingContext) {
-        renderingCtx.lightingTableBuffer = createLightEditTableBuffer(gl)
+        pointLightEdit.setupBuffer(gl, renderingCtx)  
     }
 
     /**
@@ -978,22 +1019,7 @@ class Grid(rowCount: Int = 6,
         }  
         return result
     }
-    /**
-     * light editing vertex buffer
-     */
-    private fun createLightEditTableBuffer(
-        gl: WebGLRenderingContext): WebGLBuffer? {
-        val result = gl.createBuffer()
-        if (result != null) {
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
-                result)
-            val dataSource = this.pointLightEdit.lightEditingTableArray!!
-            gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-                dataSource, 
-                WebGLRenderingContext.STATIC_DRAW) 
-        }
-        return result
-    }
+
  
     private fun updateView(gl: WebGLRenderingContext) {
         val cam = this.camera
@@ -1006,21 +1032,52 @@ class Grid(rowCount: Int = 6,
             enableLightingContext(gl, lightingContextEnabled)
             display.drawScene(gl)
         }
-        val pointShaderProg = this.renderingCtx.pointShaderProgram
-        if (pointShaderProg != null) {
-            gl.useProgram(pointShaderProg)
-
+        if (isEditingPointLight) {
+            val pointShaderProg = this.renderingCtx.pointShaderProgram
+            if (pointShaderProg != null) {
+                gl.useProgram(pointShaderProg)
+                updateCamera(gl)
+                
+            }
         }
     }
-   
-    private fun updateCamera(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
-
+    
+    /**
+     * update view for depth frame buffer 
+     */
+    fun updateViewForEditingLightDepthFrameBuffer(
+        gl: WebGLRenderingContext) {
+        val shaderProg = this.renderingCtx.pointLightDepthShaderProgram
         if (shaderProg != null) {
             gl.useProgram(shaderProg)
-            
-            val camMatrix = createCameraMatrix();
+            attachCameraToProjectionMatrix(gl)
+            pointLightEdit.attachModelMatrix(gl, renderingCtx)
+            pointLightEdit.drawForDepthBuffer(gl, renderingCtx)
 
+        }
+       
+    }
+
+   
+    /**
+     * update camera
+     */
+    private fun updateCamera(gl: WebGLRenderingContext) {
+        val shaderProg = this.renderingCtx.shaderProgram
+        if (shaderProg != null) {
+            gl.useProgram(shaderProg)
+            attachCameraToProjectionMatrix(gl)
+        }
+    }
+
+    /**
+     * attach camera matrix into projection matrix in shader program
+     */
+    private fun attachCameraToProjectionMatrix(
+        gl: WebGLRenderingContext) {
+        val camMatrix = createCameraMatrix();
+        val shaderProg = this.renderingCtx.shaderProgram
+        if (shaderProg != null) {
             val uProjMat = gl.getUniformLocation(shaderProg, 
                 "uProjectionMatrix")    
             if (camMatrix != null) { 
@@ -1029,6 +1086,7 @@ class Grid(rowCount: Int = 6,
             }
         }
     }
+
     fun createCameraMatrix(): Float32Array? {
         val cam = camera
         val glrs = this.glrs

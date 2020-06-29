@@ -169,6 +169,7 @@ class Display(var renderingCtx : RenderingCtx,
         updateBoard(gl)
     }
 
+
     /**
      * update buttons rendered image
      */
@@ -441,34 +442,6 @@ class Display(var renderingCtx : RenderingCtx,
              
         }
     }
-
-    /**
-     * update light editing deth image.
-     */
-    private fun updateLightEditingDepth(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
-        if (shaderProg != null) {
-            val uModelMat = gl.getUniformLocation(shaderProg,
-                "uModelViewMatrix")
-            val verLoc = gl.getAttribLocation(shaderProg, 
-                "aVertexPosition")
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.lightingTableBuffer)
-            gl.vertexAttribPointer(
-                verLoc,
-                3,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verLoc)
-            val mat = renderingCtx.lightingTableMatrix!!
-            gl.uniformMatrix4fv(uModelMat, false, mat)
-            gl.drawArrays(
-                board.drawingMode, 
-                0, 
-                pointLight.lightEditingTableArray!!.length / 3) 
-         }
-    } 
 
 
     /**

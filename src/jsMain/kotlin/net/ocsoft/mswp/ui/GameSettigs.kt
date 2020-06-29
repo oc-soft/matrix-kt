@@ -15,7 +15,7 @@ class GameSettings(val option: Option) {
     var labelSettingItemHandler : ((JQueryEventObject, Any) -> Any)? = null
 
     /**
-     * handle click event on editting light origin
+     * handle click event on editing light origin
      */
     var lightEditItemHandler: ((JQueryEventObject, Any) -> Any)? = null
 
@@ -116,7 +116,7 @@ class GameSettings(val option: Option) {
 
 
     /**
-     * handle setting item for light editting
+     * handle setting item for light editing
      */
     fun onClickOnLightEditItem(
         eventObj: JQueryEventObject, args: Any) : Any {

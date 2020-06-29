@@ -76,6 +76,32 @@ class PointLightSetting {
             }
         }
 
+    
+    /**
+     * you get true if user edits point light location
+     */
+    var isEditing: Boolean
+        get() {
+            var result = false
+            val grid = this.grid
+            if (grid != null) {
+                val backToMainQuery = grid.backToMainQuery
+                val backToMain = jQuery(backToMainQuery!!)
+                result = backToMain!!.data("editor") == "point-light"
+            }
+            return result
+        }
+
+        set(value) {
+            if (isEditing != value) {
+                val grid = this.grid
+                if (grid != null) {
+                    val backToMainQuery = grid.backToMainQuery
+                    val backToMain = jQuery(backToMainQuery!!)
+                    backToMain!!.data("editor", "point-light")
+                }
+            }
+        }
 
 
     /**
@@ -89,6 +115,7 @@ class PointLightSetting {
                 val backToButton = jQuery(backToMainQuery)
                 visibleBackToMain = true
                 visibleMainMenu = false 
+                isEditing = true
                 handleToBackToMain = {
                     eventObject, args ->
                     onClickToBackToMain(eventObject, args) 
@@ -108,6 +135,7 @@ class PointLightSetting {
         jQuery(eventObject.delegateTarget).off("click", handleToBackToMain!!);
         visibleBackToMain = false
         visibleMainMenu = true
+        isEditing = false
         return false
     }
    

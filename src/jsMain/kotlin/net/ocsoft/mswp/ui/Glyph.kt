@@ -53,6 +53,11 @@ class Glyph(
 
 
     /**
+     * size for open gl point sprite
+     */
+    var lightMarkerPointSize: Int = 0x10
+
+    /**
      * default texture size
      */
     val defaultTextureSize: Int

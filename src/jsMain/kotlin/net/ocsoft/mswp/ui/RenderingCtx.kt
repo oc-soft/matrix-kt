@@ -38,7 +38,7 @@ class RenderingCtx() {
     /**
      * program for storing depth data
      */
-    val depthShaderProgram: WebGLProgram?
+    val pointLightDepthShaderProgram: WebGLProgram?
         get() {
             var result: WebGLProgram? = null
             val shaderPrograms = this.shaderPrograms
@@ -81,6 +81,11 @@ class RenderingCtx() {
      */
     var buttonPickingColorBuffer : WebGLBuffer? = null
 
+
+    /**
+     * buffer for point light editing
+     */
+    var pointLightMarkerBuffer: WebGLBuffer? = null
    
 
     /**
@@ -126,7 +131,7 @@ class RenderingCtx() {
     var boardTextureCoordinateBuffer : WebGLBuffer? = null
     
     /**
-     * buffer for offscreen
+     * offscreen buffer for picking
      */
     var workableFramebuffer : WebGLFramebuffer? = null
     
@@ -139,6 +144,23 @@ class RenderingCtx() {
      * buffer for picking some objects
      */
     var pickingBuffer: WebGLRenderbuffer? = null
+
+    /**
+     * depth buffer for editing point light to be read lately
+     */
+    var pointLightEditDepthBufferRead: WebGLRenderbuffer? = null
+
+    /**
+     * depth buffer for editing point light 
+     */
+    var pointLightEditDepthBuffer: WebGLRenderbuffer? = null
+
+    /**
+     * frame buffer for point edit depth buffer read
+     */
+    var pointLightEditDepthFramebuffer: WebGLFramebuffer? = null
+
+
     /**
      * buttons location
      */
@@ -278,11 +300,16 @@ class RenderingCtx() {
             boardNormalVecBuffer,
             boardColorBuffer,
             boardTextureCoordinateBuffer,
-            boardPickingColorBuffer).forEach({ buffer ->
-            if (buffer != null) {
-                gl.deleteBuffer(buffer)
+            boardPickingColorBuffer,
+            lightingTableBuffer,
+            pointLightMarkerBuffer).forEach {
+                buffer ->
+                if (buffer != null) {
+                    gl.deleteBuffer(buffer)
+                }
             }
-        })
+        lightingTableBuffer = null
+        pointLightMarkerBuffer = null
         buttonBuffer = null
         buttonNormalVecBuffer = null
         buttonColorBuffer = null
@@ -296,27 +323,35 @@ class RenderingCtx() {
     }
     fun teardownRenderBuffer(gl: WebGLRenderingContext) {
         arrayOf(pickingBuffer,
-            depthBufferForWorking).forEach({ buffer ->
-            if (buffer != null) {
-                gl.deleteRenderbuffer(buffer)
+            depthBufferForWorking,
+            pointLightEditDepthBufferRead,
+            pointLightEditDepthBuffer).forEach { 
+                buffer ->
+                if (buffer != null) {
+                    gl.deleteRenderbuffer(buffer)
+                }
             }
-        })
+        pointLightEditDepthBuffer = null
+        pointLightEditDepthBufferRead = null
         depthBufferForWorking = null
         pickingBuffer = null
     }
     fun teardownFramebuffer(gl: WebGLRenderingContext) {
-        arrayOf(workableFramebuffer).forEach({ buffer ->
-            if (buffer != null) {
-                gl.deleteFramebuffer(buffer)
+        arrayOf(workableFramebuffer,
+            pointLightEditDepthFramebuffer).forEach { 
+                buffer ->
+                if (buffer != null) {
+                    gl.deleteFramebuffer(buffer)
+                }
             }
-        })
+        pointLightEditDepthFramebuffer = null
         workableFramebuffer = null
     }
     /**
      * destroy all textures
      */
     fun teardownTextures(gl: WebGLRenderingContext) {
-        arrayOf(buttonTexture).forEach({ gl.deleteTexture(it) })
+        arrayOf(buttonTexture).forEach { gl.deleteTexture(it) }
         this.buttonTexture = null
     }
     fun teardonwMatrix() {

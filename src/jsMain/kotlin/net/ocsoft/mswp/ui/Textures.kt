@@ -16,7 +16,12 @@ class Textures {
         /**
          * mine button texture index
          */
-        val ButtonTextureIndex = WebGLRenderingContext.TEXTURE0 
+        val ButtonTextureIndex = WebGLRenderingContext.TEXTURE0
+
+        /**
+         * light marker texture index
+         */
+        val LightMarkerTextureIndex = WebGLRenderingContext.TEXTURE1
     }
 
     /**
@@ -35,6 +40,12 @@ class Textures {
      */
     var okImageTexture: WebGLTexture? = null
         
+
+    /**
+     * point light marker
+     */
+    var pointLightMarkerTexture: WebGLTexture? = null
+
     /**
      * to use for dummy
      */
@@ -60,15 +71,18 @@ class Textures {
         setupNumberImageBlankTexture(gl, glyph)
         setupNgImageTexture(gl, glyph)
         setupOkImageTexture(gl, glyph)
+        setupPointLightMarkerTexture(gl, glyph)
     }
     /**
      * teardown
      */
     fun teardown(gl: WebGLRenderingContext) {
+        teardownPointLightMarkerTexture(gl)
         teardownOkImageTexture(gl)
         teardownNgImageTexture(gl)
         teardownNumberImageBlankTexture(gl)
         teardownTransparentBlackTexture(gl) 
+        teardownPointLightMarkerTexture(gl)
     }
 
     /**
@@ -254,7 +268,7 @@ class Textures {
     }
  
     /**
-     * update main image texture
+     * update ng image texture
      */
     fun updateNgImageTexture(gl: WebGLRenderingContext,
         glyph: Glyph) {
@@ -289,4 +303,48 @@ class Textures {
             }
         }
     }
+
+    /**
+     * setup light image texture
+     */
+    fun setupPointLightMarkerTexture(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
+
+        val markerImage = glyph.lightMarkerImage
+        if (markerImage != null) {
+            val tex = gl.createTexture();
+            if (tex != null) {
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    tex)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    markerImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                pointLightMarkerTexture = tex
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex)
+    }
+
+    /**
+     * tear down point light marker texture
+     */
+    fun teardownPointLightMarkerTexture(
+        gl: WebGLRenderingContext) {
+        val tex = pointLightMarkerTexture
+        if (tex != null) {
+            gl.deleteTexture(tex)
+        }
+        this.pointLightMarkerTexture = null
+    }
 }
+
+// vi: se ts=4 sw=4 et:

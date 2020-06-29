@@ -2,6 +2,10 @@ package net.ocsoft.mswp.ui
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLBuffer
+import org.khronos.webgl.WebGLTexture
+import org.khronos.webgl.WebGLRenderbuffer
+import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.Float64Array
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Uint8Array
@@ -19,7 +23,7 @@ class PointLight(
     
 
     /**
-     * the point on projection plane for editting point
+     * the point on projection plane for editing point
      */
     var pointOnPlane: FloatArray? = null
 
@@ -113,9 +117,9 @@ class PointLight(
     
 
     /**
-     * setup projection plane for editting light point
+     * setup projection plane for editing light point
      */
-    fun setupLighUiPlane(
+    fun setupLightUiPlane(
         grid: Grid): Unit {
         val glrs = grid.glrs 
         val renderingCtx = grid.renderingCtx
@@ -300,7 +304,7 @@ class PointLight(
         val pos = calcNewLightPointLocation(
             grid.glrs!!, xw.toFloat(), yw.toFloat())
 
-        grid.beginDrawingForLightEdit(wgl)
+        grid.beginForLightEditDepthFrame(wgl)
         val buffer = Uint8Array(4)
         wgl.readPixels(
             pos[0].roundToInt(), 
@@ -309,7 +313,7 @@ class PointLight(
             WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
         val zw = gl.ColorCodec.decodeFloat(buffer) 
-        grid.endDrawingForLightEdit(wgl)
+        grid.endForLightEditDepthFrame(wgl)
         if (zw != null) {
             result = floatArrayOf(xw.toFloat(), yw.toFloat(), zw)
         }
@@ -542,6 +546,238 @@ class PointLight(
             normalVector!!, 
             pointOnPlane!!,
             pointLight!!.point)!!
+    }
+    /**
+     * set up frame buffer for depth 
+     */
+    fun setupFrameBufferForDepth(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx) {
+
+        renderingCtx.pointLightEditDepthFramebuffer = gl.createFramebuffer()
+        
+        val savedFramebuffer = gl.getParameter(
+            WebGLRenderingContext.FRAMEBUFFER_BINDING) as
+                WebGLFramebuffer?
+  
+        
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            renderingCtx.pointLightEditDepthFramebuffer) 
+        renderingCtx.pointLightEditDepthBufferRead =
+            createDepthBufferRead(gl)
+        renderingCtx.pointLightEditDepthBuffer =
+            createDepthBufferForDepthRendering(gl, renderingCtx)
+        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
+            savedFramebuffer) 
+ 
+    }
+
+    /**
+     * light editing vertex buffer
+     */
+    fun createLightEditTableBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        if (result != null) {
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
+                result)
+            val dataSource = lightEditingTableArray!!
+            gl.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+                dataSource, 
+                WebGLRenderingContext.STATIC_DRAW) 
+        }
+        return result
+    }
+ 
+    /**
+     * create depth buffer as rendering buffer
+     */
+    fun createDepthBufferRead(
+        gl: WebGLRenderingContext): WebGLRenderbuffer? {
+
+        val result = gl.createRenderbuffer()
+        if (result != null) {
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.RENDERBUFFER_BINDING) 
+                    as WebGLRenderbuffer?
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                result)
+            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.RGBA4,
+                gl.canvas.width, gl.canvas.height)
+
+            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
+                WebGLRenderingContext.COLOR_ATTACHMENT0, 
+                WebGLRenderingContext.RENDERBUFFER, result)
+ 
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                savedBuffer) 
+        }  
+        return result
+    }
+
+    /**
+     * crate depth buffer for depth rendering
+     */
+    fun createDepthBufferForDepthRendering(
+        gl: WebGLRenderingContext,
+        renderingCtx: RenderingCtx): WebGLRenderbuffer? {
+        val result = gl.createRenderbuffer()
+        if (result != null) {
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                result) 
+            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.DEPTH_COMPONENT16,
+                gl.canvas.width, gl.canvas.height);
+
+            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
+                WebGLRenderingContext.DEPTH_ATTACHMENT, 
+                WebGLRenderingContext.RENDERBUFFER, result)
+        }
+        return result
+    }
+
+
+    /**
+     * open gl buffer
+     */
+    fun setupBuffer(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx) {
+        renderingCtx.pointLightMarkerBuffer = createBuffer(gl)
+        renderingCtx.lightingTableBuffer = createLightEditTableBuffer(gl)
+        setupFrameBufferForDepth(gl, renderingCtx)
+    }
+
+    
+    /**
+     * create buffer for open gl
+     */
+    fun createBuffer(
+        gl: WebGLRenderingContext): WebGLBuffer? {
+        val result = gl.createBuffer()
+        if (result != null) {
+            
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,
+                result) 
+            gl.bufferData(
+                WebGLRenderingContext.ARRAY_BUFFER,
+                Float32Array(3), 
+                WebGLRenderingContext.STATIC_DRAW)
+        }
+        return result
+    }
+
+
+    /**
+     * attach model matrix
+     */
+    fun attachModelMatrix(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx) {
+        val shaderProg = renderingCtx.pointLightDepthShaderProgram
+        if (shaderProg != null) {
+            val modelMatrixLoc = gl.getUniformLocation(shaderProg,
+                "uModelViewMatrix")
+            gl.uniformMatrix4fv(modelMatrixLoc, false,
+                modelMatrix)
+        }
+     }
+
+    /**
+     * draw point light edit table to store depth value
+     */
+    fun drawForDepthBuffer(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx) {
+        val shaderProg = renderingCtx.pointLightDepthShaderProgram
+        if (shaderProg != null) {
+            val verLoc = gl.getAttribLocation(shaderProg, 
+                "aVertexPosition")
+ 
+            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                renderingCtx.lightingTableBuffer)
+            gl.vertexAttribPointer(
+                verLoc,
+                3,
+                WebGLRenderingContext.FLOAT,
+                false,
+                0, 0)
+            gl.enableVertexAttribArray(verLoc)
+            gl.drawArrays(
+                WebGLRenderingContext.TRIANGLES, 
+                0, 
+                lightEditingTableArray!!.length / 3) 
+                
+        }
+    }
+
+
+
+
+    /**
+     * draw light point
+     */
+    fun drawScene(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx,
+        glrs: glrs.InitOutput,
+        glyph: Glyph,
+        textures: Textures) {
+
+        val lightOnPlane = calcLightPointOnPlane(glrs)
+ 
+        val shaderProg = renderingCtx.pointShaderProgram
+        if (shaderProg != null) {
+            val verLoc = gl.getAttribLocation(shaderProg,
+                "aVertexPosition")
+            val ptSizeLoc = gl.getUniformLocation(shaderProg,
+                "aPointSize")
+            val savedTex = gl.getParameter(
+                WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
+
+            val savedTexNum = gl.getParameter(
+                WebGLRenderingContext.ACTIVE_TEXTURE) as Int
+ 
+            val texSampler = gl.getUniformLocation(shaderProg,
+                "uSampler")
+            gl.uniform1f(ptSizeLoc, glyph.lightMarkerPointSize.toFloat())
+
+            var txtNumber = Textures.LightMarkerTextureIndex
+            gl.activeTexture(txtNumber)
+            txtNumber -= WebGLRenderingContext.TEXTURE0
+
+            gl.uniform1i(texSampler, txtNumber)
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                textures.pointLightMarkerTexture)
+
+            gl.vertexAttribPointer(verLoc, 3,
+                WebGLRenderingContext.FLOAT, false, 0, 0)
+
+            gl.bindBuffer(
+                WebGLRenderingContext.ARRAY_BUFFER,
+                renderingCtx.pointLightMarkerBuffer) 
+ 
+            gl.bufferSubData(
+                WebGLRenderingContext.ARRAY_BUFFER,
+                0,
+                Float32Array(Array<Float>(lightOnPlane.size) {
+                    lightOnPlane[it]    
+                }))
+            
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+
+            gl.drawArrays(WebGLRenderingContext.POINTS, 0, 1)
+            
+            gl.bindBuffer(
+                WebGLRenderingContext.ARRAY_BUFFER,
+                savedBuffer)
+ 
+            gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                savedTex)
+            gl.activeTexture(savedTexNum)
+        } 
     }
 
 }
