@@ -107,7 +107,7 @@ class PointLightSetting {
     /**
      * visible editor
      */
-    fun show() {
+    fun show(handleClosed: (()->Unit)? = null) {
         val grid = this.grid
         if (grid != null) {
             val backToMainQuery = grid.backToMainQuery
@@ -118,6 +118,9 @@ class PointLightSetting {
                 isEditing = true
                 handleToBackToMain = {
                     eventObject, args ->
+                    if (handleClosed != null) {
+                        handleClosed()
+                    }
                     onClickToBackToMain(eventObject, args) 
                 }
                 backToButton.on("click", handleToBackToMain!!)

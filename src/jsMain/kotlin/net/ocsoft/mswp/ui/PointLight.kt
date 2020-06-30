@@ -6,6 +6,7 @@ import org.khronos.webgl.WebGLBuffer
 import org.khronos.webgl.WebGLTexture
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLFramebuffer
+import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.Float64Array
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Uint8Array
@@ -692,6 +693,10 @@ class PointLight(
         renderingCtx : RenderingCtx) {
         val shaderProg = renderingCtx.pointLightDepthShaderProgram
         if (shaderProg != null) {
+            val savedProgram = gl.getParameter(
+                WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+
+            gl.useProgram(shaderProg)
             val verLoc = gl.getAttribLocation(shaderProg, 
                 "aVertexPosition")
  
@@ -709,6 +714,7 @@ class PointLight(
                 0, 
                 lightEditingTableArray!!.length / 3) 
                 
+            gl.useProgram(savedProgram)
         }
     }
 

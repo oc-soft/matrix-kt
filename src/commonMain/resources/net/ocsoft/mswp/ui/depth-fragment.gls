@@ -22,9 +22,9 @@ floatToVec4(
     for (int i = 0; i < 4; i++) {
         mediump int valI;
         float tmpVal;
-        tmpVal = mod(value * 0xf * i, float(0xf));
+        tmpVal = mod(value * float(0xf * i), float(0xf));
         valI = int(tmpVal);
-        result[i] = float(valI) / 0xf;
+        result[i] = float(valI) / float(0xf);
     }
     return result;
 }
