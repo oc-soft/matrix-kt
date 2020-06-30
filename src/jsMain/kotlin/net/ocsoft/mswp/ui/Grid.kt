@@ -98,13 +98,13 @@ class Grid(rowCount: Int = 6,
     /**
      * point lighting
      */
-    var pointLight: net.ocsoft.mswp.PointLight? = null
-        set(value) {
-            if (field != value) {
-                field = value 
-            }
+    var pointLight: net.ocsoft.mswp.PointLight?
+        get() {
+            return pointLightEdit.pointLight
         }
-
+        set(value) {
+            pointLightEdit.pointLight = value
+        }
     /**
      * buttons row count
      */
@@ -1049,6 +1049,8 @@ class Grid(rowCount: Int = 6,
  
                 gl.useProgram(pointShaderProg)
                 attachCameraToProjectionMatrix(gl)
+                pointLightEdit.drawScene(gl, renderingCtx,
+                    glrs!!, glyph, textures)
                 gl.useProgram(savedProgram)
             }
         }

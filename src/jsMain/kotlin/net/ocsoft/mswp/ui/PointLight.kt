@@ -676,7 +676,8 @@ class PointLight(
     fun attachModelMatrix(
         gl: WebGLRenderingContext,
         renderingCtx : RenderingCtx) {
-        val shaderProg = renderingCtx.pointLightDepthShaderProgram
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
             val modelMatrixLoc = gl.getUniformLocation(shaderProg,
                 "uModelViewMatrix")
@@ -733,12 +734,13 @@ class PointLight(
 
         val lightOnPlane = calcLightPointOnPlane(glrs)
  
-        val shaderProg = renderingCtx.pointShaderProgram
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
             val verLoc = gl.getAttribLocation(shaderProg,
                 "aVertexPosition")
             val ptSizeLoc = gl.getUniformLocation(shaderProg,
-                "aPointSize")
+                "uPointSize")
             val savedTex = gl.getParameter(
                 WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
 
