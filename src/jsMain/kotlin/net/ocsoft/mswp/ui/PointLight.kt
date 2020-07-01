@@ -215,9 +215,9 @@ class PointLight(
         point: FloatArray): FloatArray? {
         val plane = glrs.plane_create(
             Float64Array(
-                Array<Double>(pointOnPlane.size){pointOnPlane[it].toDouble()}),
+                Array<Double>(normal.size){ normal[it].toDouble() }),
             Float64Array(
-                Array<Double>(point.size){ point[it].toDouble() })) 
+                Array<Double>(pointOnPlane.size){pointOnPlane[it].toDouble()})) 
 
         val result = projectOnPlane(glrs, plane, point)
 
@@ -664,7 +664,7 @@ class PointLight(
             gl.bufferData(
                 WebGLRenderingContext.ARRAY_BUFFER,
                 Float32Array(3), 
-                WebGLRenderingContext.STATIC_DRAW)
+                WebGLRenderingContext.DYNAMIC_DRAW)
         }
         return result
     }
@@ -737,18 +737,22 @@ class PointLight(
         val shaderProg = gl.getParameter(
             WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
-            val verLoc = gl.getAttribLocation(shaderProg,
-                "aVertexPosition")
-            val ptSizeLoc = gl.getUniformLocation(shaderProg,
-                "uPointSize")
+
             val savedTex = gl.getParameter(
                 WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
 
             val savedTexNum = gl.getParameter(
                 WebGLRenderingContext.ACTIVE_TEXTURE) as Int
- 
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+
+            val verLoc = gl.getAttribLocation(shaderProg,
+                "aVertexPosition")
+            val ptSizeLoc = gl.getUniformLocation(shaderProg,
+                "uPointSize")
             val texSampler = gl.getUniformLocation(shaderProg,
                 "uSampler")
+
             gl.uniform1f(ptSizeLoc, glyph.lightMarkerPointSize.toFloat())
 
             var txtNumber = Textures.LightMarkerTextureIndex
@@ -759,23 +763,21 @@ class PointLight(
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 textures.pointLightMarkerTexture)
 
-            gl.vertexAttribPointer(verLoc, 3,
-                WebGLRenderingContext.FLOAT, false, 0, 0)
-
+            gl.enableVertexAttribArray(verLoc)
             gl.bindBuffer(
                 WebGLRenderingContext.ARRAY_BUFFER,
                 renderingCtx.pointLightMarkerBuffer) 
- 
             gl.bufferSubData(
                 WebGLRenderingContext.ARRAY_BUFFER,
                 0,
-                Float32Array(Array<Float>(lightOnPlane.size) {
-                    lightOnPlane[it]    
-                }))
-            
-            val savedBuffer = gl.getParameter(
-                WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+                Float32Array(
+                    Array<Float>(lightOnPlane.size) {
+                        lightOnPlane[it]
+                    }))
+            gl.vertexAttribPointer(verLoc, 3,
+                WebGLRenderingContext.FLOAT, false, 0, 0)
 
+            
             gl.drawArrays(WebGLRenderingContext.POINTS, 0, 1)
             
             gl.bindBuffer(

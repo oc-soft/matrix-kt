@@ -1049,6 +1049,7 @@ class Grid(rowCount: Int = 6,
  
                 gl.useProgram(pointShaderProg)
                 attachCameraToProjectionMatrix(gl)
+                pointLightEdit.attachModelMatrix(gl, renderingCtx) 
                 pointLightEdit.drawScene(gl, renderingCtx,
                     glrs!!, glyph, textures)
                 gl.useProgram(savedProgram)

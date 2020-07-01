@@ -33,7 +33,6 @@ class Display(var renderingCtx : RenderingCtx,
         = { gl -> 
             gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER,  
                 renderingCtx.buttonColorBuffer)
-
         }
 
     /**
@@ -57,7 +56,8 @@ class Display(var renderingCtx : RenderingCtx,
                 tex = buttons.getAlternateTexture(rowIndex, colIndex)
             }
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex)
-            val shaderProg = this.renderingCtx.shaderProgram
+            val shaderProg = gl.getParameter(
+                WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
             if (shaderProg != null) {
                 val enableTexLoc = gl.getUniformLocation(shaderProg,
                     "uEnableTexture")
@@ -76,8 +76,9 @@ class Display(var renderingCtx : RenderingCtx,
 
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 buttons.transparentTexture)
- 
-            val shaderProg = this.renderingCtx.shaderProgram
+            val shaderProg = gl.getParameter(
+                WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+
             if (shaderProg != null) {
                 val enableTexLoc = gl.getUniformLocation(shaderProg,
                     "uEnableTexture")
@@ -174,7 +175,8 @@ class Display(var renderingCtx : RenderingCtx,
      * update buttons rendered image
      */
     private fun updateButtons(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
 
             val verLoc = gl.getAttribLocation(shaderProg, 
@@ -272,8 +274,9 @@ class Display(var renderingCtx : RenderingCtx,
         gl: WebGLRenderingContext,
         rowIndex : Int,
         columnIndex : Int) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
 
-        val shaderProg = this.renderingCtx.shaderProgram
         if (shaderProg != null) {
             val uModelMat = gl.getUniformLocation(shaderProg,
                 "uModelViewMatrix")
@@ -354,7 +357,8 @@ class Display(var renderingCtx : RenderingCtx,
      * update board rendered image.
      */
     private fun updateBoard(gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.shaderProgram
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
             val uModelMat = gl.getUniformLocation(shaderProg,
                 "uModelViewMatrix")

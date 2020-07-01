@@ -15,7 +15,7 @@ void main() {
     bvec4 maskVec;
     if (uEnableTexture) {
         texColor = texture2D(uSampler, vTextureCoord);
-     } else {
+    } else {
         texColor = vec4(0.0, 0.0, 0.0, 0.0); 
     }
     // maskVec = greaterThan(texColor, vec4(0, 0, 0, 0));
