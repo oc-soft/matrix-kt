@@ -10,7 +10,7 @@ import kotlin.collections.HashMap
 class IconSetting(
     ngIcon: Persistence.Icon = Persistence.Icon("fas", "skull"),
     okIcon: Persistence.Icon = Persistence.Icon("fas", "star"),
-    lightMarkerIcon: Persistence.Icon = Persistence.Icon("fas", "lightbulb")) {
+    lightMarkerIcon: Persistence.Icon = Persistence.Icon("fas", "sun")) {
 
     /**
      * class instance

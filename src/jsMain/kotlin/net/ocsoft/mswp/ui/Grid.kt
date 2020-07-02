@@ -311,6 +311,9 @@ class Grid(rowCount: Int = 6,
         gl.clearColor(backColor[0], backColor[1], backColor[2], backColor[3])
         gl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT)
         gl.enable(GLRctx.DEPTH_TEST)
+        gl.enable(WebGLRenderingContext.BLEND)
+        gl.blendFunc(WebGLRenderingContext.SRC_ALPHA,
+            WebGLRenderingContext.ONE_MINUS_SRC_ALPHA)
         gl.frontFace(WebGLRenderingContext.CW)
         gl.depthFunc(GLRctx.LEQUAL)
         gl.clear(GLRctx.COLOR_BUFFER_BIT or GLRctx.DEPTH_BUFFER_BIT)

@@ -55,7 +55,7 @@ class Glyph(
     /**
      * size for open gl point sprite
      */
-    var lightMarkerPointSize: Int = 0x10
+    var lightMarkerPointSize: Int = 0x20
 
     /**
      * default texture size
@@ -423,10 +423,11 @@ class Glyph(
         val iconHeight = iconDef.icon[1] as Int
         val scale = imgSize / max(iconWidth, iconHeight)
         val sizeDisplaying = arrayOf(scale * iconWidth, scale * iconHeight) 
-        val displacement = (textureSize * (1 - textureRatio)) / 2 
+        val displacement = DoubleArray(sizeDisplaying.size) {
+            (textureSize.toDouble() -  sizeDisplaying[it]) / 2 
+        }
         val ms = createScaleMatrix(scale)
-        val mt = createTranslateMatrix(displacement.toDouble(), 
-            displacement.toDouble())
+        val mt = createTranslateMatrix(displacement[0], displacement[1])
         val m = multiply(mt, ms)
         val pathSrc = createPath(iconDef.icon[4] as String)
         val path = pathSrc
