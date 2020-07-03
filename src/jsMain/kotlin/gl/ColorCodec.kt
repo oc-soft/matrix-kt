@@ -17,8 +17,10 @@ class ColorCodec {
             if (buffer.length > 3) {
                 result = 0.0f                
                 for (idx in 3 downTo 0) {
-                    val tmpVal = buffer[idx].toFloat() /  0xff.toFloat() 
-                    result += (tmpVal * 0xf.toFloat()) / (0xf * idx).toFloat()
+                    var tmpVal = buffer[idx].toFloat() /  0xff.toFloat() 
+                    tmpVal *= 0xf.toFloat()
+                    tmpVal /= (0xf * (idx + 1)).toFloat()
+                    result += tmpVal 
                 }
             }
 

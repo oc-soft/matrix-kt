@@ -384,7 +384,7 @@ class Grid(rowCount: Int = 6,
         gl: WebGLRenderingContext) {
         beginForLightEditDepthFrame(gl)
         setupEnv(gl)
-        pointLightEdit.drawForDepthBuffer(gl, renderingCtx)
+        updateViewForEditingLightDepthFrameBuffer(gl)
         endForLightEditDepthFrame(gl)
     }
 
@@ -437,7 +437,7 @@ class Grid(rowCount: Int = 6,
         setupShaderProgram(gl)
         setupBuffer(gl)
         setupCamera(gl)
-        setupWorkingFrameBuffer(gl)
+        setupWorkingFramebuffer(gl)
         setupTextures(gl)
         setupMatrices()
         pointLightEdit.setupLightUiPlane(this)
@@ -463,7 +463,7 @@ class Grid(rowCount: Int = 6,
     /**
      * set up frame buffer for picking
      */
-    fun setupWorkingFrameBuffer(gl: WebGLRenderingContext) {
+    fun setupWorkingFramebuffer(gl: WebGLRenderingContext) {
         renderingCtx.workableFramebuffer = gl.createFramebuffer() 
         val savedFramebuffer = gl.getParameter(
             WebGLRenderingContext.FRAMEBUFFER_BINDING) as
@@ -814,19 +814,11 @@ class Grid(rowCount: Int = 6,
             createBoardTextureCoordinateBuffer(gl)
 
     }
-
-    private fun setupBufferForWorking(gl: WebGLRenderingContext) {
-        renderingCtx.buttonPickingColorBuffer = 
-            createButtonColorBufferForPicking(gl)
-        renderingCtx.boardPickingColorBuffer =
-            createBoardColorBufferForPicking(gl) 
-    } 
     private fun setupRenderbufferForPicking(gl: WebGLRenderingContext) {
         renderingCtx.pickingBuffer = createPickingBuffer(gl)
         renderingCtx.depthBufferForWorking = 
             createDepthBufferForWorking(gl) 
     }
-
     /**
      * setup game element matrix
      */

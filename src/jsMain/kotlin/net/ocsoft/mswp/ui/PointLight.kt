@@ -63,14 +63,14 @@ class PointLight(
             return result
         } 
 
-    
-
 
     /**
      * projected light edit table coordinate
      */
     var lightEditViewTable: Array<Float32Array>? = null
 
+
+    
     
     /**
      * model matrix
@@ -102,9 +102,7 @@ class PointLight(
             val triangleCount = vertexArray.size - 2
             result = Float32Array(
                 triangleCount * 3  * 3)
-            val indices = arrayOf(
-                intArrayOf(0, 1, 2),
-                intArrayOf(2, 3, 0))
+            val indices = getQuadIndicesForTwoTriangles()
             for (idx in 0..result.length - 1) {
                 val coordIdx = idx % 3
                 val groupIdx = idx / (3 * 3) 
@@ -115,8 +113,34 @@ class PointLight(
         } 
         return result
     }
-    
 
+    /**
+     * retrive quad points from two triangles.
+     */
+    fun getQuadPointsFromTwoTriangles( 
+        triangles: Float32Array): Float32Array {
+        val result = Float32Array(
+            Array<Float>(4 * 3) {
+                val groupIdx = it / (3 * 2)
+                val startIdx = (it / 3) % 2
+                val coordIdx = it % 3 
+                var triIdx = groupIdx * 3 * 3
+                triIdx += startIdx * 3
+                triIdx += coordIdx
+                triangles[triIdx]
+            }) 
+        return result
+    }
+    /**
+     * get quad indices for two triagnles
+     */
+    fun getQuadIndicesForTwoTriangles(): Array<IntArray> {
+        return arrayOf(
+            intArrayOf(0, 1, 2),
+            intArrayOf(2, 3, 0))
+    }
+
+ 
     /**
      * setup projection plane for editing light point
      */
@@ -263,12 +287,14 @@ class PointLight(
         viewport: IntArray): Array<Float32Array> {
          
         
-        val coordinates = gl.Matrix.project(glrs, 
+        var coordinates = gl.Matrix.project(glrs, 
             lightEditingTableArray!!,
             modelMatrix,
             projectionMatrix,
             viewport)!!
-         
+
+        coordinates = getQuadPointsFromTwoTriangles(coordinates) 
+
         val result = Array<Float32Array>(coordinates.length / 3) {
             coordinates.subarray(it * 3, it * 3 + 3)
         }
@@ -290,7 +316,7 @@ class PointLight(
             val lightPoint = calcPointLightFromEditorMarker(
                 grid.glrs!!,
                 lightPointW[0], lightPointW[1], lightPointW[2]) 
-            setPointLightCoordinate(grid, wgl, lightPoint)
+            // setPointLightCoordinate(grid, wgl, lightPoint)
         }
     }
     
@@ -352,34 +378,46 @@ class PointLight(
 
         val lightEditViewTable = this.lightEditViewTable
  
-        var result = Array<Double?>(lightEditViewTable!!.size) { 
-            if (lightEditViewTable != null) {
-                val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble())) 
-                val p1 = lightEditViewTable[it] 
-                val p2 = lightEditViewTable[
-                    (it + 1) % lightEditViewTable.size]
-               
-                val planeRef = glrs.plane_create_with_2d(
-                    Float64Array(Array<Double>(p1.length) 
-                        { p1[it].toDouble() }), 
-                    Float64Array(Array<Double>(p2.length)
-                        { p2[it].toDouble() }))
-                var res: Double? = null
-                if (planeRef != null) {
-                    res = glrs.plane_distance(
-                        planeRef, pt)!!.toDouble()
-                }
-                if (planeRef != null) {
-                    glrs.plane_release(planeRef)
-                }
-                res
-            } else {
-                null
-            } 
+        var result = Array<Double?>(lightEditViewTable!!.size) { null }
+        val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble()))
+        calcEachDistanceFromEdges(
+            glrs, pt,
+            lightEditViewTable!!).forEachIndexed {
+            idx, elem ->
+            result[idx] = elem
         }
         return result
     }
 
+
+    /**
+     * calculate each distance from edges
+     */
+    fun calcEachDistanceFromEdges(
+        glrs: glrs.InitOutput,
+        pt: Float64Array,
+        points: Array<Float32Array>): Array<Double?> {
+        val result = Array<Double?>(points.size) {
+            val p1 = points[it] 
+            val p2 = points[(it + 1) % points.size]
+           
+            val planeRef = glrs.plane_create_with_2d(
+                Float64Array(Array<Double>(p1.length) 
+                    { p1[it].toDouble() }), 
+                Float64Array(Array<Double>(p2.length)
+                    { p2[it].toDouble() }))
+            var res: Double? = null
+            if (planeRef != null) {
+                res = glrs.plane_distance(
+                    planeRef, pt)!!.toDouble()
+            }
+            if (planeRef != null) {
+                glrs.plane_release(planeRef)
+            }
+            res
+        } 
+        return result
+    }
 
     /**
      * calculate light position from a point which is not in light editer table
@@ -551,7 +589,7 @@ class PointLight(
     /**
      * set up frame buffer for depth 
      */
-    fun setupFrameBufferForDepth(
+    fun setupFramebufferForDepth(
         gl: WebGLRenderingContext,
         renderingCtx : RenderingCtx) {
 
@@ -560,7 +598,6 @@ class PointLight(
         val savedFramebuffer = gl.getParameter(
             WebGLRenderingContext.FRAMEBUFFER_BINDING) as
                 WebGLFramebuffer?
-  
         
         gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
             renderingCtx.pointLightEditDepthFramebuffer) 
@@ -647,7 +684,7 @@ class PointLight(
         renderingCtx : RenderingCtx) {
         renderingCtx.pointLightMarkerBuffer = createBuffer(gl)
         renderingCtx.lightingTableBuffer = createLightEditTableBuffer(gl)
-        setupFrameBufferForDepth(gl, renderingCtx)
+        setupFramebufferForDepth(gl, renderingCtx)
     }
 
     
@@ -685,38 +722,41 @@ class PointLight(
                 modelMatrix)
         }
      }
-
+  
     /**
      * draw point light edit table to store depth value
      */
     fun drawForDepthBuffer(
         gl: WebGLRenderingContext,
         renderingCtx : RenderingCtx) {
-        val shaderProg = renderingCtx.pointLightDepthShaderProgram
-        if (shaderProg != null) {
-            val savedProgram = gl.getParameter(
-                WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
 
-            gl.useProgram(shaderProg)
-            val verLoc = gl.getAttribLocation(shaderProg, 
-                "aVertexPosition")
- 
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.lightingTableBuffer)
-            gl.vertexAttribPointer(
-                verLoc,
-                3,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verLoc)
-            gl.drawArrays(
-                WebGLRenderingContext.TRIANGLES, 
-                0, 
-                lightEditingTableArray!!.length / 3) 
-                
-            gl.useProgram(savedProgram)
-        }
+        val savedBuffer = gl.getParameter(
+            WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+
+        val verLoc = gl.getAttribLocation(shaderProg, 
+            "aVertexPosition")
+
+        gl.enableVertexAttribArray(verLoc)
+        gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+            renderingCtx.lightingTableBuffer)
+
+        gl.vertexAttribPointer(
+            verLoc,
+            3,
+            WebGLRenderingContext.FLOAT,
+            false,
+            0, 0) 
+        gl.drawArrays(
+            WebGLRenderingContext.TRIANGLES, 
+            0, 
+            lightEditingTableArray!!.length / 3) 
+
+        gl.bindBuffer(
+            WebGLRenderingContext.ARRAY_BUFFER,
+            savedBuffer)
+
     }
 
 
