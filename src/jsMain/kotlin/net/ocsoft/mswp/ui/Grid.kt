@@ -384,8 +384,21 @@ class Grid(rowCount: Int = 6,
         gl: WebGLRenderingContext) {
         beginForLightEditDepthFrame(gl)
         setupEnv(gl)
+        gl.blendFunc(WebGLRenderingContext.ONE,
+            WebGLRenderingContext.ZERO)
+
         updateViewForEditingLightDepthFrameBuffer(gl)
         endForLightEditDepthFrame(gl)
+    }
+
+    fun debugLightDepthFrameBuffer(gl: WebGLRenderingContext) {
+        pointLightEdit.handleUserInput(this, gl, 230, 230)
+
+    }
+
+    fun dbgld(gl: WebGLRenderingContext, marker: String) {
+        println(marker)
+        debugLightDepthFrameBuffer(gl)
     }
 
 
@@ -1067,9 +1080,7 @@ class Grid(rowCount: Int = 6,
             pointLightEdit.attachModelMatrix(gl, renderingCtx)
             pointLightEdit.drawForDepthBuffer(gl, renderingCtx)
             gl.useProgram(savedProgram)
-
         }
-       
     }
 
    

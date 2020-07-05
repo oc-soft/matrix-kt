@@ -8,7 +8,7 @@ floatToVec4(
     float value);
 
 void main() {
-    gl_FragColor = floatToVec4(gl_FragCoord.z);
+   gl_FragColor = floatToVec4(gl_FragCoord.z);
 }
 
 /**
@@ -19,13 +19,14 @@ floatToVec4(
     float value)
 {
     vec4 result;
+    float tmpVal;   
+    tmpVal = value * float(0xff);
     for (int i = 0; i < 4; i++) {
-        mediump int valI;
-        float tmpVal;
-        tmpVal = value * float(0xf * (i + 1));
-        tmpVal = mod(tmpVal, float(0xf));
-        valI = int(tmpVal);
-        result[i] = float(valI) / float(0xf);
+        float rem;
+        rem = mod(tmpVal, float(0xff));
+        result[i] = rem / float(0xff);
+        tmpVal = fract(rem);
+        tmpVal *= float(0xff);
     }
     return result;
 }

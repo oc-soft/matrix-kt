@@ -156,10 +156,11 @@ class PointLight(
         lightEditViewTable = null
         if (glrs != null) {
             val board = grid.board
+            val normal = board.normalVector
             val buttonsCoord = grid.display.calcButtonsCoordinate() 
              
-            val normal = board.normalVector  
-            val bounds  = board.bounds
+            val bounds = calcBoardBounds(glrs,
+                board, renderingCtx.boardMatrix!!)
             val planeRef = glrs.plane_create(
                 Float64Array(
                     Array<Double>(normal.size) 
@@ -212,6 +213,31 @@ class PointLight(
                 viewport!!)
         }
     } 
+
+
+    /**
+     * calculate board bounds.
+     */
+    fun calcBoardBounds(
+        glrs: glrs.InitOutput, 
+        board: Board,
+        boardMatrix: FloatArray) : Array<FloatArray> {
+
+        val matRef = glrs.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(boardMatrix.size) {
+                boardMatrix[it].toDouble()
+            }))
+        val bounds = board.bounds
+        val result = Array<FloatArray>(bounds.size) {
+            val elem = bounds[it]
+            val coords = glrs.matrix_apply_r_32(
+                matRef, 
+                Float32Array(arrayOf(elem[0], elem[1], elem[2], 1f)))
+            floatArrayOf(coords!![0], coords!![1], coords!![2]) 
+        }
+        glrs.matrix_release(matRef)  
+        return result
+    }
 
 
     /**
@@ -339,9 +365,11 @@ class PointLight(
             WebGLRenderingContext.RGBA, 
             WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
-        val zw = gl.ColorCodec.decodeFloat(buffer) 
+        val zw = gl.ColorCodec.decodeFloatLess1(buffer) 
         grid.endForLightEditDepthFrame(wgl)
+        println("buffer read: ${buffer}")
         if (zw != null) {
+            println("z-depth: ${zw!!}")
             result = floatArrayOf(xw.toFloat(), yw.toFloat(), zw)
         }
 
@@ -662,6 +690,9 @@ class PointLight(
         renderingCtx: RenderingCtx): WebGLRenderbuffer? {
         val result = gl.createRenderbuffer()
         if (result != null) {
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.RENDERBUFFER_BINDING) 
+                    as WebGLRenderbuffer?
             gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
                 result) 
             gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
@@ -671,6 +702,9 @@ class PointLight(
             gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
                 WebGLRenderingContext.DEPTH_ATTACHMENT, 
                 WebGLRenderingContext.RENDERBUFFER, result)
+
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                savedBuffer) 
         }
         return result
     }
@@ -722,11 +756,19 @@ class PointLight(
                 modelMatrix)
         }
      }
-  
     /**
      * draw point light edit table to store depth value
      */
     fun drawForDepthBuffer(
+        gl: WebGLRenderingContext,
+        renderingCtx : RenderingCtx) {
+        drawForDepthBufferI(gl, renderingCtx)
+         
+    } 
+    /**
+     * draw point light edit table to store depth value
+     */
+    fun drawForDepthBufferI(
         gl: WebGLRenderingContext,
         renderingCtx : RenderingCtx) {
         val shaderProg = gl.getParameter(
@@ -738,7 +780,7 @@ class PointLight(
         val verLoc = gl.getAttribLocation(shaderProg, 
             "aVertexPosition")
 
-        gl.enableVertexAttribArray(verLoc)
+
         gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
             renderingCtx.lightingTableBuffer)
 
@@ -747,7 +789,8 @@ class PointLight(
             3,
             WebGLRenderingContext.FLOAT,
             false,
-            0, 0) 
+            0, 0)
+        gl.enableVertexAttribArray(verLoc)
         gl.drawArrays(
             WebGLRenderingContext.TRIANGLES, 
             0, 
