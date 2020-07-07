@@ -192,9 +192,10 @@ class PointLight(
                 pointOnPlane = calcPointOffset(farPtFromBoard, normal) 
                 normalVector = normal  
                 lightEditingTable = Array<FloatArray>(bounds.size) {
-                    projectOnPlane(glrs,
+                    val coords = projectOnPlane(glrs,
                         normalVector!!, pointOnPlane!!,
                         bounds[it])!!
+                    coords
                 }
             }
 
@@ -319,6 +320,8 @@ class PointLight(
             projectionMatrix,
             viewport)!!
 
+         
+
         coordinates = getQuadPointsFromTwoTriangles(coordinates) 
 
         val result = Array<Float32Array>(coordinates.length / 3) {
@@ -365,7 +368,7 @@ class PointLight(
             WebGLRenderingContext.RGBA, 
             WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
-        val zw = gl.ColorCodec.decodeFloatLess1(buffer) 
+        val zw = gl.ColorCodec.decodeFloat(buffer) 
         grid.endForLightEditDepthFrame(wgl)
         println("buffer read: ${buffer}")
         if (zw != null) {

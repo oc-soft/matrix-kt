@@ -8,7 +8,7 @@ floatToVec4(
     float value);
 
 void main() {
-   gl_FragColor = floatToVec4(gl_FragCoord.z);
+    gl_FragColor = floatToVec4(gl_FragCoord.z);
 }
 
 /**
@@ -19,15 +19,20 @@ floatToVec4(
     float value)
 {
     vec4 result;
-    float tmpVal;   
-    tmpVal = value * float(0xff);
+    vec4 tmpVec;
+    float tmpVal; 
+    tmpVal = value;
+    // color component resolution is 4 bits (0xf).
+    // It was specified by WebGLRenderingContext.RGBA4 
     for (int i = 0; i < 4; i++) {
-        float rem;
-        rem = mod(tmpVal, float(0xff));
-        result[i] = rem / float(0xff);
-        tmpVal = fract(rem);
-        tmpVal *= float(0xff);
+        tmpVec[i] = tmpVal;
+        tmpVal = fract(tmpVal * float(0xf));
     }
+    for (int i = 1; i < 2; i++) {
+        result[i - 1] = tmpVec[i - 1] - tmpVec[i] / float(0xf);
+    }
+
+    result[3] = tmpVec[3];
     return result;
 }
 

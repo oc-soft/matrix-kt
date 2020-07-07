@@ -121,6 +121,10 @@ class Matrix {
                     coord0[2] = coordinates[3 * idx + 2]
                     coord0[3] = 1.0f 
                     val tmpCoord0 = glrs.matrix_apply_r_32(projRef, coord0)!!
+                    for (idx0 in 0..2) {
+                        tmpCoord0[idx0] /= tmpCoord0[3]
+                    }
+
                     tmpCoord0[3] = 1.0f 
                     val tmpCoord1 = glrs.matrix_apply_r_32(viewportRef, 
                         tmpCoord0)!!
@@ -158,6 +162,11 @@ class Matrix {
                     coord0[2] = coordinates[3 * idx + 2]
                     coord0[3] = 1.0 
                     val tmpCoord0 = glrs.matrix_apply_r_64(projRef, coord0)!!
+
+                    for (idx0 in 0..2) {
+                        tmpCoord0[idx0] /= tmpCoord0[3]
+                    }
+
                     tmpCoord0[3] = 1.0 
                     val tmpCoord1 = glrs.matrix_apply_r_64(viewportRef, 
                         tmpCoord0)!!
@@ -285,9 +294,10 @@ class Matrix {
                     tmpCoord0[3] = 1.0 
                     val tmpCoord1 = glrs.matrix_apply_r_64(
                         projRef, tmpCoord0)!!
-                    result[3 * idx] = tmpCoord1[0]
-                    result[3 * idx + 1] = tmpCoord1[1] 
-                    result[3 * idx + 2] = tmpCoord1[2]
+
+                    result[3 * idx] = tmpCoord1[0] / tmpCoord1[3]
+                    result[3 * idx + 1] = tmpCoord1[1] / tmpCoord1[3] 
+                    result[3 * idx + 2] = tmpCoord1[2] / tmpCoord1[3]
                 } 
             } 
             if (projRef != null) {

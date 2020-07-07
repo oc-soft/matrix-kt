@@ -1,6 +1,8 @@
 package gl
+import kotlin.math.pow
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+
 
 /**
  * handle open gl color data
@@ -13,13 +15,12 @@ class ColorCodec {
          */
         fun decodeFloat(buffer: Uint8Array): Float? {
             var result: Float? = null 
-            
+             
             if (buffer.length > 3) {
                 result = 0.0f
-                for (idx in 3 downTo 0) {
-                    var tmpVal = buffer[idx].toFloat() /  0xff.toFloat() 
-                    tmpVal *= 0xff.toFloat()
-                    result /= 0xff.toFloat();
+                for (idx in 0 until 4) {
+                    var tmpVal = buffer[idx].toFloat() / 0xff.toFloat();
+                    tmpVal /=  0xff.toFloat().pow(idx)
                     result += tmpVal 
                 }
             }

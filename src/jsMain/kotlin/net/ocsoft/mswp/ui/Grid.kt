@@ -12,7 +12,6 @@ import net.ocsoft.mswp.ui.grid.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.Image
-typealias GLRctx = WebGLRenderingContext
 
 /**
  * game play ground grid
@@ -309,14 +308,15 @@ class Grid(rowCount: Int = 6,
      */
     fun setupEnv(gl :WebGLRenderingContext) {
         gl.clearColor(backColor[0], backColor[1], backColor[2], backColor[3])
-        gl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT)
-        gl.enable(GLRctx.DEPTH_TEST)
+
+        gl.enable(WebGLRenderingContext.DEPTH_TEST)
         gl.enable(WebGLRenderingContext.BLEND)
         gl.blendFunc(WebGLRenderingContext.SRC_ALPHA,
             WebGLRenderingContext.ONE_MINUS_SRC_ALPHA)
         gl.frontFace(WebGLRenderingContext.CW)
-        gl.depthFunc(GLRctx.LEQUAL)
-        gl.clear(GLRctx.COLOR_BUFFER_BIT or GLRctx.DEPTH_BUFFER_BIT)
+        gl.depthFunc(WebGLRenderingContext.LEQUAL)
+        gl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT or
+            WebGLRenderingContext.DEPTH_BUFFER_BIT)
     }
     /**
      * draw scene
@@ -387,13 +387,24 @@ class Grid(rowCount: Int = 6,
         gl.blendFunc(WebGLRenderingContext.ONE,
             WebGLRenderingContext.ZERO)
 
+        val viewport = this.viewport!!
+        gl.viewport(viewport[0], viewport[1], viewport[2], viewport[3])
+
         updateViewForEditingLightDepthFrameBuffer(gl)
         endForLightEditDepthFrame(gl)
+    }
+    /**
+     * set up depth frame buffer for editing point light
+     */
+    fun setupDepthFrameBufferForEditingLight() {
+        val canvasNode = jQuery(canvasId!!)
+        val canvas = canvasNode[0] as HTMLCanvasElement
+        val gl = canvas.getContext("webgl") as WebGLRenderingContext
+        setupDepthFrameBufferForEditingLight(gl)
     }
 
     fun debugLightDepthFrameBuffer(gl: WebGLRenderingContext) {
         pointLightEdit.handleUserInput(this, gl, 230, 230)
-
     }
 
     fun dbgld(gl: WebGLRenderingContext, marker: String) {
@@ -718,7 +729,7 @@ class Grid(rowCount: Int = 6,
             glyph.bind(settings.glyphCanvasId, settings.iconSetting)
             
             setup(gl)
-            setupDepthFrameBufferForEditingLight(gl)
+            
             drawScene(gl)
         } 
     }
@@ -1514,6 +1525,7 @@ class Grid(rowCount: Int = 6,
         pointLightSetting.show {
             postDrawScene()
         }
+        setupDepthFrameBufferForEditingLight()
         postDrawScene()
     }
 }

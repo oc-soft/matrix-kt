@@ -6,8 +6,8 @@ package net.ocsoft.mswp
  */
 class Camera(fieldOfView: Float = 45 * kotlin.math.PI.toFloat() / 180,
     aspect: Float = 2f,
-    zNear: Float = 0.1f,
-    zFar: Float = 100f,
+    zNear: Float = 1f,
+    zFar: Float = 20f,
     eye: FloatArray = floatArrayOf(0f, 0f, 12f),
     center: FloatArray = floatArrayOf(0f, 0f, 0f),
     up: FloatArray = floatArrayOf(0f, 1f, 0f)) {
