@@ -35,7 +35,7 @@ class ColorCodec {
             
             result = decodeFloat(buffer)
             if (result != null) {
-                result /= 0xff.toFloat()
+                result /= 0xf.toFloat()
             }
             return result
         }

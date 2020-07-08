@@ -62,15 +62,35 @@ class PointLight(
             } 
             return result
         } 
-
-
     /**
      * projected light edit table coordinate
      */
     var lightEditViewTable: Array<Float32Array>? = null
 
 
-    
+    /**
+     * light editing table triangles
+     */
+    val lightEditViewTableTriangles: Array<Float32Array>?
+        get() {
+            var result: Array<Float32Array>? = null
+            val tableArray = lightEditViewTable
+            if (tableArray != null && tableArray.size == 4) {
+                val triangleCount = tableArray.size - 2
+                val triangleIndices = getQuadIndicesForTwoTriangles()
+                result = Array<Float32Array>(triangleCount) {
+                    val indices = triangleIndices[it] 
+                    Float32Array(Array<Float>(3 * 3) {
+                        val groupIdx = it / 3
+                        val coordIdx = it % 3
+                        tableArray[indices[groupIdx]][coordIdx]
+                    })
+                }
+            }
+            return result
+        }
+
+   
     
     /**
      * model matrix
@@ -320,8 +340,6 @@ class PointLight(
             projectionMatrix,
             viewport)!!
 
-         
-
         coordinates = getQuadPointsFromTwoTriangles(coordinates) 
 
         val result = Array<Float32Array>(coordinates.length / 3) {
@@ -359,18 +377,7 @@ class PointLight(
         var result: FloatArray? = null
         val pos = calcNewLightPointLocation(
             grid.glrs!!, xw.toFloat(), yw.toFloat())
-
-        grid.beginForLightEditDepthFrame(wgl)
-        val buffer = Uint8Array(4)
-        wgl.readPixels(
-            pos[0].roundToInt(), 
-            pos[1].roundToInt(), 1, 1,
-            WebGLRenderingContext.RGBA, 
-            WebGLRenderingContext.UNSIGNED_BYTE, 
-            buffer)
-        val zw = gl.ColorCodec.decodeFloat(buffer) 
-        grid.endForLightEditDepthFrame(wgl)
-        println("buffer read: ${buffer}")
+        val zw = readDepth(grid, xw, yw)
         if (zw != null) {
             println("z-depth: ${zw!!}")
             result = floatArrayOf(xw.toFloat(), yw.toFloat(), zw)
@@ -378,7 +385,90 @@ class PointLight(
 
         return result
     }
-    
+
+
+    /**
+     * read z-depth
+     */
+    fun readDepth(grid: Grid,
+        xw: Int, yw: Int): Float? {
+        var result: Float? = null
+        val glrs = grid.glrs
+        if (glrs != null) {
+            val triangle = findEditingTableTriangle(grid, xw, yw)
+            if (triangle != null) {
+                val vecs = arrayOf( 
+                    DoubleArray(3) {
+                        (triangle[3 * 1 + it] - triangle[3 * 0 + it]).toDouble()
+                    },
+                    DoubleArray(3) {
+                        (triangle[3 * 2 + it] - triangle[3 * 0 + it]).toDouble()
+                    })
+                val matComp = Float64Array(Array<Double>(4) {
+                        vecs[it / 2][it % 2]
+                    })
+                val mat = glrs.matrix_create_with_components_col_order(matComp)
+                val matInv = glrs.matrix_inverse(mat)
+                if (matInv != 0) {
+                    val ratio = glrs.matrix_apply_r_32(matInv, 
+                        Float32Array(
+                            arrayOf(
+                                xw.toFloat() - triangle[3 * 0], 
+                                yw.toFloat() - triangle[3 * 0 + 1]))) 
+                    if (ratio != null) {
+                        var zw = ratio[0] * vecs[0][2]
+                        zw += ratio[1] * vecs[1][2]   
+                        zw += triangle[3 * 0 + 2]
+                        result = zw.toFloat()
+                    }
+                } 
+                glrs.matrix_release(matInv)
+                glrs.matrix_release(mat)
+            }
+        }
+        return result 
+    }
+
+    /**
+     * find a trianle contained the point.
+     * The triangle compose the editingTable
+     */    
+    fun findEditingTableTriangle(
+        grid: Grid,
+        xw: Int, yw: Int): Float32Array? {
+        val glrs = grid.glrs
+        var result: Float32Array? = null
+        if (glrs != null) {
+            val triangles = lightEditViewTableTriangles 
+            if (triangles != null) {
+                val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble()))
+                            
+                for (idx0 in 0 until triangles.size) {
+                      
+                    val distances = calcEachDistanceFromEdges(
+                        glrs, pt,
+                        Array<Float32Array>(triangles[idx0].length / 3) {
+                            triangles[idx0].subarray(3 * it, 3 * it + 2)
+                        })
+                    var gteZero = true 
+                    for (idx1 in 0 until distances.size) {
+                        val distance = distances[idx1]
+                        if (distance != null) {
+                            gteZero = distance >= 0.0
+                            if (!gteZero) {
+                                break
+                            }
+                        }
+                    } 
+                    if (gteZero) {
+                        result = triangles[idx0]
+                        break    
+                    }
+                }
+            }
+        }
+        return result
+    }
 
     /**
      * set point light coord
