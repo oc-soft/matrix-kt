@@ -98,7 +98,11 @@ class PointLightSetting {
                 if (grid != null) {
                     val backToMainQuery = grid.backToMainQuery
                     val backToMain = jQuery(backToMainQuery!!)
-                    backToMain!!.data("editor", "point-light")
+                    if (value) {
+                        backToMain!!.data("editor", "point-light")
+                    } else {
+                        backToMain!!.removeData("editor")
+                    }
                 }
             }
         }

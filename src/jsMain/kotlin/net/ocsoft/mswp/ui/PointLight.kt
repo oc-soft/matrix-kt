@@ -363,7 +363,7 @@ class PointLight(
             val lightPoint = calcPointLightFromEditorMarker(
                 grid.glrs!!,
                 lightPointW[0], lightPointW[1], lightPointW[2]) 
-            // setPointLightCoordinate(grid, wgl, lightPoint)
+            setPointLightCoordinate(grid, wgl, lightPoint)
         }
     }
     
@@ -379,7 +379,6 @@ class PointLight(
             grid.glrs!!, xw.toFloat(), yw.toFloat())
         val zw = readDepth(grid, xw, yw)
         if (zw != null) {
-            println("z-depth: ${zw!!}")
             result = floatArrayOf(xw.toFloat(), yw.toFloat(), zw)
         }
 
