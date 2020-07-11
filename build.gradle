@@ -11,7 +11,7 @@ plugins {
 
 ext.site_dir = 'mswp'
 ext.web_dir = 'prg'
-ext.packageVersion = '0.3.0'
+ext.packageVersion = '0.4.0'
 ext.ocSoftEmail0 = 'toshi@oc-soft.net'
 ext.webpackSetting = [
     gradleBuildJs: 'gradle-build.js' 
@@ -102,7 +102,7 @@ task webpackGradleBuild {
         def gradleBuildSrc = new File(new File(projectDir, "tools"), jsName)    
         def binding = [
             config: """{
-    programDir: '${web_dir}/${site_dir}',
+    programDir: '${site_dir}/${web_dir}',
     cssDir: 'css'
 }"""
         ]
@@ -157,7 +157,8 @@ task xgettextphp {
 }
 
 task installWasmBindGen(type: Exec) {
-    executable = 'cargo'
+    def cargoBin = new File(new File(System.env.HOME, '.cargo'), 'bin')
+    executable = new File(cargoBin, 'cargo')
     args += 'install'
     args += '--root'
     args += new File(buildDir, "rust")
@@ -310,7 +311,7 @@ jsMainClasses.dependsOn webpackDeploy
 task deployResources0(type: Copy) {
     def distDir = jsBrowserDistributeResources.destinationDir
     from jsProcessResources.destinationDir
-    into new File(new File(distDir, web_dir), site_dir)
+    into new File(new File(distDir, site_dir), web_dir)
 }
 
 webpackDeploy.dependsOn deployResources0
@@ -323,7 +324,7 @@ task deployResources1(type: Copy) {
         "glrs_bg.wasm")
  
     from  src
-    into new File(new File(distDir, web_dir), site_dir)
+    into new File(new File(distDir, site_dir), web_dir)
 }
 
 webpackDeploy.dependsOn deployResources1
