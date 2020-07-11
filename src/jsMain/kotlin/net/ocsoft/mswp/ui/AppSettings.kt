@@ -13,12 +13,13 @@ class AppSettings(val option : Option) {
      */
     data class Option(
         val gameSettingsOption: GameSettings.Option, 
-        val iconOption : IconSelector.Option)
+        val iconOption : IconSelector.Option,
+        val pointLightSettingOption: PointLightSetting.Option)
 
     /**
      * runtime configuration
      */
-    var runtimeConfig : dynamic? = null;
+    var runtimeConfig : dynamic = null;
 
     /**
      * icon selector

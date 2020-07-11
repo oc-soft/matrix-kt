@@ -102,7 +102,7 @@ actual class MainPage {
         uiSetting: Json) {
         appSettings.runtimeConfig = uiSetting
         jQuery { 
-            val grid = Grid()
+            val grid = Grid(appSettings.option.pointLightSettingOption)
             val shaders = arrayOf(
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls",
@@ -128,6 +128,14 @@ actual class MainPage {
                     }
                     Unit
                 }))
+            var pointLight0 : PointLight? = null
+            promises.add(
+                Persistence.loadPointLight().then({
+                    if (it != null) {
+                        pointLight0 = it
+                    }
+                    Unit
+                }))
             val promisesArray = Array<Promise<Any>>(promises.size) {
                 promises[it]
             }
@@ -142,9 +150,16 @@ actual class MainPage {
                     responses[4] as String,
                     responses[5] as String)
                 grid.glrs = responses[6] as glrs.InitOutput
+
+                var pointLightParam = pointLight
+                if (pointLight0 != null) {
+                    this.pointLight = pointLight0!!
+                    pointLightParam = pointLight0!!
+                }
+                
                 grid.bind(config.gridSettings,
                     model, camera, 
-                    pointLight, shaderPrograms,
+                    pointLightParam, shaderPrograms,
                     appSettings)
                 appSettings.bind()
                 readyToPlay() 

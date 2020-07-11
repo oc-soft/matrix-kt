@@ -1,18 +1,36 @@
 package net.ocsoft.mswp.ui
 import jQuery
 import JQueryEventObject
+import kotlin.collections.ArrayList
 
 /**
  * editor for point light
  */
-class PointLightSetting {
+class PointLightSetting(val option: Option) {
 
+    /**
+     * option for setting instance
+     */
+    data class Option(val syncIconTemplateQuery: String)
     /**
      * grid
      */
     var grid: Grid? = null
+    
 
-
+    /**
+     * point lighting
+     */
+    val pointLight: net.ocsoft.mswp.PointLight?
+        get() {
+            var result: net.ocsoft.mswp.PointLight? = null
+            val grid = this.grid
+            if (grid != null) { 
+                result = grid.pointLight
+            }
+            return result
+        }
+ 
     /**
      * handler to back to main
      */
@@ -76,7 +94,11 @@ class PointLightSetting {
             }
         }
 
-    
+    /**
+     * back to main contents
+     */
+    var backToMainContents: MutableList<String>? = null 
+
     /**
      * you get true if user edits point light location
      */
@@ -87,7 +109,7 @@ class PointLightSetting {
             if (grid != null) {
                 val backToMainQuery = grid.backToMainQuery
                 val backToMain = jQuery(backToMainQuery!!)
-                result = backToMain!!.data("editor") == "point-light"
+                result = backToMain.data("editor") == "point-light"
             }
             return result
         }
@@ -99,9 +121,9 @@ class PointLightSetting {
                     val backToMainQuery = grid.backToMainQuery
                     val backToMain = jQuery(backToMainQuery!!)
                     if (value) {
-                        backToMain!!.data("editor", "point-light")
+                        backToMain.data("editor", "point-light")
                     } else {
-                        backToMain!!.removeData("editor")
+                        backToMain.removeData("editor")
                     }
                 }
             }
@@ -136,16 +158,71 @@ class PointLightSetting {
     /**
      * handle click icon back to main
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onClickToBackToMain(
         eventObject: JQueryEventObject,
         args: Any): Any {
         jQuery(eventObject.delegateTarget).off("click", handleToBackToMain!!);
-        visibleBackToMain = false
-        visibleMainMenu = true
-        isEditing = false
+        doSave() 
         return false
     }
-   
+
+    /**
+     * save point light setting
+     */
+    fun doSave() {
+        val pointLight = this.pointLight           
+        if (pointLight != null) {
+            changeBackToMainToSync()
+            Persistence.savePointLight(pointLight).then({
+                restoreToBackToMain()
+                visibleBackToMain = false
+                visibleMainMenu = true
+                isEditing = false
+            }, {
+                restoreToBackToMain()
+                visibleBackToMain = false
+                visibleMainMenu = true
+                isEditing = false
+            })
+        }
+    }
+
+    /**
+     * change back to main icon to synchronizing icon
+     */
+    fun changeBackToMainToSync() {
+        val syncHtml = jQuery(option.syncIconTemplateQuery).html()
+        val grid = this.grid
+        if (grid != null) {
+            val backToMainQuery = grid.backToMainQuery
+            backToMainContents = ArrayList<String>()
+            jQuery(backToMainQuery!!).html({
+                _, oldHtml ->
+                backToMainContents?.add(oldHtml)
+                syncHtml 
+            })
+        }
+    }
+
+    /**
+     * restore back to main icon from sychronzing icon
+     */
+    fun restoreToBackToMain() {
+        val backToMainContents = this.backToMainContents
+        if (backToMainContents != null) {
+            val grid = this.grid
+            if (grid != null) {
+                val backToMainQuery = grid.backToMainQuery
+                jQuery(backToMainQuery!!).html({
+                    idx, _ ->
+                    backToMainContents[idx.toInt()] 
+                })
+            }
+            this.backToMainContents = null
+        }
+    }
+
 }
 
 // vi: se ts=4 sw=4 et:

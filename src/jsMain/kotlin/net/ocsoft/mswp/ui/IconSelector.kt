@@ -68,13 +68,14 @@ class IconSelector(val option : Option) {
      */
     var iconPageMap: Map<Persistence.Icon, Int>? = null
         get() {
-            var result: Map<Persistence.Icon, Int>? = null
+
             if (field == null) {
                 val ctMeta = this.contentsMeta 
                 if (ctMeta != null) {
                     field = createIconPageMap(ctMeta)
                 }
             }
+            var result: Map<Persistence.Icon, Int>?
             result = field
             return result
         }
@@ -178,10 +179,10 @@ class IconSelector(val option : Option) {
      */
     val iconKindUI: String?
         get() {
-            var result : String? = null
+            var result : String?
             val selectedItem = jQuery(":selected",
-                option.iconKindSelectorQuery) as JQuery
-            result = selectedItem?.`val`() as String?
+                option.iconKindSelectorQuery)
+            result = selectedItem.`val`() as String?
             return result 
         }
     
@@ -215,13 +216,13 @@ class IconSelector(val option : Option) {
         iconItemClickHdlr = { e, args -> onIconItemClick(e, args) }
         iconKindChangeHdlr = { e, args -> onIconKindChange(e, args) } 
        
-        val modalQuery = jQuery(option.modalQuery) as JQuery
+        val modalQuery = jQuery(option.modalQuery)
         jQuery(option.okQuery).on("click", okHdlr!!)
         modalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
         selectedNgIcon = option.iconSetting.ngIcon 
         selectedOkIcon = option.iconSetting.okIcon
 
-        val iconSelector = jQuery(option.iconKindSelectorQuery) as JQuery
+        val iconSelector = jQuery(option.iconKindSelectorQuery)
         iconSelector.on("change", iconKindChangeHdlr!!)
         setupContents()
     }
@@ -253,6 +254,7 @@ class IconSelector(val option : Option) {
     /**
      * handle modal hidden event
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onModalHidden(e: JQueryEventObject, a: Any?): Any {
         unbindModal() 
         return Unit
@@ -261,6 +263,7 @@ class IconSelector(val option : Option) {
     /**
      * handle ok
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onOk(e: JQueryEventObject, args: Any?): Any {
                 
         postSave()
@@ -306,7 +309,7 @@ class IconSelector(val option : Option) {
 
         okContents = ArrayList<String>()
         jQuery(option.okQuery).html({
-            index, oldHtml ->
+            _, oldHtml ->
             okContents?.add(oldHtml) 
             syncHtml
         })
@@ -318,7 +321,7 @@ class IconSelector(val option : Option) {
         val okContents = this.okContents
         if (okContents != null) {
             jQuery(option.okQuery).html({
-                index, oldHtml ->
+                index, _ ->
                 okContents[index.toInt()]
             })
             this.okContents = null
@@ -468,6 +471,7 @@ class IconSelector(val option : Option) {
     /**
      * update pagination ui
      */
+    @Suppress("UNUSED_PARAMETER")
     fun updatePagination(
         pageIndex: Int) {
     }
@@ -555,12 +559,13 @@ class IconSelector(val option : Option) {
     /**
      * handle number control  
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onNumberUi(e: JQueryEventObject, args: Any?): Any {
         val ctMeta = contentsMeta
         if (ctMeta != null) {
             postUpdatePage(
                 jQuery(e.delegateTarget).text().toInt() - 1,
-                ctMeta!!)
+                ctMeta)
             Activity.record()
         }
         return Unit
@@ -569,6 +574,7 @@ class IconSelector(val option : Option) {
     /**
      * handle go to fist page event
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onFirstPage(e :JQueryEventObject, args: Any?): Any {
         postRenumberPageCtrl(0) 
         Activity.record()
@@ -578,6 +584,7 @@ class IconSelector(val option : Option) {
     /**
      * handle go to last page
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onLastPage(e :JQueryEventObject, args: Any?): Any {
         val ctMeta = contentsMeta
         if (ctMeta != null) {
@@ -593,6 +600,7 @@ class IconSelector(val option : Option) {
     /**
      * handle previous pages ui event 
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onPrevPage(e : JQueryEventObject, args: Any?): Any {
         val pageRange = readPageNumbersFromUi()
         if (pageRange != null) {
@@ -610,6 +618,7 @@ class IconSelector(val option : Option) {
     /**
      * handle next pages ui event 
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onNextPage(e : JQueryEventObject, args: Any?): Any {
         val pageRange = readPageNumbersFromUi()
         val ctMeta = contentsMeta
@@ -673,7 +682,7 @@ class IconSelector(val option : Option) {
             val elemNum = jQuery(elem).text().toIntOrNull()
             var notMatched = true
             if (elemNum != null) {
-                notMatched = elemNum!! != pageNumber  
+                notMatched = elemNum != pageNumber  
                 if (!notMatched) {
                     elemIndex = idx.toInt()
                 }
@@ -721,6 +730,7 @@ class IconSelector(val option : Option) {
     /**
      * update icon  page
      */
+    @Suppress("UNUSED_PARAMETER")
     fun updatePage(pageIndex : Int,
         contentsMeta: ContentsMeta,
         selectionInPage: Int? = null) {
@@ -840,13 +850,13 @@ class IconSelector(val option : Option) {
         index: Int) {
         var items = jQuery(option.itemsQuery)
         if (0 <= index && index <= items.length.toInt()) {
-            var newNode : JQuery? = null
+            var newNode : JQuery?
             var selected = false
             if (item != null) {
                 val newLine = jQuery(option.itemTemplateQuery).html()
                 newNode = jQuery(newLine) 
-                val divNode = jQuery("div", newNode as JQueryStatic)
-                val iNode = jQuery("i", divNode as JQueryStatic)
+                val divNode = jQuery("div", newNode as JQuery?)
+                val iNode = jQuery("i", divNode as JQuery?)
                 iNode.addClass("${item.prefix} fa-${item.name}")
                 selected = selectedIcon == Persistence.Icon(
                     item.prefix, item.name)
@@ -888,7 +898,8 @@ class IconSelector(val option : Option) {
 
     /**
      * handle selector changed event
-     */     
+     */ 
+    @Suppress("UNUSED_PARAMETER")
     fun onIconKindChange(e: JQueryEventObject, args: Any?) {
         if ("change" == e.type) {
             postSyncPageWithItem(selectedIcon!!)
@@ -900,6 +911,7 @@ class IconSelector(val option : Option) {
     /**
      * handle item click
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onIconItemClick(e: JQueryEventObject, args: Any?) {
         postSelectIconNode(e.delegateTarget)
     }
@@ -939,7 +951,7 @@ class IconSelector(val option : Option) {
             iconNodeJ as JQuery?) 
         val persisIcon = createIconIdFromNode(iconDisplayingNode)
         if (persisIcon != null) {
-            selectedIcon = persisIcon!!
+            selectedIcon = persisIcon
         }
     }
 
@@ -956,4 +968,4 @@ class IconSelector(val option : Option) {
         return result
     }
 }
-
+// vi: se ts=4 sw=4 et:

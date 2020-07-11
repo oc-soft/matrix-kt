@@ -2,6 +2,7 @@ package net.ocsoft.mswp
 import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
 import net.ocsoft.mswp.ui.IconSelector
+import net.ocsoft.mswp.ui.PointLightSetting
 import net.ocsoft.mswp.ui.IconSetting
 import net.ocsoft.mswp.ui.GameSettings
 
@@ -42,8 +43,9 @@ data class MainPageConfig(
             "#icons_paginating_middle_tmpl",
             "#icons_paginating_simple_tmpl",
             "#icons_paginating_item_tmpl",
-            "#synchronizing_icon",
-            gridSettings.iconSetting))) {
+            "#synchronizing-icon",
+            gridSettings.iconSetting),
+        PointLightSetting.Option("#synchronizing-icon-2"))) {
 }
 
 // vi: se ts=4 sw=4 et: 

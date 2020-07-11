@@ -477,13 +477,15 @@ class PointLight(
         wgl: WebGLRenderingContext,
         lightPoint: FloatArray) {
         var doUpdate = false 
-        for (idx in 0..pointLight!!.point.size) {
-            if (pointLight!!.point[idx] != lightPoint[idx]) {
-                pointLight!!.point[idx] = lightPoint[idx] 
+        val dstPt = pointLight!!.point
+
+        for (idx in 0 until dstPt.size) {
+            if (dstPt[idx] != lightPoint[idx]) {
                 doUpdate = true     
             } 
         }
         if (doUpdate) {
+            pointLight!!.point = lightPoint
             grid.postDrawScene(wgl)
         } 
     }
@@ -707,30 +709,6 @@ class PointLight(
             pointLight!!.point)!!
     }
     /**
-     * set up frame buffer for depth 
-     */
-    fun setupFramebufferForDepth(
-        gl: WebGLRenderingContext,
-        renderingCtx : RenderingCtx) {
-
-        renderingCtx.pointLightEditDepthFramebuffer = gl.createFramebuffer()
-        
-        val savedFramebuffer = gl.getParameter(
-            WebGLRenderingContext.FRAMEBUFFER_BINDING) as
-                WebGLFramebuffer?
-        
-        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
-            renderingCtx.pointLightEditDepthFramebuffer) 
-        renderingCtx.pointLightEditDepthBufferRead =
-            createDepthBufferRead(gl)
-        renderingCtx.pointLightEditDepthBuffer =
-            createDepthBufferForDepthRendering(gl, renderingCtx)
-        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
-            savedFramebuffer) 
- 
-    }
-
-    /**
      * light editing vertex buffer
      */
     fun createLightEditTableBuffer(
@@ -810,7 +788,6 @@ class PointLight(
         renderingCtx : RenderingCtx) {
         renderingCtx.pointLightMarkerBuffer = createBuffer(gl)
         renderingCtx.lightingTableBuffer = createLightEditTableBuffer(gl)
-        setupFramebufferForDepth(gl, renderingCtx)
     }
 
     

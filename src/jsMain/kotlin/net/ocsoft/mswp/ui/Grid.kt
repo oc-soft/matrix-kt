@@ -16,7 +16,8 @@ import org.w3c.dom.Image
 /**
  * game play ground grid
  */
-class Grid(rowCount: Int = 6,
+class Grid(val pointLightSettingOption: PointLightSetting.Option,
+    rowCount: Int = 6,
     columnCount: Int = 6,
     colorMap: ColorMap = ColorMap(),
     val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
@@ -139,7 +140,7 @@ class Grid(rowCount: Int = 6,
      */
     val pointLightSetting: PointLightSetting
         get() {
-            val result = PointLightSetting()
+            val result = PointLightSetting(pointLightSettingOption)
             result.grid = this
             return result
         }  
@@ -377,41 +378,6 @@ class Grid(rowCount: Int = 6,
         }
     }
 
-    /**
-     * set up depth frame buffer for editing point light
-     */
-    fun setupDepthFrameBufferForEditingLight(
-        gl: WebGLRenderingContext) {
-        beginForLightEditDepthFrame(gl)
-        setupEnv(gl)
-        gl.blendFunc(WebGLRenderingContext.ONE,
-            WebGLRenderingContext.ZERO)
-
-        val viewport = this.viewport!!
-        gl.viewport(viewport[0], viewport[1], viewport[2], viewport[3])
-
-        updateViewForEditingLightDepthFrameBuffer(gl)
-        endForLightEditDepthFrame(gl)
-    }
-    /**
-     * set up depth frame buffer for editing point light
-     */
-    fun setupDepthFrameBufferForEditingLight() {
-        val canvasNode = jQuery(canvasId!!)
-        val canvas = canvasNode[0] as HTMLCanvasElement
-        val gl = canvas.getContext("webgl") as WebGLRenderingContext
-        setupDepthFrameBufferForEditingLight(gl)
-    }
-
-    fun debugLightDepthFrameBuffer(gl: WebGLRenderingContext) {
-        pointLightEdit.handleUserInput(this, gl, 230, 230)
-    }
-
-    fun dbgld(gl: WebGLRenderingContext, marker: String) {
-        println(marker)
-        debugLightDepthFrameBuffer(gl)
-    }
-
 
     fun beginDrawingForPicking(gl: WebGLRenderingContext) {
         gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
@@ -434,6 +400,7 @@ class Grid(rowCount: Int = 6,
         lightingContextEnabled = lightingContextEnabledForDrawing
     } 
 
+    @Suppress("UNUSED_PARAMETER")
     fun beginDrawing(gl: WebGLRenderingContext) {
     } 
     fun endDrawing(gl: WebGLRenderingContext) {
@@ -441,21 +408,7 @@ class Grid(rowCount: Int = 6,
             null)
     } 
 
-    /**
-     * prepare rendering context for light edit
-     */
-    fun beginForLightEditDepthFrame(gl: WebGLRenderingContext) {
-        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
-            renderingCtx.pointLightEditDepthFramebuffer)
-    }
-
-    /**
-     * finished rendering context for light edit
-     */
-    fun endForLightEditDepthFrame(gl: WebGLRenderingContext) {
-        gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null)
-    }
-      
+     
     fun setup(gl: WebGLRenderingContext)  {
         setupSceneBuffer(gl)
         setupShaderProgram(gl)
@@ -529,32 +482,31 @@ class Grid(rowCount: Int = 6,
         val vertexShaders = createVertexShaders(gl)
         var fragmentShaders = createFragmentShaders(gl)
         this.renderingCtx.teardownShaderProgram(gl)
-        if (vertexShaders != null && fragmentShaders != null) {  
-            this.renderingCtx.shaderPrograms = Array<WebGLProgram?>(
-                minOf(vertexShaders.size, fragmentShaders.size)) {
-                val vertexShader = vertexShaders[it]
-                val fragmentShader = fragmentShaders[it] 
-                var shaderProg: WebGLProgram? = null
-                if (vertexShader != null 
-                    && fragmentShader != null) { 
-                    shaderProg = gl.createProgram()  
-                    if (shaderProg != null) {
-                        gl.attachShader(shaderProg, vertexShader)
-                        gl.attachShader(shaderProg, fragmentShader)
-                        gl.linkProgram(shaderProg)
-                        assertLinkError(gl, shaderProg)
-                    }
+        this.renderingCtx.shaderPrograms = Array<WebGLProgram?>(
+            minOf(vertexShaders.size, fragmentShaders.size)) {
+            val vertexShader = vertexShaders[it]
+            val fragmentShader = fragmentShaders[it] 
+            var shaderProg: WebGLProgram? = null
+            if (vertexShader != null 
+                && fragmentShader != null) { 
+                shaderProg = gl.createProgram()  
+                if (shaderProg != null) {
+                    gl.attachShader(shaderProg, vertexShader)
+                    gl.attachShader(shaderProg, fragmentShader)
+                    gl.linkProgram(shaderProg)
+                    assertLinkError(gl, shaderProg)
                 }
-                shaderProg
             }
+            shaderProg
         }
+    
     }
     /**
      * on clik event
      */ 
     fun onClick(event: Event) {
         if (event is MouseEvent) {
-            val mouseEvent = event as MouseEvent
+            val mouseEvent = event 
             val canvas = document.querySelector(
                 canvasId!!) as HTMLCanvasElement
             val y = (canvas.height
@@ -567,6 +519,7 @@ class Grid(rowCount: Int = 6,
     /**
      * on resizing event
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onResize(event: Event) {
         
     }
@@ -673,6 +626,7 @@ class Grid(rowCount: Int = 6,
         }
      }
     
+    @Suppress("UNUSED_PARAMETER")
     fun tapButton(gl: WebGLRenderingContext,
         rowIndex: Int, colIndex: Int) {
         
@@ -752,6 +706,7 @@ class Grid(rowCount: Int = 6,
     /**
      * response icon setting changed event.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun handleIconChanged(sender: Any?, msg: String) {
         
         if (msg == IconSetting.NG_ICON
@@ -769,8 +724,8 @@ class Grid(rowCount: Int = 6,
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
-            textures?.updateOkImageTexture(gl, glyph)
-            textures?.updateNgImageTexture(gl, glyph) 
+            textures.updateOkImageTexture(gl, glyph)
+            textures.updateNgImageTexture(gl, glyph) 
             postDrawScene(gl)
         }
     }
@@ -810,7 +765,7 @@ class Grid(rowCount: Int = 6,
     }
     private fun startAnimation(gl: WebGLRenderingContext,
         animationFinishedListener: (()->Unit)) {
-        var then = .0
+        @Suppress("UNUSED_PARAMETER")
         fun render(now : Double): Unit {
             Animation.doAnimate(renderingCtx)
             drawScene(gl)
@@ -1045,7 +1000,6 @@ class Grid(rowCount: Int = 6,
 
  
     private fun updateView(gl: WebGLRenderingContext) {
-        val cam = this.camera
         val shaderProg = this.renderingCtx.shaderProgram
         if (shaderProg != null) {
             val savedProgram = gl.getParameter(
@@ -1076,24 +1030,6 @@ class Grid(rowCount: Int = 6,
         }
     }
     
-    /**
-     * update view for depth frame buffer 
-     */
-    fun updateViewForEditingLightDepthFrameBuffer(
-        gl: WebGLRenderingContext) {
-        val shaderProg = this.renderingCtx.pointLightDepthShaderProgram
-        if (shaderProg != null) {
-            val savedProgram = gl.getParameter(
-                WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
- 
-            gl.useProgram(shaderProg)
-            attachCameraToProjectionMatrix(gl)
-            pointLightEdit.attachModelMatrix(gl, renderingCtx)
-            pointLightEdit.drawForDepthBuffer(gl, renderingCtx)
-            gl.useProgram(savedProgram)
-        }
-    }
-
    
     /**
      * update camera
@@ -1122,7 +1058,7 @@ class Grid(rowCount: Int = 6,
                 "uProjectionMatrix")    
             if (camMatrix != null) { 
                 gl.uniformMatrix4fv(uProjMat, false,
-                    camMatrix as Float32Array)
+                    camMatrix)
             }
         }
     }
@@ -1332,7 +1268,7 @@ class Grid(rowCount: Int = 6,
         val t = 1f
         val rotationCount = 0.5f
         val axis = floatArrayOf(1f, 0f, 0f)
-        var result : Array<FloatArray>? = null
+        var result : Array<FloatArray>?
 
         result = model!!.physicsEng.calcSpinAndVerticalMotion1(t, axis, 
             rotationCount)
@@ -1346,7 +1282,7 @@ class Grid(rowCount: Int = 6,
         val t = 1f
         val rotationCount = 0.5f
         val axis = floatArrayOf(1f, 0f, 0f)
-        var result : Array<FloatArray>? = null
+        var result : Array<FloatArray>?
 
         result = model!!.physicsEng.calcSpinMotion(t, axis, 
             rotationCount)
@@ -1380,6 +1316,7 @@ class Grid(rowCount: Int = 6,
     private fun detachCameraListener() {
         camera?.off(null, this::onCameraChanged)
     }
+    @Suppress("UNUSED_PARAMETER")
     private fun onCameraChanged(eventName : String, camera : Camera) {
     }
 
@@ -1391,7 +1328,7 @@ class Grid(rowCount: Int = 6,
         if (nodeId != null) {
             val canvas = document.querySelector(
                 canvasId!!) as HTMLCanvasElement
-            var doResize = false
+            var doResize: Boolean
             doResize = canvas.width != canvas.clientWidth
             if (!doResize) {
                 doResize = canvas.height != canvas.clientHeight
@@ -1460,6 +1397,7 @@ class Grid(rowCount: Int = 6,
     /**
      * modal hidden event handler
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun handleHiddenGameOverModal(e : JQueryEventObject,
         args: Any) : Any {
         if (nextGameOperation != null) {
@@ -1470,6 +1408,7 @@ class Grid(rowCount: Int = 6,
     /**
      * modal hidden event handler
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun handleHiddenPlayerWonModal(e : JQueryEventObject,
         args: Any) : Any {
         if (nextGameOperation != null) {
@@ -1481,6 +1420,7 @@ class Grid(rowCount: Int = 6,
     /**
      * play again button handler
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun handleClickToPlayAgain(e : JQueryEventObject, 
         args: Any): Any {
         this.nextGameOperation = {
@@ -1525,7 +1465,6 @@ class Grid(rowCount: Int = 6,
         pointLightSetting.show {
             postDrawScene()
         }
-        setupDepthFrameBufferForEditingLight()
         postDrawScene()
     }
 }

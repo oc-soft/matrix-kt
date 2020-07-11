@@ -36,20 +36,6 @@ class RenderingCtx() {
             return result 
         } 
     /**
-     * program for storing depth data
-     */
-    val pointLightDepthShaderProgram: WebGLProgram?
-        get() {
-            var result: WebGLProgram? = null
-            val shaderPrograms = this.shaderPrograms
-            if (shaderPrograms != null
-                && shaderPrograms.size > 2) {
-                result = shaderPrograms[2]
-            }
-            return result
-        }
-
-    /**
      * glrs interface
      */
     var glrs : glrs.InitOutput? = null
@@ -144,21 +130,6 @@ class RenderingCtx() {
      * buffer for picking some objects
      */
     var pickingBuffer: WebGLRenderbuffer? = null
-
-    /**
-     * depth buffer for editing point light to be read lately
-     */
-    var pointLightEditDepthBufferRead: WebGLRenderbuffer? = null
-
-    /**
-     * depth buffer for editing point light 
-     */
-    var pointLightEditDepthBuffer: WebGLRenderbuffer? = null
-
-    /**
-     * frame buffer for point edit depth buffer read
-     */
-    var pointLightEditDepthFramebuffer: WebGLFramebuffer? = null
 
 
     /**
@@ -323,28 +294,22 @@ class RenderingCtx() {
     }
     fun teardownRenderBuffer(gl: WebGLRenderingContext) {
         arrayOf(pickingBuffer,
-            depthBufferForWorking,
-            pointLightEditDepthBufferRead,
-            pointLightEditDepthBuffer).forEach { 
+            depthBufferForWorking).forEach { 
                 buffer ->
                 if (buffer != null) {
                     gl.deleteRenderbuffer(buffer)
                 }
             }
-        pointLightEditDepthBuffer = null
-        pointLightEditDepthBufferRead = null
         depthBufferForWorking = null
         pickingBuffer = null
     }
     fun teardownFramebuffer(gl: WebGLRenderingContext) {
-        arrayOf(workableFramebuffer,
-            pointLightEditDepthFramebuffer).forEach { 
+        arrayOf(workableFramebuffer).forEach { 
                 buffer ->
                 if (buffer != null) {
                     gl.deleteFramebuffer(buffer)
                 }
             }
-        pointLightEditDepthFramebuffer = null
         workableFramebuffer = null
     }
     /**

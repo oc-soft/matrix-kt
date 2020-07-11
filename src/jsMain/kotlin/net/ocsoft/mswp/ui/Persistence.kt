@@ -25,35 +25,31 @@ class Persistence {
          * load icon
          */
         fun loadIcon(): Promise<Map<String, Icon>?> {
-            val result = Promise<Map<String, Icon>?>({
+            val result = Promise<Map<String, Icon>?> {
                 resolve, reject ->  
 
-                 val body = FormData()
-                 body.append("icon", "read")
-                 var prm = window.fetch("persistence.php",
+                val body = FormData()
+                body.append("icon", "read")
+                var prm = window.fetch("persistence.php",
                     RequestInit(
                         method = "POST",
                         body = body)) 
-                 prm.then(
-                    {
-                        res ->
-                        res.json()
-                    }).then(
-                    {
-                        res ->
-                        val res0: dynamic = res 
-                        var iconData: Map<String, Icon>? = null
-                        if (res0.data != null) { 
-                            val tmpIconData = JSON.parse<dynamic>(res0.data)
-                            iconData = dynamicToIconMap(tmpIconData)
-                       }
-                       resolve(iconData) 
-                    }).catch( 
-                    {
-                        reason ->
-                        reject(Throwable(reason))
-                    })
-            }) 
+                prm.then(
+                    { it.json() }
+                ).then({
+                    res ->
+                    val res0: dynamic = res 
+                    var iconData: Map<String, Icon>? = null
+                    if (res0.data != null) { 
+                        val tmpIconData = JSON.parse<dynamic>(res0.data)
+                        iconData = dynamicToIconMap(tmpIconData)
+                    }
+                    resolve(iconData) 
+                }).catch({
+                    reason ->
+                    reject(Throwable(reason))
+                })
+            } 
             return result 
         }
 
@@ -87,7 +83,40 @@ class Persistence {
             })
             return result
         }
-        
+
+        /**
+         * save point light
+         */
+        fun savePointLight(
+            pointLight: net.ocsoft.mswp.PointLight): Promise<Any?> {
+
+            val strData = JSON.stringify(pointLightToDynamic(pointLight)) 
+            val result = Promise<Any?>({
+                resolve, reject ->
+                val body = FormData()
+                body.append("point-light", "write")
+                body.append("data", strData)
+
+                window.fetch("persistence.php",
+                    RequestInit(
+                        method = "POST",
+                        body = body)).then(
+                    {
+                        res ->
+                        res.json()
+                    }).then(
+                    {
+                        res ->
+                        resolve(res) 
+                    }).catch( 
+                    {
+                        reason ->
+                        reject(Throwable(reason))
+                    })
+            })
+            return result
+        }
+         
         /**
          * convert 
          */
@@ -134,6 +163,49 @@ class Persistence {
             }
             return result
         }
+
+        /**
+         * convert dynamic object to pointLight
+         */
+        fun dynamicToPointLight(
+            pointLightData: dynamic) : net.ocsoft.mswp.PointLight? {
+            var result : net.ocsoft.mswp.PointLight? = null
+            val pointObj = pointLightData["point"] 
+            if (pointObj != null) {
+                if (pointObj.length > 2) {
+                    val point = FloatArray(3) { 0f }
+                    var valid = true 
+                    for (idx in 0..2) {
+                        val numStr = pointObj[idx]
+                        if (numStr != null) {
+                            try {
+                                point[idx] = numStr.toString().toFloat()
+                            } catch (ex: NumberFormatException) {
+                                valid = false
+                            }
+                        }
+                        if (!valid) {
+                            break
+                        }
+                    }
+                    if (valid) {
+                        result = net.ocsoft.mswp.PointLight(point)
+                    }
+                }
+            }
+            return result
+        }
+
+        /**
+         * point light to dynamic object
+         */
+        fun pointLightToDynamic(
+            pointLight: net.ocsoft.mswp.PointLight): dynamic {
+            val result: dynamic = object { } 
+            result["point"] = pointLight.point 
+            return result
+        }
+ 
         /**
          * create icon map in backward compatibility
          */
@@ -167,7 +239,39 @@ class Persistence {
                     }
                 }
             }
-            
+            return result
+        }
+       
+        /**
+         * load point light location.
+         */
+        fun loadPointLight() : Promise<net.ocsoft.mswp.PointLight?> {
+            val result = Promise<net.ocsoft.mswp.PointLight?> {
+                resolve, reject ->
+
+                val body = FormData()
+                body.append("point-light", "read") 
+                var prm = window.fetch("persistence.php",
+                   RequestInit(
+                    method = "POST",
+                    body = body)) 
+                prm.then({ it.json() }
+                ).then({
+                    val res: dynamic = it
+                    var pointLight : net.ocsoft.mswp.PointLight?
+                    pointLight = null
+                    if (res.data != null) {
+                        val pointLightData = JSON.parse<dynamic>(res.data) 
+                        pointLight = dynamicToPointLight(pointLightData)
+                    } 
+                    resolve(pointLight)
+                }).catch({
+                    reason ->
+                    reject(Throwable(reason))
+                })
+                
+            }
+
             return result
         }
     }
@@ -181,3 +285,5 @@ class Persistence {
         @JsName("iconName")
         val iconName: String)   
 }
+
+// vi: se ts=4 sw=4 et: 

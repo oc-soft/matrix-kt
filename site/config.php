@@ -12,7 +12,14 @@ $db_table_creation = array(
         . 'ID CHAR(23),'
         . 'DATA CHAR(255),'
         . 'PRIMARY KEY (ID)'
-        . ')'
+	. ')',
+    'point_light' => 'CREATE TABLE IF NOT EXISTS %spoint_light '
+        . '('
+        . 'ID CHAR(23),'
+        . 'DATA CHAR(64),'
+        . 'PRIMARY KEY (ID)'
+	. ')',
+    
 );
 
 $db_access_update = array(
@@ -32,6 +39,7 @@ $db_select_expired_records = array(
 );
 
 $db_remove_expired_records = array(
+    'point_light' => 'DELETE FROM %spoint_light WHERE ID in (%s)',
     'icon' => 'DELETE FROM %sicon WHERE ID in (%s)',
     'session' => 'DELETE FROM %ssession WHERE ID in (%s)'
 );
@@ -48,6 +56,18 @@ $db_icon_manipulation = array(
     )
 );
 
+$db_point_light_manipulation = array(
+    'write' => array(
+        'query' => 'INSERT INTO %spoint_light (ID,DATA) VALUES(?,?) '
+            . 'ON DUPLICATE KEY UPDATE DATA = VALUES(DATA)',
+        'params'=> array('ss')
+    ),
+    'read' => array(
+        'query' => 'SELECT DATA FROM %spoint_light WHERE ID = ?',
+        'params' => array('s')
+    )
+);
+
 
 $using_mapping = array(
 	'polyfill' => '<script src="https://polyfill.io/v3/polyfill.min.js'
@@ -60,4 +80,4 @@ $using_mapping = array(
 		. '</script>'
 
 );
-?>
+// vi: se ts=4 sw=4 et: 
