@@ -328,16 +328,14 @@ task deployResources1(type: Copy) {
 
 webpackDeploy.dependsOn deployResources1
 
-
-
-
-
 task cleanWebpackDeploy(type: Delete) {
     delete web_dir 
     delete site_dir
     delete new File(projectDir, 'css')
 }
 clean.dependsOn cleanWebpackDeploy
+
+webpackDeploy.dependsOn cleanWebpackDeploy
 
 task webpackViewDeploy(type: Copy) {
     def distDir = null
