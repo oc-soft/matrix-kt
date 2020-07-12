@@ -92,6 +92,7 @@ actual class MainPage {
             camera!!, 
             pointLight!!,
             settingObj!!.rootDir,
+            settingObj!!.progDir,
             settingObj!!.ui) 
         }
     }
@@ -99,17 +100,18 @@ actual class MainPage {
         camera: Camera, 
         pointLight: PointLight,
         rootDir: String,
+        progDir: String,
         uiSetting: Json) {
         appSettings.runtimeConfig = uiSetting
         jQuery { 
             val grid = Grid(appSettings.option.pointLightSettingOption)
             val shaders = arrayOf(
-                "${rootDir}/prg/net/ocsoft/mswp/ui/vertex.gls", 
-                "${rootDir}/prg/net/ocsoft/mswp/ui/fragment.gls",
-                "${rootDir}/prg/net/ocsoft/mswp/ui/point-vertex.gls", 
-                "${rootDir}/prg/net/ocsoft/mswp/ui/point-fragment.gls",
-                "${rootDir}/prg/net/ocsoft/mswp/ui/depth-vertex.gls", 
-                "${rootDir}/prg/net/ocsoft/mswp/ui/depth-fragment.gls")
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/vertex.gls", 
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/fragment.gls",
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/point-vertex.gls", 
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/point-fragment.gls",
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-vertex.gls", 
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-fragment.gls")
              var promises = ArrayList<Promise<Any>>()
 
             shaders.forEach {
@@ -117,7 +119,7 @@ actual class MainPage {
             }
 
             promises.add(
-                glrs.init("${rootDir}/prg/glrs_bg.wasm"))
+                glrs.init("${rootDir}${progDir}glrs_bg.wasm"))
             promises.add(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
