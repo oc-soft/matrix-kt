@@ -7,9 +7,6 @@
 [submodule "find-package"]
 	path = find-package
 	url = ../../npm/find-package.git
-[submodule "dukat"]
-	path = dukat
-	url = https://github.com/Kotlin/dukat.git
 [submodule "glrs"]
 	path = glrs
 	url = ssh://toshi@oc-soft.net/home/toshi/projects/repo/glrs.git
