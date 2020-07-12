@@ -104,12 +104,12 @@ actual class MainPage {
         jQuery { 
             val grid = Grid(appSettings.option.pointLightSettingOption)
             val shaders = arrayOf(
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/vertex.gls", 
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/fragment.gls",
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-vertex.gls", 
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/point-fragment.gls",
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/depth-vertex.gls", 
-                "${rootDir}/prg/mswp/net/ocsoft/mswp/ui/depth-fragment.gls")
+                "${rootDir}/prg/net/ocsoft/mswp/ui/vertex.gls", 
+                "${rootDir}/prg/net/ocsoft/mswp/ui/fragment.gls",
+                "${rootDir}/prg/net/ocsoft/mswp/ui/point-vertex.gls", 
+                "${rootDir}/prg/net/ocsoft/mswp/ui/point-fragment.gls",
+                "${rootDir}/prg/net/ocsoft/mswp/ui/depth-vertex.gls", 
+                "${rootDir}/prg/net/ocsoft/mswp/ui/depth-fragment.gls")
              var promises = ArrayList<Promise<Any>>()
 
             shaders.forEach {
@@ -117,7 +117,7 @@ actual class MainPage {
             }
 
             promises.add(
-                glrs.init("${rootDir}/prg/mswp/glrs_bg.wasm"))
+                glrs.init("${rootDir}/prg/glrs_bg.wasm"))
             promises.add(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
