@@ -1,0 +1,12 @@
+# Change light source
+
+You can change light source location by selecting a lighting menu item.
+
+![light source menu item](img/menu-item-lighting.png)
+
+You move the light source to a location you tapped. 
+
+![lighting menu item](img/light-source-1.png)
+
+To back to game, you tap left arrow mark
+<i class="fas fa-arrow-left"></i> at left uppper.

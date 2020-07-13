@@ -14,8 +14,7 @@ You can change each icon with icon type selector in icon selector dialog.
 
 ![icon type selector](img/icon-selector-ng.png)
 
-to display above modal dialog, you tap wrench mark
-<i class="fas fa-wrench"></i>
-at left upper.
+to display above modal dialog, you tap labels menu item from pull down at eft upper.
 
+![labels menu item](img/menu-item-labels.png)
 

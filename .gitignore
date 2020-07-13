@@ -4,6 +4,7 @@ i18n/
 gradle-app.setting
 !gradle-wrapper.ja
 .gradletasknamecache
+.DS_Store
 *.swp
 *~
 prg/
