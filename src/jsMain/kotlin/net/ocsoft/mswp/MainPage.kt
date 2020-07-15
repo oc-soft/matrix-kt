@@ -1,5 +1,4 @@
 package net.ocsoft.mswp
-
 import jQuery
 import net.ocsoft.mswp.ui.Grid
 import net.ocsoft.mswp.ui.ShaderPrograms
@@ -86,8 +85,12 @@ actual class MainPage {
         } else {
             settingObj = Settings()
         }
-        val promise = loadFont(settingObj.textureText)
-        promise.then { 
+            
+        var promises = ArrayList<Promise<Any>>()
+        
+        promises.add(loadFont(settingObj.textureText))
+        promises.add(Polyfill.load())
+        Promise.all(Array<Promise<Any>>(promises.size) { promises[it] }).then {
             setupBodyI(model!!, 
             camera!!, 
             pointLight!!,
@@ -112,7 +115,7 @@ actual class MainPage {
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/point-fragment.gls",
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-vertex.gls", 
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-fragment.gls")
-             var promises = ArrayList<Promise<Any>>()
+            var promises = ArrayList<Promise<Any>>()
 
             shaders.forEach {
                 promises.add(window.fetch(it).then({ it.text() }));
@@ -177,6 +180,7 @@ actual class MainPage {
         jQuery(".loading", config.splashPaneId).hide()   
         jQuery(config.splashPaneId).height(0)
     }
+
     /**
      * load font
      */
