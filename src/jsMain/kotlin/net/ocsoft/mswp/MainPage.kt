@@ -113,8 +113,8 @@ actual class MainPage {
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/fragment.gls",
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/point-vertex.gls", 
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/point-fragment.gls",
-                "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-vertex.gls", 
-                "${rootDir}${progDir}net/ocsoft/mswp/ui/depth-fragment.gls")
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/shadow-vertex.gls", 
+                "${rootDir}${progDir}net/ocsoft/mswp/ui/shadow-fragment.gls")
             var promises = ArrayList<Promise<Any>>()
 
             shaders.forEach {

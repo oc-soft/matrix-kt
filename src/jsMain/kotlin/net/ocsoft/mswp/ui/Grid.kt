@@ -24,6 +24,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
     board: Board = Board(),
     pointLightEdit: PointLight = PointLight(),
+    shadowMap: ShadowMap = ShadowMap(),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
     val glyph: Glyph = Glyph(),
@@ -51,7 +52,6 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                         onEditLightSetting()
                     }                               
                 }
-
             }
         }
 
@@ -134,6 +134,11 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * instance to edit point light 
      */
     var pointLightEdit = pointLightEdit 
+
+    /**
+     * instance for managing shadow mapping
+     */
+    var shadowMap = shadowMap
       
     /**
      * the editor for point light
@@ -353,6 +358,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
+        // shadowMap.drawScene(this, gl)
         drawSceneI(gl)
     }
 
@@ -408,7 +414,9 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             null)
     } 
 
-     
+    /**
+     * setup 3d rendering environment
+     */ 
     fun setup(gl: WebGLRenderingContext)  {
         setupSceneBuffer(gl)
         setupShaderProgram(gl)
@@ -419,6 +427,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         setupMatrices()
         pointLightEdit.setupLightUiPlane(this)
         pointLightEdit.setupBuffer(gl, renderingCtx) 
+        shadowMap.setup(this, gl)
     }
     fun teardown(gl: WebGLRenderingContext) {
         renderingCtx.tearDown(gl)
@@ -810,7 +819,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
 
         renderingCtx.boardMatrix = createBoardMatrix() 
         renderingCtx.boardNormalVecMatrix = createBoardNormalVecMatrix()
-        renderingCtx.spinAndVMotionMatrices = createSpinAndVMotionMatrices()
+        renderingCtx.spinVMotionMatricesIndex = createSpinAndVMotionMatrices()
         renderingCtx.spinMotionMatrices = createSpinMatrices()
     }
     /**
@@ -986,10 +995,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                 result) 
             gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
                 WebGLRenderingContext.DEPTH_COMPONENT16,
-                gl.canvas.width, gl.canvas.height);
-            //gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
-            //    WebGLRenderingContext.RGBA4,
-            //    gl.canvas.width, gl.canvas.height);
+                gl.canvas.width, gl.canvas.height)
    
             gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
                 WebGLRenderingContext.DEPTH_ATTACHMENT, 
@@ -1263,12 +1269,12 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     /**
      * create spin and vertical movement matrices.
      */
-    fun createSpinAndVMotionMatrices(): Array<FloatArray>? {
+    fun createSpinAndVMotionMatrices(): Pair<Array<FloatArray>, IntArray>? {
         
         val t = 1f
         val rotationCount = 0.5f
         val axis = floatArrayOf(1f, 0f, 0f)
-        var result : Array<FloatArray>?
+        var result : Pair<Array<FloatArray>, IntArray>?
 
         result = model!!.physicsEng.calcSpinAndVerticalMotion1(t, axis, 
             rotationCount)

@@ -35,7 +35,7 @@ class Animation {
                     val lastAniMtx = spinMotionMtx[spinMotionMtx.size - 1]
                     val frameMat = Array<FloatArray>(
                         buttons.rowCount * buttons.columnCount) {
-                        j -> buttonMatrices[j]          
+                        j -> buttonMatrices[j]
                     }
                     openedButtonIndices.forEach({
                         rowCol ->
@@ -65,14 +65,14 @@ class Animation {
                         j ->           
                         buttonNormalVecMatrices[j]
                     }
-                    buttonIndices.forEach({
+                    buttonIndices.forEach {
                         rowCol ->
                         var locMatIdx = rowCol[0] * buttons.columnCount
                         locMatIdx += rowCol[1]
                         val aMat = frameMat[locMatIdx]
                         val newMat = Matrix.multiply(normalVecAniMtx, aMat)
                         frameMat[locMatIdx] = newMat!!
-                    })
+                    }
                     frameMat 
                 }
                 renderingCtx.animationMatrices = 

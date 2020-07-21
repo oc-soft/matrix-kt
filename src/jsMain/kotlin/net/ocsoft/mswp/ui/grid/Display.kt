@@ -3,6 +3,7 @@ package net.ocsoft.mswp.ui.grid
 
 import net.ocsoft.mswp.ui.*
 import org.khronos.webgl.*
+import kotlin.collections.ArrayList
 
 /**
  * has responsibility to render draw some visual objects. 
@@ -26,6 +27,7 @@ class Display(var renderingCtx : RenderingCtx,
         get() {
             return buttons.columnCount
         }
+
     /**
      * bind buffer for button color for display
      */
@@ -247,14 +249,8 @@ class Display(var renderingCtx : RenderingCtx,
                     buttonTextureBind(gl, rowIndex, colIndex)
                     buttonColorDataForDraw(gl, rowIndex, colIndex)
                      
-                    updateButtonViewMatrix(gl, rowIndex, colIndex)
-                    gl.bindBuffer(
-                        WebGLRenderingContext.ARRAY_BUFFER,
-                        renderingCtx.buttonBuffer)
+                    drawButtonI(gl, rowIndex, colIndex)
 
-                    gl.drawArrays(
-                        buttons.mineButton.drawingMode, 0,
-                        buttons.mineButton.vertices.size / 3) 
                 }
             }
             gl.activeTexture(savedTexNum as Int)
@@ -266,6 +262,22 @@ class Display(var renderingCtx : RenderingCtx,
                 savedArrayBuffer as WebGLBuffer?)
          }
     }
+
+    /**
+     * draw button at a cell which is specified with row and column.
+     * this call write over gl array buffer.
+     */
+    fun drawButtonI(gl: WebGLRenderingContext,
+        rowIndex: Int,
+        colIndex: Int) {
+        updateButtonViewMatrix(gl, rowIndex, colIndex)
+        gl.bindBuffer(
+            WebGLRenderingContext.ARRAY_BUFFER,
+            renderingCtx.buttonBuffer)
+        gl.drawArrays(
+            buttons.mineButton.drawingMode, 0,
+            buttons.mineButton.vertices.size / 3) 
+     }
 
     /**
      * update button view matrix
@@ -282,23 +294,114 @@ class Display(var renderingCtx : RenderingCtx,
                 "uModelViewMatrix")
             val uNormalVecMat = gl.getUniformLocation(shaderProg,
                 "uNormalVecMatrix")
-            renderingCtx.buttonMatrices!![
-                rowIndex * columnCount + columnIndex]
-            val mat = renderingCtx.buttonMatricesForDrawing!![
-                rowIndex * columnCount + columnIndex]
 
-            gl.uniformMatrix4fv(uModelMat, false, 
-                Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
+            if (uModelMat != null) {
+                val mat = renderingCtx.buttonMatricesForDrawing!![
+                    rowIndex * columnCount + columnIndex]
+                gl.uniformMatrix4fv(uModelMat, false, 
+                    Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
+            }
         
-            val normalVecMat = renderingCtx.buttonNormalVecMatrices!![
-                rowIndex * columnCount + columnIndex]
+            if (uNormalVecMat != null) {
+                val normalVecMat = renderingCtx.buttonNormalVecMatrices!![
+                    rowIndex * columnCount + columnIndex]
 
-            gl.uniformMatrix4fv(uNormalVecMat, false,
-                Float32Array(Array<Float>(normalVecMat.size) {
-                    normalVecMat[it] 
-                }))
+                gl.uniformMatrix4fv(uNormalVecMat, false,
+                    Float32Array(Array<Float>(normalVecMat.size) {
+                        normalVecMat[it] 
+                    }))
+            }
         }
     }
+
+    /**
+     * calc buttons vertices coordinate bounds
+     */ 
+    fun calcButtonsMovingBounds(): Array<FloatArray> {
+        val vertices = calcButtonsMovingBoundsI()
+        val vertexList = ArrayList<FloatArray>()
+        vertices.forEach {
+            elem0 ->
+            elem0.forEach {
+                elem1 ->
+                elem1.forEach {
+                    vertexList.add(it)
+                }
+            }
+        }
+        return Array<FloatArray>(vertexList.size) { vertexList[it] }
+    }
+ 
+
+    /**
+     * calc buttons vertices coordinate bounds
+     */ 
+    fun calcButtonsMovingBoundsI(): Array<Array<Array<FloatArray>>> {
+        return calcButtonsMovingBoundsI(renderingCtx.glrs!!)
+    }
+ 
+    /**
+     * calc buttons vertices coordinate bounds
+     */ 
+    fun calcButtonsMovingBoundsI(
+        glrs: glrs.InitOutput): Array<Array<Array<FloatArray>>>  {
+        val boundsIndices = arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(0, columnCount - 1),
+            intArrayOf(rowCount - 1, columnCount),
+            intArrayOf(rowCount - 1, 0))
+        val buttonMatrices = renderingCtx.cloneButtonMatrices()!! 
+        val buttonVertices = buttons.mineButton.verticesAsFloat32
+        val spinVMotionMatricesIndex = renderingCtx.spinVMotionMatricesIndex!!
+        val result = Array<Array<Array<FloatArray>>>(boundsIndices.size) {
+            val rowCol = boundsIndices[it]
+            val locMat = renderingCtx.buttonMatrices!![
+                rowCol[0] * columnCount + rowCol[1]]
+            val locMatRef = glrs.matrix_create_with_components_col_order(
+                Float64Array(Array<Double>(locMat.size) {
+                    locMat[it].toDouble()
+                })) 
+            val res = Array<Array<FloatArray>>(
+                spinVMotionMatricesIndex.second.size + 1) {
+                idx0 ->
+                if (idx0 < spinVMotionMatricesIndex.second.size) {
+                    val topMoveMat = spinVMotionMatricesIndex.first[it]
+                    val topMoveMatRef =
+                        glrs.matrix_create_with_components_col_order(
+                            Float64Array(Array<Double>(topMoveMat.size) { 
+                                topMoveMat[it].toDouble()
+                            }))
+                    val boundsMat = glrs.matrix_multiply(
+                        locMatRef, topMoveMatRef)
+                     
+                    val res0 = Array<FloatArray>(buttonVertices.length / 3) {
+                        idx1 -> 
+                        val transformed = glrs.matrix_apply_r_32(
+                            boundsMat,
+                            buttonVertices.subarray(3 * idx1, 
+                                3 * idx1 + 3)) 
+                        FloatArray(transformed!!.length) { transformed[it] } 
+                    }
+                    glrs.matrix_release(boundsMat)
+                    glrs.matrix_release(topMoveMatRef)
+                    res0
+                } else { 
+                    Array<FloatArray>(buttonVertices.length / 3) {
+                        idx1 ->
+                        val transformed = glrs.matrix_apply_r_32(
+                            locMatRef,
+                            buttonVertices.subarray(3 * idx1, 
+                                3 * idx1 + 3)) 
+                        FloatArray(transformed!!.length) { transformed[it] } 
+                    }
+                }
+            } 
+            glrs.matrix_release(locMatRef)
+            res
+        }
+        return result
+    }
+    
 
     /**
      * calculate buttons coordinate

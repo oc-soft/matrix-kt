@@ -17,6 +17,18 @@ class Buttons(var mineButton : MineButton,
     val colorMap : ColorMap) {
 
     /**
+     * indices for each corner button
+     */
+    val indicesForEachCorner : Array<IntArray>
+        get() = arrayOf( 
+                intArrayOf(0, 0),
+                intArrayOf(columnCount - 1, 0),
+                intArrayOf(columnCount - 1, rowCount - 1),
+                intArrayOf(0, rowCount - 1)
+            ) 
+        
+
+    /**
      * cached color for picking
      */
     var colorsForPickingCache : FloatArray? = null
@@ -207,4 +219,4 @@ class Buttons(var mineButton : MineButton,
     }
 }
 
-
+// vi: se ts=4 sw=4 et:

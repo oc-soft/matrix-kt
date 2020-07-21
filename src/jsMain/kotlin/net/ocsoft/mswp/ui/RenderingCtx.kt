@@ -35,6 +35,20 @@ class RenderingCtx() {
             }
             return result 
         } 
+
+    /**
+     * shadow map shader program
+     */
+    val shadowMapShaderProgram: WebGLProgram?
+        get() {
+            var result: WebGLProgram? = null
+            val shaderPrograms = this.shaderPrograms
+            if (shaderPrograms != null
+                && shaderPrograms.size > 2) {
+                result = shaderPrograms[2]
+            }
+            return result 
+        }
     /**
      * glrs interface
      */
@@ -112,6 +126,11 @@ class RenderingCtx() {
     var boardTexture : WebGLTexture? = null
 
     /**
+     * shadow depth texture
+     */
+    var shadowDepthTexture: WebGLTexture? = null
+
+    /**
      * board texture coordinate buffer
      */
     var boardTextureCoordinateBuffer : WebGLBuffer? = null
@@ -120,11 +139,21 @@ class RenderingCtx() {
      * offscreen buffer for picking
      */
     var workableFramebuffer : WebGLFramebuffer? = null
-    
+
+    /**
+     * shadow depth frame buffer
+     */
+    var shadowDepthFramebuffer: WebGLFramebuffer? = null
+
     /**
      * depth buffer for working
      */
     var depthBufferForWorking : WebGLRenderbuffer? = null
+
+    /**
+     * depth buffer for shadow depth rendering
+     */
+    var depthForShadowDepth: WebGLRenderbuffer? = null
 
     /**
      * buffer for picking some objects
@@ -153,9 +182,18 @@ class RenderingCtx() {
     var buttonNormalVecMatricesForDrawing : Array<FloatArray>? = null
 
     /**
+     * spin vertical motion matrices and highest point indices
+     */
+    var spinVMotionMatricesIndex: Pair<Array<FloatArray>, IntArray>? = null
+
+
+    /**
      * spin and vertical motion matrices
      */
-    var spinAndVMotionMatrices : Array<FloatArray>? = null
+    val spinAndVMotionMatrices: Array<FloatArray>? 
+        get() {
+            return spinVMotionMatricesIndex?.first
+        }
 
     /**
      * spin motion matrices
@@ -294,31 +332,43 @@ class RenderingCtx() {
     }
     fun teardownRenderBuffer(gl: WebGLRenderingContext) {
         arrayOf(pickingBuffer,
-            depthBufferForWorking).forEach { 
+            depthBufferForWorking,
+            depthForShadowDepth).forEach { 
                 buffer ->
                 if (buffer != null) {
                     gl.deleteRenderbuffer(buffer)
                 }
             }
         depthBufferForWorking = null
+        depthForShadowDepth = null
         pickingBuffer = null
     }
     fun teardownFramebuffer(gl: WebGLRenderingContext) {
-        arrayOf(workableFramebuffer).forEach { 
+        arrayOf(workableFramebuffer,
+                shadowDepthFramebuffer).forEach { 
                 buffer ->
                 if (buffer != null) {
                     gl.deleteFramebuffer(buffer)
                 }
             }
+        shadowDepthFramebuffer = null
         workableFramebuffer = null
     }
     /**
      * destroy all textures
      */
     fun teardownTextures(gl: WebGLRenderingContext) {
-        arrayOf(buttonTexture).forEach { gl.deleteTexture(it) }
+        arrayOf(
+            buttonTexture,
+            boardTexture,
+            shadowDepthTexture).forEach { 
+                gl.deleteTexture(it)
+            }
         this.buttonTexture = null
+        this.boardTexture = null
+        this.shadowDepthTexture = null
     }
+
     fun teardonwMatrix() {
         this.buttonMatrices = null
         this.boardMatrix = null
