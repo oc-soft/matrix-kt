@@ -1,6 +1,8 @@
 
 package net.ocsoft.mswp.ui.grid
 
+import kotlin.math.*
+
 import net.ocsoft.mswp.ui.*
 import org.khronos.webgl.*
 import kotlin.collections.ArrayList
@@ -12,6 +14,20 @@ class Display(var renderingCtx : RenderingCtx,
     var buttons : Buttons,
     var board : Board,
     var pointLight: PointLight)  {
+
+    /**
+     * singleton functions
+     */
+    companion object {
+
+        /**
+         * calculate power of 2 value which is higher than input value and near
+         * the input value
+         */
+        fun calcPower2Value(value: Int): Int {
+            return 2.0.pow(ceil(log2(value.toDouble()))).toInt()
+        }
+    }
     
     /**
      * row count
@@ -181,8 +197,6 @@ class Display(var renderingCtx : RenderingCtx,
             WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
 
-            val verLoc = gl.getAttribLocation(shaderProg, 
-                "aVertexPosition")
             val verColor = gl.getAttribLocation(shaderProg,
                 "aVertexColor")
             val normalVecLoc = gl.getAttribLocation(shaderProg,
@@ -195,16 +209,8 @@ class Display(var renderingCtx : RenderingCtx,
 
             val savedArrayBuffer = gl.getParameter(
                 WebGLRenderingContext.ARRAY_BUFFER_BINDING)
+            bindButtonVerticesBuffer(gl) 
 
-            gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
-                renderingCtx.buttonBuffer)
-            gl.vertexAttribPointer(
-                verLoc,
-                3,
-                WebGLRenderingContext.FLOAT,
-                false,
-                0, 0)
-            gl.enableVertexAttribArray(verLoc)
 
             buttonColorBufferBind(gl) 
             gl.vertexAttribPointer( 
@@ -278,6 +284,34 @@ class Display(var renderingCtx : RenderingCtx,
             buttons.mineButton.drawingMode, 0,
             buttons.mineButton.vertices.size / 3) 
      }
+
+    /**
+     * bind button vertices buffer
+     */
+    fun bindButtonVerticesBuffer(gl: WebGLRenderingContext) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val verLoc = gl.getAttribLocation(shaderProg, 
+                "aVertexPosition")
+            if (verLoc != null) { 
+                val savedArrayBuffer = gl.getParameter(
+                    WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                    renderingCtx.buttonBuffer)
+                gl.vertexAttribPointer(
+                    verLoc,
+                    3,
+                    WebGLRenderingContext.FLOAT,
+                    false,
+                    0, 0)
+                gl.enableVertexAttribArray(verLoc)
+      
+                gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 
+                    savedArrayBuffer)
+            }
+        }
+    }
 
     /**
      * update button view matrix

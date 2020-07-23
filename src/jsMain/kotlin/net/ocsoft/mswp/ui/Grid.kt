@@ -303,11 +303,16 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     //val lightingContextEnabledForDrawing = false 
      val lightingContextEnabledForDrawing = true
  
+     
     /**
      * lighting context
      */
     var lightingContextEnabled = lightingContextEnabledForDrawing 
     
+    /**
+     * enable shadow depth rendering
+     */
+    var shadowDepthEnabled = true
  
     /**
      * initialize gl context
@@ -358,7 +363,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
-        shadowMap.drawScene(this, gl)
+        // shadowMap.drawScene(this, gl)
         drawSceneI(gl)
     }
 
@@ -394,6 +399,8 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         display.buttonTextureBind = display.buttonTextureBindForPicking 
         backColor = backColorForPicking
         lightingContextEnabled = false
+        shadowDepthEnabled = false
+
     } 
     fun endDrawingForPicking(gl: WebGLRenderingContext) {
         gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER,
@@ -404,6 +411,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         display.boardColorBufferBind = display.boardColorForDisplayBind
         backColor = backColorForDrawing
         lightingContextEnabled = lightingContextEnabledForDrawing
+        shadowDepthEnabled = true
     } 
 
     @Suppress("UNUSED_PARAMETER")
@@ -1016,6 +1024,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             enableCameraAttrib(gl) 
             updateCamera(gl)
             enableLightingContext(gl, lightingContextEnabled)
+            enableShadowDepth(gl, shadowDepthEnabled)
             shadowMap.setupShadowSettingForDrawing(this, gl)
             display.drawScene(gl)
             gl.useProgram(savedProgram)
@@ -1127,6 +1136,23 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                 enabled.toInt());
         }
     } 
+
+    /**
+     * enable shadow depth rendering
+     */
+    private fun enableShadowDepth(
+        gl: WebGLRenderingContext,
+        enable: Boolean) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val enableLoc = gl.getUniformLocation(shaderProg,
+                "uEnableShadowDepth")
+            fun Boolean.toInt() = if (this) 1 else 0 
+            gl.uniform1i(enableLoc as WebGLUniformLocation, 
+                enable.toInt());
+        }
+     }
 
     /**
      * enable camera related Attribute

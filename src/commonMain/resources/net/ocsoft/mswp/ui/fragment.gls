@@ -8,6 +8,7 @@ uniform sampler2D uSampler;
 uniform sampler2D uShadowDepthSampler;
 varying vec4 vNormal;
 varying vec4 vPosition;
+varying vec4 vShadowPosition;
 varying vec4 vColor;
 varying vec2 vTextureCoord;
 
@@ -16,7 +17,8 @@ varying vec2 vTextureCoord;
  */
 bool
 isInShadow(
-    vec3 point);
+    vec4 point,
+    vec4 pointInShadow);
 
 /**
  * convert from vector to float
@@ -43,11 +45,14 @@ void main() {
         vec3 reflectDir = reflect(- lightVec, vNormal.xyz);
         float specular = pow(max(dot(viewDir, reflectDir), 0.0), 1.0) * 0.8;
         color = color * vec4(vec3(specular), 1.0);
-    } 
-    if (isInShadow) {
-        color.rgba = 0.0; 
-        color.b = 1.0;
-    } 
+    }
+    if (uEnableShadowDepth) {
+        if (isInShadow(vPosition, vShadowPosition)) {
+            color = vec4(0.0); 
+            color.b = 1.0;
+            color.a = 1.0;    
+        } 
+    }
     gl_FragColor = color;
 }
 
@@ -56,14 +61,14 @@ void main() {
  */
 bool
 isInShadow(
-    vec3 point,
-    vec3 pointInShadow)
+    vec4 point,
+    vec4 pointInShadow)
 {
     vec4 shadowVec;
     float depth;
     shadowVec = texture2D(uShadowDepthSampler, pointInShadow.xy);
     depth = vec4ToFloat(shadowVec);
-    return point.z > depth;
+    return point.z < depth;
 }
 
 /**
@@ -77,7 +82,7 @@ vec4ToFloat(
     result = 0.0;
     for (int i = 0; i < 4; i++) {
         float tmpVal = coord[i];
-        tmpVal /= pow(float(0xff), i);
+        tmpVal /= pow(float(0xff), float(i));
         result += tmpVal;
     } 
     return result;

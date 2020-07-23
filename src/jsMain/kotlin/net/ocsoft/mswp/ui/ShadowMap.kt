@@ -30,7 +30,10 @@ class ShadowMap {
      */
     var orthoGraphic: Orthographic? = null
  
-
+    /**
+     * frame buffer size
+     */
+    var frameBufferSize: IntArray? = null 
        
     /**
      * set up 
@@ -42,7 +45,14 @@ class ShadowMap {
         val viewport = gl.getParameter(
             WebGLRenderingContext.VIEWPORT) as Int32Array?
         val canvas = gl.canvas as HTMLCanvasElement 
-        val texture = createShadowDepthTexture(gl, canvas.width, canvas.height)
+
+        frameBufferSize = intArrayOf(
+            Display.calcPower2Value(canvas.width),
+            Display.calcPower2Value(canvas.height))
+
+
+        val texture = createShadowDepthTexture(gl,
+            frameBufferSize!![0], frameBufferSize!![1])
         val depthBuffer = createRenderDepthBuffer(gl,
             canvas.width, canvas.height)
 
@@ -66,15 +76,23 @@ class ShadowMap {
 
         val savedFramebuffer = gl.getParameter(
             WebGLRenderingContext.FRAMEBUFFER_BINDING) as WebGLFramebuffer?
+        val savedViewport = gl.getParameter(
+            WebGLRenderingContext.VIEWPORT) as Int32Array
+
         gl.bindFramebuffer(
             WebGLRenderingContext.FRAMEBUFFER,
             grid.renderingCtx.shadowDepthFramebuffer)
+        gl.viewport(0, 0, frameBufferSize!![0], frameBufferSize!![1])
         beginEnv(grid, gl)
         drawSceneI(grid, gl)
         endEnv(grid, gl)
+
+        gl.viewport(savedViewport[0], savedViewport[1],
+            savedViewport[2], savedViewport[3])
         gl.bindFramebuffer(
             WebGLRenderingContext.FRAMEBUFFER,
             savedFramebuffer)
+
     }
 
     /**
@@ -101,6 +119,7 @@ class ShadowMap {
         val savedArrayBuffer = gl.getParameter(
                 WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
 
+        grid.display.bindButtonVerticesBuffer(gl)
         for (rowIndex in 0 until grid.rowCount) {
             for (colIndex in 0 until grid.columnCount) { 
                 grid.display.drawButtonI(gl, rowIndex, colIndex)
@@ -120,7 +139,7 @@ class ShadowMap {
         for (i in 0 until grid.backColor.size) {
             grid.backColor[i] = 0f
         } 
-        grid.backColor[0] = 1f
+        // grid.backColor[0] = 1f
         grid.setupEnv(gl)
         for (i in 0 until grid.backColor.size) {
             grid.backColor[i] = savedBackColor[i]
@@ -197,12 +216,11 @@ class ShadowMap {
             if (uTexLoc != null) {
                 var txtNumber = Textures.ShadowmappingTextureIndex
                 gl.activeTexture(txtNumber)
-                txtNumber -= WebGLRenderingContext.TEXTURE0
-
-                gl.uniform1i(uTexLoc, txtNumber)
                 gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                     renderingCtx.shadowDepthTexture)
-            }
+                txtNumber -= WebGLRenderingContext.TEXTURE0
+                gl.uniform1i(uTexLoc, txtNumber)
+           }
         }
     }
 
@@ -277,7 +295,16 @@ class ShadowMap {
             WebGLRenderingContext.RGBA, width, height,
             0, WebGLRenderingContext.RGBA,
             WebGLRenderingContext.UNSIGNED_BYTE, null)
-
+        gl.texParameteri(WebGLRenderingContext.TEXTURE_2D,
+            WebGLRenderingContext.TEXTURE_WRAP_S,
+            WebGLRenderingContext.CLAMP_TO_EDGE);
+        gl.texParameteri(WebGLRenderingContext.TEXTURE_2D,
+            WebGLRenderingContext.TEXTURE_WRAP_T,
+            WebGLRenderingContext.CLAMP_TO_EDGE);
+        gl.texParameteri(WebGLRenderingContext.TEXTURE_2D,
+            WebGLRenderingContext.TEXTURE_MIN_FILTER,
+            WebGLRenderingContext.LINEAR);
+  
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, savedTexture)
 
         return result
