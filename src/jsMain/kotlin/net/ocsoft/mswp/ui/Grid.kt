@@ -358,7 +358,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
-        // shadowMap.drawScene(this, gl)
+        shadowMap.drawScene(this, gl)
         drawSceneI(gl)
     }
 
@@ -1016,6 +1016,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             enableCameraAttrib(gl) 
             updateCamera(gl)
             enableLightingContext(gl, lightingContextEnabled)
+            shadowMap.setupShadowSettingForDrawing(this, gl)
             display.drawScene(gl)
             gl.useProgram(savedProgram)
 

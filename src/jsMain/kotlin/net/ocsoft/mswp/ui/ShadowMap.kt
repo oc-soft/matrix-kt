@@ -30,6 +30,7 @@ class ShadowMap {
      */
     var orthoGraphic: Orthographic? = null
  
+
        
     /**
      * set up 
@@ -115,8 +116,16 @@ class ShadowMap {
      */
     fun beginEnv(grid: Grid,
         gl: WebGLRenderingContext) {
-        gl.clearColor(0f, 0f, 0f, 0f)
-        grid.setupEnv(gl) 
+        val savedBackColor = grid.backColor.copyOf()
+        for (i in 0 until grid.backColor.size) {
+            grid.backColor[i] = 0f
+        } 
+        grid.backColor[0] = 1f
+        grid.setupEnv(gl)
+        for (i in 0 until grid.backColor.size) {
+            grid.backColor[i] = savedBackColor[i]
+        } 
+
         gl.disable(WebGLRenderingContext.BLEND) 
     }
 
@@ -126,6 +135,8 @@ class ShadowMap {
     fun endEnv(grid: Grid,
         gl: WebGLRenderingContext) {
     }
+
+
 
     /**
      * update projection matrix
@@ -144,6 +155,56 @@ class ShadowMap {
             }
         }
     } 
+    /**
+     * setup shadow setting for drawing
+     */
+    fun setupShadowSettingForDrawing(
+        grid: Grid,
+        gl: WebGLRenderingContext) {
+        attachShadowProjectionMatrix(gl, grid.glrs!!)
+        attachShadowTexture(gl, grid.renderingCtx)
+    }
+    /**
+     * attach shadow projection matrix into current program
+     */
+    fun attachShadowProjectionMatrix(
+        gl: WebGLRenderingContext,
+        glrs: glrs.InitOutput) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val projMat = getShadowProjectionMatrixForTexture(glrs) 
+            if (projMat != null) {
+                val uProjMat = gl.getUniformLocation(shaderProg, 
+                    "uShadowMapProjectionMatrix")    
+                if (uProjMat != null) { 
+                    gl.uniformMatrix4fv(uProjMat, false, projMat)
+                }
+            }
+        } 
+    }
+    /**
+     * attach shadow mapping texture
+     */
+    fun attachShadowTexture(
+        gl: WebGLRenderingContext,
+        renderingCtx: RenderingCtx) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val uTexLoc = gl.getUniformLocation(shaderProg, 
+                    "uShadowDepthSampler") 
+            if (uTexLoc != null) {
+                var txtNumber = Textures.ShadowmappingTextureIndex
+                gl.activeTexture(txtNumber)
+                txtNumber -= WebGLRenderingContext.TEXTURE0
+
+                gl.uniform1i(uTexLoc, txtNumber)
+                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
+                    renderingCtx.shadowDepthTexture)
+            }
+        }
+    }
 
 
     /**
@@ -349,7 +410,7 @@ class ShadowMap {
      * othographic matrix
      */
     fun getOrthoGraphicMatrix(grid: Grid) :Float32Array? {
-        return getOrthoGraphicMatrix(grid)
+        return getOrthoGraphicMatrix(grid.glrs!!)
     }
  
     /**
@@ -366,6 +427,29 @@ class ShadowMap {
             glrs.matrix_release(matRef) 
         }
         return result
+    }
+
+    /**
+     * get shadow mapping projection matrix for texture coordinate
+     */
+    fun getShadowProjectionMatrixForTexture(glrs: glrs.InitOutput): 
+        Float32Array? {
+        val ortho = this.orthoGraphic
+        var result: Float32Array? = null
+        if (ortho != null) {
+            val orthoRef = glrs.matrix_new_ortho(
+                ortho.left, ortho.right,
+                ortho.bottom, ortho.top, ortho.zNear, ortho.zFar)
+            val matRef = glrs.matrix_create_with_components_col_order(
+               Textures.matrixFromProjectToTexture)
+
+            glrs.matrix_multiply_mut(matRef, orthoRef)
+            result = glrs.matrix_get_components_col_order_32(matRef)
+            glrs.matrix_release(matRef) 
+            glrs.matrix_release(orthoRef)
+        }
+        return result
+ 
     }
  
 }

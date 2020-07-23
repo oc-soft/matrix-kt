@@ -4,8 +4,10 @@ attribute vec4 aVertexColor;
 attribute vec2 aTextureCoord;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uShadowMapProjectionMatrix;
 uniform mat4 uNormalVecMatrix;
 varying vec4 vPosition;
+varying vec4 vShadowPosition;
 varying vec4 vNormal;
 varying vec4 vColor;
 varying vec2 vTextureCoord;
@@ -13,6 +15,9 @@ void main() {
     vNormal = uNormalVecMatrix * aNormalVector;
     vPosition = uModelViewMatrix * aVertexPosition;
     gl_Position = uProjectionMatrix * vPosition;
+    vShadowPosition = uShadowMapProjectionMatrix * vPosition;
     vColor = aVertexColor;
     vTextureCoord = aTextureCoord;
 }
+
+// vi: se ts=4 sw=4 et:

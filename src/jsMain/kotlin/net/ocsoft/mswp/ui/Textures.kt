@@ -6,6 +6,7 @@ import kotlin.collections.MutableMap
 import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
 import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.Float64Array
 import org.khronos.webgl.ArrayBufferView
 
 /**
@@ -22,6 +23,21 @@ class Textures {
          * light marker texture index
          */
         val LightMarkerTextureIndex = WebGLRenderingContext.TEXTURE1
+
+
+        /**
+         * shadow mapping texture index
+         */
+        val ShadowmappingTextureIndex = WebGLRenderingContext.TEXTURE2
+
+        /**
+         * matrix from projection coordinate to texture coordinate
+         */
+        val matrixFromProjectToTexture = Float64Array(arrayOf(
+            0.5, 0.0, 0.0, 0.0,
+            0.0, 0.5, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.5, 0.5, 0.5, 1.0))
     }
 
     /**

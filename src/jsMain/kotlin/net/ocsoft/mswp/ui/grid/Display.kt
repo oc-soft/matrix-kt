@@ -348,7 +348,7 @@ class Display(var renderingCtx : RenderingCtx,
         val boundsIndices = arrayOf(
             intArrayOf(0, 0),
             intArrayOf(0, columnCount - 1),
-            intArrayOf(rowCount - 1, columnCount),
+            intArrayOf(rowCount - 1, columnCount - 1),
             intArrayOf(rowCount - 1, 0))
         val buttonMatrices = renderingCtx.cloneButtonMatrices()!! 
         val buttonVertices = buttons.mineButton.verticesAsFloat32
@@ -376,10 +376,17 @@ class Display(var renderingCtx : RenderingCtx,
                      
                     val res0 = Array<FloatArray>(buttonVertices.length / 3) {
                         idx1 -> 
+                        
                         val transformed = glrs.matrix_apply_r_32(
                             boundsMat,
-                            buttonVertices.subarray(3 * idx1, 
-                                3 * idx1 + 3)) 
+                            Float32Array(Array<Float>(4) {
+                                idx2 ->
+                                if (idx2 < 3) {
+                                    buttonVertices[3 * idx1 + idx2] 
+                                } else {
+                                    1f
+                                }
+                            })) 
                         FloatArray(transformed!!.length) { transformed[it] } 
                     }
                     glrs.matrix_release(boundsMat)
@@ -390,8 +397,14 @@ class Display(var renderingCtx : RenderingCtx,
                         idx1 ->
                         val transformed = glrs.matrix_apply_r_32(
                             locMatRef,
-                            buttonVertices.subarray(3 * idx1, 
-                                3 * idx1 + 3)) 
+                            Float32Array(Array<Float>(4) {
+                                idx2 ->
+                                if (idx2 < 3) {
+                                    buttonVertices[3 * idx1 + idx2] 
+                                } else {
+                                    1f
+                                }
+                            })) 
                         FloatArray(transformed!!.length) { transformed[it] } 
                     }
                 }
