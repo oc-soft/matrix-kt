@@ -330,8 +330,7 @@ class Display(var renderingCtx : RenderingCtx,
                 "uNormalVecMatrix")
 
             if (uModelMat != null) {
-                val mat = renderingCtx.buttonMatricesForDrawing!![
-                    rowIndex * columnCount + columnIndex]
+                val mat = getButtonMatrixForDrawing(rowIndex, columnIndex)
                 gl.uniformMatrix4fv(uModelMat, false, 
                     Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
             }
@@ -346,6 +345,40 @@ class Display(var renderingCtx : RenderingCtx,
                     }))
             }
         }
+    }
+
+    /**
+     * get button matrix for drawing
+     */
+
+    fun getButtonMatrixForDrawing(
+        rowIndex: Int,
+        columnIndex: Int): FloatArray {
+        return renderingCtx.buttonMatricesForDrawing!![
+            rowIndex * columnCount + columnIndex]
+    }
+
+    
+    /**
+     * calculate all of coordinates for game
+     */
+    fun calcGameBounds(): Array<FloatArray> {
+        val vertices = calcButtonsMovingBoundsI()
+        val vertexList = ArrayList<FloatArray>()
+        vertices.forEach {
+            elem0 ->
+            elem0.forEach {
+                elem1 ->
+                elem1.forEach {
+                    vertexList.add(it)
+                }
+            }
+        }
+        calcBoardCoordinate().forEach {
+            elem ->
+            vertexList.add(FloatArray(elem.length) { elem[it] })
+        }
+        return Array<FloatArray>(vertexList.size) { vertexList[it] }
     }
 
     /**
@@ -510,8 +543,6 @@ class Display(var renderingCtx : RenderingCtx,
         val shaderProg = gl.getParameter(
             WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
-            val uModelMat = gl.getUniformLocation(shaderProg,
-                "uModelViewMatrix")
             val uNormalVecMat = gl.getUniformLocation(shaderProg,
                 "uNormalVecMatrix")
             val texLoc = gl.getAttribLocation(shaderProg,
@@ -573,27 +604,41 @@ class Display(var renderingCtx : RenderingCtx,
             gl.uniform1i(enableTexLoc as WebGLUniformLocation, 
                 0);
  
-            gl.bindBuffer(
-                WebGLRenderingContext.ARRAY_BUFFER,
-                renderingCtx.boardBuffer)
-            val mat = renderingCtx.boardMatrix!!
-            gl.uniformMatrix4fv(uModelMat, false, 
-                Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
             val normalVecMat = renderingCtx.boardNormalVecMatrix!!
             gl.uniformMatrix4fv(uNormalVecMat, false,
                 Float32Array(Array<Float>(normalVecMat.size) {
                     normalVecMat[it] 
                 }))
-            gl.drawArrays(
-                board.drawingMode, 
-                0, 
-                board.vertices.size / 3) 
+            drawBoardI(gl)
 
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 savedTex as WebGLTexture?)
             gl.activeTexture(
                 savedTexNum as Int)
              
+        }
+    }
+
+
+    /**
+     * draw board
+     */
+    fun drawBoardI(gl: WebGLRenderingContext) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val uModelMat = gl.getUniformLocation(shaderProg,
+                "uModelViewMatrix")
+            gl.bindBuffer(
+                WebGLRenderingContext.ARRAY_BUFFER,
+                renderingCtx.boardBuffer)
+            val mat = renderingCtx.boardMatrix!!
+            gl.uniformMatrix4fv(uModelMat, false, 
+                Float32Array(Array<Float>(mat.size) { i -> mat[i] }))
+            gl.drawArrays(
+                board.drawingMode, 
+                0, 
+                board.vertices.size / 3) 
         }
     }
 

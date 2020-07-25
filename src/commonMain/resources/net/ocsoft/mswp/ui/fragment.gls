@@ -17,7 +17,13 @@ varying vec2 vTextureCoord;
  */
 bool
 isInShadow(
-    vec4 point,
+    vec4 pointInShadow);
+
+/**
+ * read shadow depth
+ */
+float
+readShadowDepth(
     vec4 pointInShadow);
 
 /**
@@ -26,6 +32,14 @@ isInShadow(
 float
 vec4ToFloat(
     vec4 coord);
+
+/**
+ * float to vector4
+ */
+vec4
+floatToVec4(
+    float value);
+
 
 void main() {
     vec4 color;
@@ -47,11 +61,25 @@ void main() {
         color = color * vec4(vec3(specular), 1.0);
     }
     if (uEnableShadowDepth) {
-        if (isInShadow(vPosition, vShadowPosition)) {
-            color = vec4(0.0); 
-            color.b = 1.0;
-            color.a = 1.0;    
-        } 
+        // float depth;
+        // depth = readShadowDepth(vShadowPosition);
+        // color = vec4(vec3(depth), 1);
+        // color = vec4(vec3(vShadowPosition.z), 1.0);
+        // if (vShadowPosition.z < depth) {
+        //    float diff = depth - vShadowPosition.z;
+        //    color = vec4(diff, 0, 0, 1.0);
+        // } else {
+        //    float diff = vShadowPosition.z - depth;
+        //    color = vec4(0, diff, 0, 1.0);
+        // }
+        // color = vec4(vec3(gl_FragCoord.z), 1.0);
+        if (isInShadow(vShadowPosition)) {
+            // float depth;
+            color *= vec4(0.5, 0.5, 0.5, 1.0);
+            // depth = readShadowDepth(vShadowPosition);
+            // color = vec4(vec3(depth), 1.0); 
+            // color = vec4(vec3(vPosition.z * 0.5 + 0.5), 1.0); 
+        }
     }
     gl_FragColor = color;
 }
@@ -61,15 +89,30 @@ void main() {
  */
 bool
 isInShadow(
-    vec4 point,
     vec4 pointInShadow)
 {
-    vec4 shadowVec;
     float depth;
-    shadowVec = texture2D(uShadowDepthSampler, pointInShadow.xy);
-    depth = vec4ToFloat(shadowVec);
-    return point.z < depth;
+    float diff;
+    float ptDepth; 
+    depth = readShadowDepth(pointInShadow);
+    ptDepth = pointInShadow.z - 0.005;
+    return ptDepth > depth;
 }
+
+/**
+ * read shadow depth
+ */
+float
+readShadowDepth(
+    vec4 pointInShadow)
+{
+    float result;
+    vec4 shadowVec;
+    shadowVec = texture2D(uShadowDepthSampler, pointInShadow.xy);
+    result = vec4ToFloat(shadowVec);
+    return result;
+}
+
 
 /**
  * convert from vector to float
@@ -87,4 +130,28 @@ vec4ToFloat(
     } 
     return result;
 }
+
+/**
+ * float to vector4
+ */
+vec4
+floatToVec4(
+    float value)
+{
+    vec4 result;
+    vec4 tmpVec;
+    float tmpVal; 
+    tmpVal = value;
+    for (int i = 0; i < 4; i++) {
+        tmpVec[i] = tmpVal;
+        tmpVal = fract(tmpVal * float(0xff));
+    }
+    for (int i = 1; i < 2; i++) {
+        result[i - 1] = tmpVec[i - 1] - tmpVec[i] / float(0xff);
+    }
+    result[3] = tmpVec[3];
+    return result;
+}
+
+
 // vi: se ts=4 sw=4 et:

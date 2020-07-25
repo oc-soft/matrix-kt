@@ -8,7 +8,9 @@ floatToVec4(
     float value);
 
 void main() {
-    gl_FragColor = floatToVec4(gl_FragCoord.z);
+    vec4 color;
+    color = floatToVec4(gl_FragCoord.z);
+    gl_FragColor = color;
 }
 
 /**

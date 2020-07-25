@@ -90,7 +90,7 @@ class PhysicsEng(var gravity: Float = 9.8f,
                         0f, 0f, zLocs[i], 1f
                     )},
                     if (divisionCount % 2 == 0) {
-                        intArrayOf(divisionCount / 2 - 1, divisionCount)
+                        intArrayOf(divisionCount / 2 - 1, divisionCount / 2)
                     } else {
                         intArrayOf(divisionCount / 2)
                     })

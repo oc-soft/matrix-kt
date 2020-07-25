@@ -363,7 +363,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
-        // shadowMap.drawScene(this, gl)
+        shadowMap.drawScene(this, gl)
         drawSceneI(gl)
     }
 

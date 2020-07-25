@@ -4,6 +4,7 @@ import kotlin.collections.sort
 import kotlin.collections.last
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.math.absoluteValue
 
 import org.w3c.dom.HTMLCanvasElement
 
@@ -54,7 +55,7 @@ class ShadowMap {
         val texture = createShadowDepthTexture(gl,
             frameBufferSize!![0], frameBufferSize!![1])
         val depthBuffer = createRenderDepthBuffer(gl,
-            canvas.width, canvas.height)
+            frameBufferSize!![0], frameBufferSize!![1])
 
         val renderingCtx = grid.renderingCtx
         renderingCtx.shadowDepthTexture = texture
@@ -86,7 +87,8 @@ class ShadowMap {
         beginEnv(grid, gl)
         drawSceneI(grid, gl)
         endEnv(grid, gl)
-
+        gl.flush()
+        
         gl.viewport(savedViewport[0], savedViewport[1],
             savedViewport[2], savedViewport[3])
         gl.bindFramebuffer(
@@ -107,6 +109,7 @@ class ShadowMap {
         gl.useProgram(grid.renderingCtx.shadowMapShaderProgram) 
         updateProjectionMatrix(grid, gl)
         drawButtons(grid, gl)
+        drawBoard(grid, gl)
         gl.useProgram(savedProgram) 
     }
 
@@ -131,16 +134,84 @@ class ShadowMap {
     }
 
     /**
+     * draw board 
+     */
+    fun drawBoard(
+        grid: Grid,
+        gl: WebGLRenderingContext) {
+        val savedArrayBuffer = gl.getParameter(
+                WebGLRenderingContext.ARRAY_BUFFER_BINDING) as WebGLBuffer?
+
+        grid.display.drawBoardI(gl)
+        gl.bindBuffer(
+            WebGLRenderingContext.ARRAY_BUFFER,
+            savedArrayBuffer)
+    }
+
+
+    /**
+     * debug button vertices
+     */
+    fun debugButtonVertics(
+        grid: Grid,
+        rowIndex: Int, colIndex: Int) {
+        val glrs = grid.glrs!!
+        val projMat = calcProjectionMatrix(grid)
+        val lookFromMat = getLookFromLightPoint(grid)!!
+        val orthoMat = getOrthoGraphicMatrix(grid)!!
+        val modelMat = grid.display.getButtonMatrixForDrawing(
+            rowIndex, colIndex)
+        val lookFromMatRef = glrs.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(lookFromMat.length) {
+                lookFromMat[it].toDouble() }))
+ 
+        val orthoMatRef = glrs.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(orthoMat.length) {
+                orthoMat[it].toDouble() }))
+
+        val matRef = grid.glrs!!.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(projMat!!.length) {
+                projMat[it].toDouble() }))
+        val modelMatRef = grid.glrs!!.matrix_create_with_components_col_order(
+            Float64Array(Array<Double>(modelMat.size) {
+                modelMat[it].toDouble() }))
+        grid.glrs!!.matrix_multiply_mut(matRef, modelMatRef)
+        val vertices = grid.buttons.mineButton.vertices
+        println("buton[${rowIndex}][${colIndex}]")
+        for (idx in 0 until vertices.size / 3) {
+            val srcPt = Float32Array(
+                Array<Float>(4) {
+                    idx1 -> 
+                    if (idx1 < 3) {
+                        vertices[3 * idx + idx1]
+                    } else {
+                        1f
+                    } 
+                })
+
+            val pt = glrs.matrix_apply_r_32(matRef, srcPt)
+            println("${pt!![0]}, ${pt!![1]}, ${pt!![2]}, ${pt!![3]}")
+        }
+        
+        glrs.matrix_release(lookFromMatRef)
+        glrs.matrix_release(orthoMatRef) 
+        glrs.matrix_release(modelMatRef)
+        glrs.matrix_release(matRef) 
+
+    }
+
+    /**
      * setup env
      */
     fun beginEnv(grid: Grid,
         gl: WebGLRenderingContext) {
         val savedBackColor = grid.backColor.copyOf()
         for (i in 0 until grid.backColor.size) {
-            grid.backColor[i] = 0f
+            grid.backColor[i] = 0.0f
         } 
-        // grid.backColor[0] = 1f
+        grid.backColor[0] = 1f
         grid.setupEnv(gl)
+
         for (i in 0 until grid.backColor.size) {
             grid.backColor[i] = savedBackColor[i]
         } 
@@ -169,7 +240,7 @@ class ShadowMap {
             val uProjMat = gl.getUniformLocation(shaderProg, 
                 "uProjectionMatrix")    
             if (uProjMat != null) { 
-                val projMat = getOrthoGraphicMatrix(grid)
+                val projMat = calcProjectionMatrix(grid)
                 gl.uniformMatrix4fv(uProjMat, false, projMat!!)
             }
         }
@@ -180,7 +251,7 @@ class ShadowMap {
     fun setupShadowSettingForDrawing(
         grid: Grid,
         gl: WebGLRenderingContext) {
-        attachShadowProjectionMatrix(gl, grid.glrs!!)
+        attachShadowProjectionMatrix(gl, grid)
         attachShadowTexture(gl, grid.renderingCtx)
     }
     /**
@@ -188,11 +259,11 @@ class ShadowMap {
      */
     fun attachShadowProjectionMatrix(
         gl: WebGLRenderingContext,
-        glrs: glrs.InitOutput) {
+        grid: Grid) {
         val shaderProg = gl.getParameter(
             WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
         if (shaderProg != null) {
-            val projMat = getShadowProjectionMatrixForTexture(glrs) 
+            val projMat = getShadowProjectionMatrixForTexture(grid) 
             if (projMat != null) {
                 val uProjMat = gl.getUniformLocation(shaderProg, 
                     "uShadowMapProjectionMatrix")    
@@ -215,15 +286,11 @@ class ShadowMap {
                     "uShadowDepthSampler") 
             if (uTexLoc != null) {
                 var txtNumber = Textures.ShadowmappingTextureIndex
-                gl.activeTexture(txtNumber)
-                gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
-                    renderingCtx.shadowDepthTexture)
                 txtNumber -= WebGLRenderingContext.TEXTURE0
                 gl.uniform1i(uTexLoc, txtNumber)
            }
         }
     }
-
 
     /**
      * create frame buffer for shadow depth
@@ -288,8 +355,11 @@ class ShadowMap {
         
         val savedTexture = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
-        
+        val savedActiveTexture = gl.getParameter(
+            WebGLRenderingContext.ACTIVE_TEXTURE) as Int  
         val result = gl.createTexture()
+        var txtNumber = Textures.ShadowmappingTextureIndex
+        gl.activeTexture(txtNumber)
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, result)
         gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
             WebGLRenderingContext.RGBA, width, height,
@@ -304,7 +374,8 @@ class ShadowMap {
         gl.texParameteri(WebGLRenderingContext.TEXTURE_2D,
             WebGLRenderingContext.TEXTURE_MIN_FILTER,
             WebGLRenderingContext.LINEAR);
-  
+
+        gl.activeTexture(savedActiveTexture)
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, savedTexture)
 
         return result
@@ -328,11 +399,17 @@ class ShadowMap {
         display: Display): Orthographic {
         val bounds = calcBoundsForRendering(
             glrs, pointLight, camera, display)
+        val nearFarIndices = intArrayOf(0, 1)  
+        if (bounds[2][0].absoluteValue >  bounds[2][1].absoluteValue) {
+            nearFarIndices[0] = 1
+            nearFarIndices[1] = 0
+        } 
+        val adjustments = floatArrayOf(1f, 1f) 
         
         return Orthographic(
-            bounds.first[0], bounds.first[2],
-            bounds.first[1], bounds.first[3], 
-            0.3f, bounds.second)
+            bounds[0][0] * adjustments[0], bounds[0][1] * adjustments[1],
+            bounds[1][0] * adjustments[0], bounds[1][1] * adjustments[1],
+            -bounds[2][nearFarIndices[0]], -bounds[2][nearFarIndices[1]])
     }
 
     /**
@@ -342,7 +419,7 @@ class ShadowMap {
         glrs: glrs.InitOutput,
         pointLight: net.ocsoft.mswp.PointLight,
         camera: Camera,
-        display: Display): Pair<FloatArray, Float> {
+        display: Display): Array<FloatArray> {
         val ptLight = pointLight.point
         val center = camera.center
         val normVec = Float64Array(Array<Double>(ptLight.size) { 
@@ -355,38 +432,51 @@ class ShadowMap {
         }
         normVecLength = sqrt(normVecLength)
         
-        val projPlaneRef = glrs.plane_create(normVec, 
-            Float64Array(Array<Double>(center.size) { center[it].toDouble() }) )
 
-        val vertices = getButtonsMovementVertices(display)
+        val vertices = getGameBounds(display)
+
+        val matRef = getLookFromLightPointI(glrs, camera, pointLight)
+
          
-        var farFromCenter = Array<Float?>(1) { null }
+        var bounds = Array<Array<Float?>>(3) { Array<Float?>(2) { null } }
+        val valueSelector: Array<(Int, Int, Float)->Boolean> = arrayOf(
+            {
+                idx0, idx1, value -> value < bounds[idx0][idx1]!! 
+            },
+            {
+                idx0, idx1, value -> value > bounds[idx0][idx1]!! 
+            }
+        )
         vertices.forEach {
-            val vertex = it
-            val projectedPt = glrs.plane_project(projPlaneRef, 
-                Float64Array(Array<Double>(vertex.size) {
-                    vertex[it].toDouble() }))!!
-            var res = 0f
-            for (idx0 in 0 until projectedPt.length) {
-                res += (projectedPt[idx0].toFloat() - 
-                    center[idx0]).pow(2f)
-            } 
-            res = sqrt(res)
-            if (farFromCenter[0] == null) {
-                farFromCenter[0] = res
-            } else if (farFromCenter[0]!! > res) {
-                farFromCenter[0] = res
-            } 
+            vertexElem ->  
+            val vertexSrc = Float32Array(Array<Float>(4) {
+                if (it < vertexElem.size) {
+                    vertexElem[it]
+                } else {
+                    1f
+                }
+            })
+            val vertex = glrs.matrix_apply_r_32(matRef, vertexSrc)!!
+            for (idx0 in 0 until bounds.size) {
+                for (idx1 in 0 until bounds[idx0].size) { 
+                    if (bounds[idx0][idx1] == null) {
+                        bounds[idx0][idx1] = vertex[idx0] 
+                    } else if (valueSelector[idx1](
+                        idx0, idx1, vertex[idx0])) {
+                        bounds[idx0][idx1] = vertex[idx0]
+                    } 
+                }
+            }
         } 
         
-        val result = Pair(floatArrayOf(
-                -farFromCenter[0]!!,
-                -farFromCenter[0]!!,
-                farFromCenter[0]!!, 
-                farFromCenter[0]!!),
-                normVecLength.toFloat())                
+        val result = Array(bounds.size) {
+            idx0 ->
+            FloatArray(bounds[idx0].size) {
+                bounds[idx0][it]!!
+            }
+        }
             
-        glrs.plane_release(projPlaneRef)
+        glrs.matrix_release(matRef)
 
         return result
     }
@@ -434,16 +524,90 @@ class ShadowMap {
     }
 
     /**
+     * calculate all of coordinates for game
+     */
+    fun getGameBounds(
+        display: Display): Array<FloatArray> {
+        return display.calcGameBounds()
+    }
+
+    /**
+     * calculate projection matrix from light point view
+     */
+    fun calcProjectionMatrix(grid: Grid): Float32Array? {
+        val glrs = grid.glrs!!
+        val matRef = calcProjectionMatrixI(grid)
+        val result = glrs.matrix_get_components_col_order_32(matRef)
+        glrs.matrix_release(matRef)
+        return result
+    }
+    /**
+     * calculate projection matrix from light point view
+     */
+    fun calcProjectionMatrixI(grid: Grid): Number {
+        val glrs = grid.glrs!!
+        val ortho = orthoGraphic!!
+        val result = glrs.matrix_new_ortho(
+            ortho.left, ortho.right,
+            ortho.bottom, ortho.top, ortho.zNear, ortho.zFar)
+        val lookatMatRef = getLookFromLightPointI(grid)
+        glrs.matrix_multiply_mut(result, lookatMatRef)
+        glrs.matrix_release(lookatMatRef)
+        return result
+    }
+
+
+    /**
+     * get the matrix looking at from light point.
+     */
+    fun getLookFromLightPoint(grid: Grid): Float32Array? {
+
+        val glrs = grid.glrs!!
+        val matRef = getLookFromLightPointI(grid)
+        val result = glrs.matrix_get_components_col_order_32(matRef) 
+        glrs.matrix_release(matRef)
+        return result
+    }
+
+
+    /**
+     * get matrix looking at from light poing
+     */
+    private fun getLookFromLightPointI(grid: Grid): Number {
+        val result = getLookFromLightPointI(
+            grid.glrs!!, grid.camera!!, grid.pointLight!!)
+        return result
+     }
+    
+    /**
+     * get matrix looking at from light poing
+     */
+    private fun getLookFromLightPointI(
+        glrs: glrs.InitOutput,
+        camera: Camera,
+        pointLight: net.ocsoft.mswp.PointLight): Number {
+        val ptLight = pointLight.point
+        val camCenter = camera.center
+        val camUp = camera.up
+
+        val result = glrs.matrix_new_look_at(
+            ptLight[0], ptLight[1], ptLight[2],
+            camCenter[0], camCenter[1], camCenter[2],
+            camUp[0], camUp[1], camUp[2])
+        return result
+     }
+ 
+    /**
      * othographic matrix
      */
-    fun getOrthoGraphicMatrix(grid: Grid) :Float32Array? {
+    private fun getOrthoGraphicMatrix(grid: Grid) :Float32Array? {
         return getOrthoGraphicMatrix(grid.glrs!!)
     }
  
     /**
      * othographic matrix
      */
-    fun getOrthoGraphicMatrix(glrs: glrs.InitOutput) :Float32Array? {
+    private fun getOrthoGraphicMatrix(glrs: glrs.InitOutput) :Float32Array? {
         val ortho = this.orthoGraphic
         var result: Float32Array? = null
         if (ortho != null) {
@@ -459,21 +623,19 @@ class ShadowMap {
     /**
      * get shadow mapping projection matrix for texture coordinate
      */
-    fun getShadowProjectionMatrixForTexture(glrs: glrs.InitOutput): 
+    fun getShadowProjectionMatrixForTexture(grid: Grid): 
         Float32Array? {
         val ortho = this.orthoGraphic
         var result: Float32Array? = null
         if (ortho != null) {
-            val orthoRef = glrs.matrix_new_ortho(
-                ortho.left, ortho.right,
-                ortho.bottom, ortho.top, ortho.zNear, ortho.zFar)
+            val glrs = grid.glrs!!
+            val projRef = calcProjectionMatrixI(grid)
             val matRef = glrs.matrix_create_with_components_col_order(
                Textures.matrixFromProjectToTexture)
-
-            glrs.matrix_multiply_mut(matRef, orthoRef)
+            glrs.matrix_multiply_mut(matRef, projRef)
             result = glrs.matrix_get_components_col_order_32(matRef)
             glrs.matrix_release(matRef) 
-            glrs.matrix_release(orthoRef)
+            glrs.matrix_release(projRef)
         }
         return result
  
