@@ -61,24 +61,8 @@ void main() {
         color = color * vec4(vec3(specular), 1.0);
     }
     if (uEnableShadowDepth) {
-        // float depth;
-        // depth = readShadowDepth(vShadowPosition);
-        // color = vec4(vec3(depth), 1);
-        // color = vec4(vec3(vShadowPosition.z), 1.0);
-        // if (vShadowPosition.z < depth) {
-        //    float diff = depth - vShadowPosition.z;
-        //    color = vec4(diff, 0, 0, 1.0);
-        // } else {
-        //    float diff = vShadowPosition.z - depth;
-        //    color = vec4(0, diff, 0, 1.0);
-        // }
-        // color = vec4(vec3(gl_FragCoord.z), 1.0);
         if (isInShadow(vShadowPosition)) {
-            // float depth;
             color *= vec4(0.5, 0.5, 0.5, 1.0);
-            // depth = readShadowDepth(vShadowPosition);
-            // color = vec4(vec3(depth), 1.0); 
-            // color = vec4(vec3(vPosition.z * 0.5 + 0.5), 1.0); 
         }
     }
     gl_FragColor = color;

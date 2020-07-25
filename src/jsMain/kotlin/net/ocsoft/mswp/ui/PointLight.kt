@@ -486,6 +486,7 @@ class PointLight(
         }
         if (doUpdate) {
             pointLight!!.point = lightPoint
+            grid.invalidateShadowSetting()
             grid.postDrawScene(wgl)
         } 
     }

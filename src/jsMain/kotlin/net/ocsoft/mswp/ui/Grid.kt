@@ -279,6 +279,28 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     var onMineIconChanged: ((Any?, String)->Unit)? = null
 
     /**
+     * set up shadow dummy
+     */
+    val setupShadow0: ((Grid, WebGLRenderingContext)->Unit) = {
+            grid, gl ->
+        }
+
+    /**
+     * set up shadow
+     */
+    val setupShadow1: ((Grid, WebGLRenderingContext)->Unit) = {
+        grid, gl ->
+        grid.shadowMap.setup(grid, gl)
+        grid.setupShadow = grid.setupShadow0 
+    }
+
+    /**
+     * setting up shadow environemnt
+     */ 
+    var setupShadow: ((Grid, WebGLRenderingContext)->Unit) = setupShadow0
+
+
+    /**
      * icon setting. you can access this setting while ui is bound.
      */
     var iconSetting: IconSetting? = null 
@@ -348,7 +370,6 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         val gl = canvas.getContext("webgl") as WebGLRenderingContext
         postDrawScene(gl)  
     }
-
       
     /**
      * draw scene lately.
@@ -363,8 +384,16 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene(gl: WebGLRenderingContext) {
+        setupShadow(this, gl)   
         shadowMap.drawScene(this, gl)
         drawSceneI(gl)
+    }
+
+    /**
+     * invalidate shadow setting
+     */
+    fun invalidateShadowSetting() {
+        setupShadow = setupShadow1
     }
 
     /**
