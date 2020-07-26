@@ -1,0 +1,40 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/mswp-v3.png",
+            "title": "Shadow",
+            "type": "website"
+        },
+        "title": "Shadow",
+        "customs" : [
+          [
+            "<script>window.MathJax = { ",
+            " tex: {",
+            "   tags: 'ams'",
+            " }",   
+            "};</script>"
+          ]
+        ], 
+        "css" : [
+            "doc/develop-5.css"
+        ], 
+        "using": [
+            "polyfill",
+            "mathjax"
+        ]	
+    },
+    "body": {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/mswp-v3.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    },
+     "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}
