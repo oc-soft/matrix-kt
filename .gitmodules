@@ -10,3 +10,6 @@
 [submodule "glrs"]
 	path = glrs
 	url = ../../glrs.git
+[submodule "color-picker"]
+	path = color-picker
+	url = ../../npm/color-picker.git
