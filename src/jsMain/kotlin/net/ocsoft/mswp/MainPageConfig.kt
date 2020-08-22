@@ -2,6 +2,7 @@ package net.ocsoft.mswp
 import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
 import net.ocsoft.mswp.ui.IconSelector
+import net.ocsoft.mswp.ui.ColorSelector
 import net.ocsoft.mswp.ui.PointLightSetting
 import net.ocsoft.mswp.ui.IconSetting
 import net.ocsoft.mswp.ui.GameSettings
@@ -27,6 +28,7 @@ data class MainPageConfig(
                 ".setting.menu .menu.item", 
                 ".setting.menu.contents",
                 "#label-setting",
+                "#color-setting",
                 "#lighting-setting"),
             GameSettings.Option.Menu(
                 arrayOf(0, 20))),
@@ -45,6 +47,10 @@ data class MainPageConfig(
             "#icons_paginating_item_tmpl",
             "#synchronizing-icon",
             gridSettings.iconSetting),
+        ColorSelector.Option(
+            "#color-selector",
+            "#color-selector .oc-color-circle",
+            "#color-seletor .ok"),
         PointLightSetting.Option("#synchronizing-icon-2"))) {
 }
 

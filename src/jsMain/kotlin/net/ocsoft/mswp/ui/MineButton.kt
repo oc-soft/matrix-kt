@@ -7,8 +7,9 @@ import net.ocsoft.mswp.*
  * button to cover mine
  */
 class MineButton(
-    frontColor: FloatArray = ColorScheme.colors[1],
-    backColor: FloatArray = ColorScheme.colors[3],
+    colorScheme: ColorScheme,
+    frontColor: FloatArray = colorScheme[ColorScheme.ButtonFront],
+    backColor: FloatArray = colorScheme[ColorScheme.ButtonBack],
     buttonSize : FloatArray = floatArrayOf(1f, 1f),
     thickness: Float = 0.001f) {
     
@@ -187,7 +188,5 @@ class MineButton(
     fun createNormalVectors(): FloatArray {
         return Polygon.createNormalVectorsForTriangles(vertices)
     }
-
-    
-    
 }
+// vi: se ts=4 sw=4 et:

@@ -16,6 +16,12 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
-external open class VarDate {
-    open var VarDate_typekey: VarDate
+external interface ReadonlyMap<K, V> {
+    fun entries(): IterableIterator<dynamic /* JsTuple<K, V> */>
+    fun keys(): IterableIterator<K>
+    fun values(): IterableIterator<V>
+    fun forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) -> Unit, thisArg: Any = definedExternally)
+    fun get(key: K): V?
+    fun has(key: K): Boolean
+    var size: Number
 }

@@ -19,15 +19,17 @@ import org.w3c.dom.Image
 class Grid(val pointLightSettingOption: PointLightSetting.Option,
     rowCount: Int = 6,
     columnCount: Int = 6,
+    colorScheme: ColorScheme = ColorScheme(),
     colorMap: ColorMap = ColorMap(),
-    val buttons: Buttons = Buttons(MineButton(), rowCount, columnCount,
+    val buttons: Buttons = Buttons(
+        MineButton(colorScheme), rowCount, columnCount,
         floatArrayOf(0.02f, 0.02f), floatArrayOf(0.01f, 0.005f), colorMap),
-    board: Board = Board(),
+    board: Board = Board(colorScheme),
     pointLightEdit: PointLight = PointLight(),
     shadowMap: ShadowMap = ShadowMap(),
     val borderGap: FloatArray = floatArrayOf(0.02f, 0.02f),
     val boardEdge: FloatArray = floatArrayOf(0.03f, 0.03f),
-    val glyph: Glyph = Glyph(),
+    val glyph: Glyph = Glyph(colorScheme),
     val textures: Textures = Textures(),
     val renderingCtx: RenderingCtx = RenderingCtx()) {
     var model : Model? = null
@@ -1390,21 +1392,31 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         if (nodeId != null) {
             val canvas = document.querySelector(
                 canvasId!!) as HTMLCanvasElement
-            var doResize: Boolean
-            doResize = canvas.width != canvas.clientWidth
-            if (!doResize) {
-                doResize = canvas.height != canvas.clientHeight
-            }
-            if (doResize) {
-                canvas.width = canvas.clientWidth
-                canvas.height = canvas.clientHeight
-                if (resized != null) {
-                    resized()
-                }
-            } 
-            
+            syncCanvasWithClientSize(canvas, resized)
         }  
     }
+
+    /**
+     * synchronize canvas size with client size.
+     */
+    private fun syncCanvasWithClientSize(
+        canvas: HTMLCanvasElement,
+        resized: (()->Unit)?) {
+
+        var doResize: Boolean
+        doResize = canvas.width != canvas.clientWidth
+        if (!doResize) {
+            doResize = canvas.height != canvas.clientHeight
+        }
+        if (doResize) {
+            canvas.width = canvas.clientWidth
+            canvas.height = canvas.clientHeight
+            if (resized != null) {
+                resized()
+            }
+        }  
+    }
+
     /**
      * sync gl viewport with canvas size
      */

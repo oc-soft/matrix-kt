@@ -7,7 +7,8 @@ import net.ocsoft.mswp.*
  * game board
  */
 class Board(
-    var color: FloatArray  = ColorScheme.colors[4]) {
+    colorScheme: ColorScheme,
+    var color: FloatArray = colorScheme[ColorScheme.Board]) {
 
     /**
      * cache of vertices

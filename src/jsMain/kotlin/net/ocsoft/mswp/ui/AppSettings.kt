@@ -14,6 +14,7 @@ class AppSettings(val option : Option) {
     data class Option(
         val gameSettingsOption: GameSettings.Option, 
         val iconOption : IconSelector.Option,
+        val colorOption: ColorSelector.Option,
         val pointLightSettingOption: PointLightSetting.Option)
 
     /**
@@ -25,6 +26,12 @@ class AppSettings(val option : Option) {
      * icon selector
      */
     var iconSelector : IconSelector? = null
+
+
+    /**
+     * color selector
+     */
+    var colorSelector: ColorSelector? = null
 
     /**
      * game setting
@@ -47,6 +54,9 @@ class AppSettings(val option : Option) {
         iconSelector = IconSelector(option.iconOption)
         iconSelector?.runtimeConfig = runtimeConfig
         iconSelector?.bind()
+
+        colorSelector = ColorSelector(option.colorOption)
+        
     }
 
     /**
@@ -57,6 +67,7 @@ class AppSettings(val option : Option) {
         gameSettings = null
         iconSelector?.unbind()
         iconSelector = null
+        colorSelector = null     
     }
 
 

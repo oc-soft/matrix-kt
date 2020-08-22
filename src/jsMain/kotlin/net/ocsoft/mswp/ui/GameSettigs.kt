@@ -14,6 +14,12 @@ class GameSettings(val option: Option) {
      */
     var labelSettingItemHandler : ((JQueryEventObject, Any) -> Any)? = null
 
+
+    /**
+     * handle click event on color setting item
+     */
+    var colorSettingItemHandler: ((JQueryEventObject, Any) -> Any)? = null
+
     /**
      * handle click event on editing light origin
      */
@@ -42,6 +48,7 @@ class GameSettings(val option: Option) {
             val setting: String,
             val dropdown: String,
             val labelSetting: String,
+            val colorSetting: String,
             val lightSetting: String)   
 
         /**
@@ -63,6 +70,7 @@ class GameSettings(val option: Option) {
         this.appSettings = appSettings
         val labelSettingItem = jQuery(option.queries.labelSetting)
         val lightSettingItem = jQuery(option.queries.lightSetting)
+        val colorSettingItem = jQuery(option.queries.colorSetting)
         labelSettingItemHandler = {
             evt, args ->
             onClickOnLabelSettingItem(evt, args)
@@ -71,10 +79,15 @@ class GameSettings(val option: Option) {
             evt, args ->
             onClickOnLightEditItem(evt, args)
         }
+        colorSettingItemHandler = {
+            evt, args ->
+            onClickOnColorSetting(evt, args)
+        }
         // settingItem.on("click", settingItemHandler!!)
         dropdown.bind(option.queries.setting, option.queries.dropdown)
         labelSettingItem?.on("click", labelSettingItemHandler!!)
         lightSettingItem?.on("click", lightEditItemHandler!!) 
+        colorSettingItem?.on("click", colorSettingItemHandler!!)
         popperInstance = Popper.createPopper(labelSettingItem!![0],
             jQuery(option.queries.dropdown)!![0]!!,
             object {
@@ -97,6 +110,17 @@ class GameSettings(val option: Option) {
             labelSettingItem?.off("click", labelSettingItemHandler!!)
             labelSettingItemHandler = null
         }
+        if (colorSettingItemHandler != null) {
+            val colorSettingItem = jQuery(option.queries.colorSetting)
+            colorSettingItem?.off("click", colorSettingItemHandler!!)
+            colorSettingItemHandler = null
+        }
+        if (lightEditItemHandler != null) {
+            val lightSettingItem = jQuery(option.queries.lightSetting)
+            lightSettingItem?.off("click", lightEditItemHandler!!)
+            lightEditItemHandler = null
+        }
+
         if (popperInstance != null) {
             popperInstance!!.destroy()
             popperInstance = null
@@ -114,6 +138,15 @@ class GameSettings(val option: Option) {
         return false 
     }
 
+
+    /**
+     * handle click event for color setting
+     */
+    fun onClickOnColorSetting(eventObj: JQueryEventObject, args: Any): Any {
+        appSettings?.colorSelector?.show()
+        hideDropdown()
+        return false 
+    }
 
     /**
      * handle setting item for light editing

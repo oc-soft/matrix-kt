@@ -21,7 +21,9 @@ import fontawesome.SvgCore;
  * glyph setting
  */
 class Glyph(
-    val numberColor: FloatArray = ColorScheme.colors[0].copyOf(),
+    colorScheme: ColorScheme,
+    val numberColor: FloatArray = colorScheme[
+        ColorScheme.MineNumber],
     val mineColor: FloatArray = numberColor) {
 
     /**
@@ -246,7 +248,7 @@ class Glyph(
             if (it.key in paramMap) {
                 val param = paramMap[it.key]
                 textureSize = param!!.textureSize
-                textureRatio = param!!.contentsRatio 
+                textureRatio = param.contentsRatio 
             } 
             val imgSrc = createImage(ctx, it.value,
                 textureSize, textureRatio)
