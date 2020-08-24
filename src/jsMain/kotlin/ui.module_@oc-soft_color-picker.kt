@@ -38,7 +38,7 @@ external open class UI(template: String = definedExternally, classMapping: `T$0`
     open var listeners: Any
     open var rootElement: Any
     open var oldContents: Any
-    open var template: Any
+    open var template: Any?
     open fun bind(rootElement: Any)
     open fun unbind()
     open fun addEventListener(type: Any, listener: Any)
