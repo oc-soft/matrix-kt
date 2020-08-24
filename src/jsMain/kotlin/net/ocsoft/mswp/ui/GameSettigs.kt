@@ -143,7 +143,7 @@ class GameSettings(val option: Option) {
      * handle click event for color setting
      */
     fun onClickOnColorSetting(eventObj: JQueryEventObject, args: Any): Any {
-        appSettings?.colorSelector?.show()
+        appSettings?.editColorScheme()
         hideDropdown()
         return false 
     }

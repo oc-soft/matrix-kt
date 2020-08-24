@@ -16,6 +16,81 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
+external interface PropertyDescriptor {
+    var configurable: Boolean?
+        get() = definedExternally
+        set(value) = definedExternally
+    var enumerable: Boolean?
+        get() = definedExternally
+        set(value) = definedExternally
+    var value: Any?
+        get() = definedExternally
+        set(value) = definedExternally
+    var writable: Boolean?
+        get() = definedExternally
+        set(value) = definedExternally
+    val get: (() -> Any)?
+        get() = definedExternally
+    val set: ((v: Any) -> Unit)?
+        get() = definedExternally
+}
+
+external interface PropertyDescriptorMap {
+    @nativeGetter
+    operator fun get(s: String): PropertyDescriptor?
+    @nativeSetter
+    operator fun set(s: String, value: PropertyDescriptor)
+}
+
+external interface Object {
+    var constructor: Function<*>
+    override fun toString(): String
+    fun toLocaleString(): String
+    fun valueOf(): Any
+    fun hasOwnProperty(v: String): Boolean
+    fun hasOwnProperty(v: Number): Boolean
+    fun hasOwnProperty(v: Any): Boolean
+    fun isPrototypeOf(v: Any): Boolean
+    fun propertyIsEnumerable(v: String): Boolean
+    fun propertyIsEnumerable(v: Number): Boolean
+    fun propertyIsEnumerable(v: Any): Boolean
+}
+
+external interface ObjectConstructor {
+    fun <T, U> assign(target: T, source: U): T /* T & U */
+    fun <T, U, V> assign(target: T, source1: U, source2: V): T /* T & U & V */
+    fun <T, U, V, W> assign(target: T, source1: U, source2: V, source3: W): T /* T & U & V & W */
+    fun assign(target: Any?, vararg sources: Any): Any
+    fun getOwnPropertySymbols(o: Any): Array<Any>
+    fun keys(o: Any): Array<String>
+    fun `is`(value1: Any, value2: Any): Boolean
+    fun setPrototypeOf(o: Any, proto: Any?): Any
+    @nativeInvoke
+    operator fun invoke(): Any
+    @nativeInvoke
+    operator fun invoke(value: Any): Any
+    var prototype: Any
+    fun getPrototypeOf(o: Any): Any
+    fun getOwnPropertyDescriptor(o: Any, p: String): PropertyDescriptor?
+    fun getOwnPropertyDescriptor(o: Any, p: Number): PropertyDescriptor?
+    fun getOwnPropertyDescriptor(o: Any, p: Any): PropertyDescriptor?
+    fun getOwnPropertyNames(o: Any): Array<String>
+    fun create(o: Any?): Any
+    fun create(o: Any?, properties: PropertyDescriptorMap /* PropertyDescriptorMap & ThisType<Any> */): Any
+    fun defineProperty(o: Any, p: String, attributes: PropertyDescriptor /* PropertyDescriptor & ThisType<Any> */): Any
+    fun defineProperty(o: Any, p: Number, attributes: PropertyDescriptor /* PropertyDescriptor & ThisType<Any> */): Any
+    fun defineProperty(o: Any, p: Any, attributes: PropertyDescriptor /* PropertyDescriptor & ThisType<Any> */): Any
+    fun defineProperties(o: Any, properties: PropertyDescriptorMap /* PropertyDescriptorMap & ThisType<Any> */): Any
+    fun <T> seal(o: T): T
+    fun <T> freeze(a: Array<T>): Any
+    fun <T : Function<*>> freeze(f: T): dynamic
+    fun <T> preventExtensions(o: T): T
+    fun isSealed(o: Any): Boolean
+    fun isFrozen(o: Any): Boolean
+    fun isExtensible(o: Any): Boolean
+    fun keys(o: Any?): Array<String>
+}
+
 external interface FunctionConstructor {
     @nativeInvoke
     operator fun invoke(vararg args: String): Function<*>
@@ -75,7 +150,11 @@ external interface ArrayLike<T> {
     operator fun set(n: Number, value: T)
 }
 
+typealias Readonly<T> = Any
+
 typealias Record<K, T> = Any
+
+external interface ThisType<T>
 
 external interface ArrayBufferTypes {
     var ArrayBuffer: ArrayBuffer

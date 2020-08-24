@@ -18,12 +18,32 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
-external interface `T$0` {
+external interface `T$8` {
     var value: String
     var colorCircleCanvas: String
 }
 
-external open class UI(template: String = definedExternally, classMapping: `T$0` = definedExternally, indexValue: Number = definedExternally, colorType: String = definedExternally) {
+external interface `T$9` {
+    var loc: Array<Number>
+    var radius: Number
+}
+
+external interface `T$10` {
+    var radius: Number
+    var radian: Number
+}
+
+external interface `T$11` {
+    var indexValue: Number
+    var pickerLocation: `T$10`
+}
+
+external interface `T$12` {
+    var radian: Number
+    var radius: Number
+}
+
+external open class UI(template: String? = definedExternally, classMapping: `T$8`? = definedExternally, indexValue: Number = definedExternally, colorType: String = definedExternally) {
     open var indexValueField: Any
     open var colorTypeField: Any
     open var pickerLocationField: Any
@@ -38,35 +58,36 @@ external open class UI(template: String = definedExternally, classMapping: `T$0`
     open var listeners: Any
     open var rootElement: Any
     open var oldContents: Any
-    open var template: Any?
-    open fun bind(rootElement: Any)
+    open var template: String?
+    open var markColor: Array<Number>?
+    open fun bind(rootElement: HTMLElement)
     open fun unbind()
-    open fun addEventListener(type: Any, listener: Any)
-    open fun removeEventListener(type: Any, listener: Any)
-    open fun notify(type: Any)
-    open fun bindValue(rootElement: Any)
-    open fun unbindValue(rootElement: Any)
-    open fun bindColorCircle(rootElement: Any)
-    open fun unbindColorCircle(rootElement: Any)
-    open fun postHandleClickInColorCircle(event: Any)
-    open fun handleClickInColorCircle(event: Any)
-    open fun getColorCircleLocRadius(colorCanvas: Any): Any
+    open fun addEventListener(type: String, listener: (type: String, sender: Any) -> Unit)
+    open fun removeEventListener(type: String, listener: (type: String, sender: Any) -> Unit)
+    open fun notify(type: String)
+    open fun bindValue(rootElement: HTMLElement)
+    open fun unbindValue(rootElement: HTMLElement)
+    open fun bindColorCircle(rootElement: HTMLElement)
+    open fun unbindColorCircle(rootElement: HTMLElement)
+    open fun postHandleClickInColorCircle(event: Event)
+    open fun handleClickInColorCircle(event: MouseEvent)
+    open fun getColorCircleLocRadius(colorCanvas: HTMLCanvasElement): `T$9`
     open fun postUpdateColorCircleCanvas()
-    open fun updateColorCircleCanvas(rootElement: Any)
-    open fun convertPickerLocToRgb(pickerLoc: Any): Any
-    open fun convertRgbToPickerLocationAndIndex(rgb255: Any): Any
-    open fun updateColorCircle(ctx: Any)
-    open fun updateColorCircleProgress(ctx: Any)
-    open fun updatePickerMarker(ctx: Any)
-    open fun calcCanvasLocationFromPickerLocation(canvas: Any, pickerLocation: Any): Any
-    open fun calcPickerLocationFromCanvasLocation(canvas: Any, cartesian: Any): Any
+    open fun updateColorCircleCanvas(rootElement: HTMLElement)
+    open fun convertPickerLocToRgb(pickerLoc: `T$10`): Array<Number>
+    open fun convertRgbToPickerLocationAndIndex(rgb255: Array<Number>): `T$11`
+    open fun updateColorCircle(ctx: CanvasRenderingContext2D)
+    open fun updateColorCircleProgress(ctx: CanvasRenderingContext2D)
+    open fun updatePickerMarker(ctx: CanvasRenderingContext2D)
+    open fun calcCanvasLocationFromPickerLocation(canvas: HTMLCanvasElement, pickerLocation: `T$10`): Array<Number>
+    open fun calcPickerLocationFromCanvasLocation(canvas: HTMLCanvasElement, cartesian: Array<Number>): `T$12`
     open fun handleValueValidate()
-    open fun handleValue(event: Any)
+    open fun handleValue(event: Event)
     open fun syncValueWithUi()
     open fun syncValueUiWithValue()
 
     companion object {
-        fun createDefaultPickerMarker(lineWidth: Any): (ctx: Any, x: Any, y: Any, r: Any, i: Any) -> Unit
-        fun calcRecognizableGrayIndex(grayIndex: Any): Any
+        fun createDefaultPickerMarker(lineWidth: Any): (ctx: CanvasRenderingContext2D, x: Number, y: Number, r: Number, i: Number) -> Unit
+        fun calcRecognizableGrayIndex(grayIndex: Any): Number
     }
 }

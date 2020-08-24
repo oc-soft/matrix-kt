@@ -161,9 +161,19 @@ li.icon-item svg.svg-inline--fa path {
 
         div.color-scheme {
             border-radius: .2em;
+            border-color: rgb(222, 226, 230);
+            border-style: solid;
+            border-width: thin;
             margin: .2em;
             width: 1em;
             height: 1em;
+            &.selected:hover,
+            &.selected {
+                border-color: var(--primary);
+            }
+            &:hover {
+                border-color: var(--secondary);
+            }
         }
     }
     div.color-circle-container {
@@ -178,6 +188,7 @@ li.icon-item svg.svg-inline--fa path {
         justify-content: center;
         align-items: center;
         margin-top: 10px;
+
     }
     canvas.oc-color-circle {
         width: 160px;

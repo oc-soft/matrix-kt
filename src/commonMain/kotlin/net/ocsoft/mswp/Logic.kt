@@ -55,14 +55,14 @@ class Logic(rowSize: Int,
      */
     val openedCells : Set<CellIndex>
         get() {
-            var openedCells : Set<CellIndex>? = null
+            var openedCells : Set<CellIndex>?
             val status = this.status
             if (status != null) {
                 openedCells = status.openedButtons
             } else {
                 openedCells = HashSet<CellIndex>()
             } 
-            return openedCells!!
+            return openedCells
         }
 
     /**
@@ -70,11 +70,10 @@ class Logic(rowSize: Int,
      */
     val isOver: Boolean
         get() {
-            var result = false
             val gameOverStatus = HashSet<GamingStatus>(
                 arrayOf(GamingStatus.LOST,
                     GamingStatus.WON).toList())
-            result = gamingStatus in gameOverStatus
+            var result = gamingStatus in gameOverStatus
              
             return result 
         }
@@ -328,8 +327,7 @@ class Logic(rowSize: Int,
      * you get true if the cell is in 0..rowSize - 1 and 0..columnSize - 1
      */
     fun isValidCell(cell: CellIndex) : Boolean {
-        var result = false
-        result = cell.row in 0..rowSize - 1
+        var result = cell.row in 0..rowSize - 1
         if (result) {
             result = cell.column in 0..columnSize - 1
         } 

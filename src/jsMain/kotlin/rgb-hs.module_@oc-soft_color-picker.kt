@@ -18,51 +18,51 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
-external interface `T$4` {
+external interface `T$0` {
     var value: Number
     var maxIndex: Any
     var minIndex: Any
 }
 
-external interface `T$5` {
-    var chroma: `T$4`
+external interface `T$1` {
+    var chroma: `T$0`
     var hue: Any
 }
 
-external interface `T$6` {
+external interface `T$2` {
     var alpha: Number
     var beta: Number
     var hue2: Number
     var chroma2: Number
 }
 
-external interface `T$7` {
+external interface `T$3` {
     var red: Number
     var green: Number
     var blue: Number
 }
 
-external interface `T$8` {
+external interface `T$4` {
     var hue2: Any
     var chroma2: Any
     var v: Any
     var saturation: Any
 }
 
-external interface `T$9` {
+external interface `T$5` {
     var hue2: Number
     var chroma2: Number
     var l: Number
     var saturation: Any
 }
 
-external interface `T$10` {
+external interface `T$6` {
     var rgb: Array<Any>
     var row: Number
     var col: Number
 }
 
-external interface `T$11` {
+external interface `T$7` {
     var start: (progress: Any) -> Promise<Any>
 }
 
@@ -74,10 +74,10 @@ external open class RgbHs {
         fun findIndex(rgb: Any, comparator: Any): Any
         fun findMaxIndex(rgb: Any): Any
         fun findMinIndex(rgb: Any): Any
-        fun calcChroma(rgb: Any): `T$4`
+        fun calcChroma(rgb: Any): `T$0`
         fun calcHue(rgb: Any, chroma: Any): Any
-        fun calcHueChroma(rgb: Any): `T$5`
-        fun calcHueChroma2(rgb: Any): `T$6`
+        fun calcHueChroma(rgb: Any): `T$1`
+        fun calcHueChroma2(rgb: Any): `T$2`
         fun luma(rgb: Any, coefficients: Any): Any
         fun lumaY709(rgb: Any): Any
         fun lumaY601(rgb: Any): Any
@@ -85,9 +85,9 @@ external open class RgbHs {
         fun rgbMinValue(rgb: Any): Any
         fun rgbMinMaxAverage(rgb: Any): Number
         fun rgbAverage(rgb: Any): Number
-        fun rgb255ToRgb1(rgb: Any): `T$7`
-        fun rgbToHsv2(rgb: Any): `T$8`
-        fun rgbToHsl2(rgb: Any): `T$9`
+        fun rgb255ToRgb1(rgb: Any): `T$3`
+        fun rgbToHsv2(rgb: Any): `T$4`
+        fun rgbToHsl2(rgb: Any): `T$5`
         fun calcChromaRatioFromHue(hue: Any): Any
         fun xyrvToRgb(x: Any, y: Any, r: Any, v: Any, vToColorValue: Any): Any
         fun hueChromaToRgb(hue: Any, chroma: Any, v: Any, vToColorValue: Any): Array<Number>
@@ -96,7 +96,7 @@ external open class RgbHs {
         fun lumaY709ToColorValue(y709: Any, chroma: Any, rgbTempValue: Any): Number
         fun lumaY601ToColorValue(y601: Any, chroma: Any, rgbTempValue: Any): Number
         fun isInCircle(x: Any, y: Any, radius: Any): Boolean
-        fun createColorCircle(radius: Any, indexValue: Any, notCircleValue: Any): `T$10`
-        fun createColorCircleProgress(radius: Any, indexValue: Any, notCircleValue: Any): `T$11`
+        fun createColorCircle(radius: Any, indexValue: Any, notCircleValue: Any): `T$6`
+        fun createColorCircleProgress(radius: Any, indexValue: Any, notCircleValue: Any): `T$7`
     }
 }

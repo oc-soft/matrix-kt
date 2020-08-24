@@ -120,8 +120,10 @@
   <div id="color-selector" class="modal" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-title"><?php
-          echo _("Please choose color"); ?></div>
+        <div class="modal-header">
+          <div class="modal-title"><?php
+            echo _("Please choose color"); ?></div>
+        </div>
         <div class="modal-body">
           <div class="colors container">
             <div class="color-scheme color-item-0"></div>
@@ -129,12 +131,13 @@
             <div class="color-scheme color-item-3"></div>
             <div class="color-scheme color-item-4"></div>
             <div class="color-scheme color-item-env-0"></div>
+            <div class="color-scheme color-item-env-1"></div>
           </div>
           <div class="color-circle-container">
             <canvas class="oc-color-circle"></canvas>
           </div>
           <div class="color-value-controller">
-            <input class="oc-value" type="number" min="0" max="255">
+            <input class="oc-value" type="range" min="0" max="255">
           </div>
         </div>
         <div class="modal-footer">

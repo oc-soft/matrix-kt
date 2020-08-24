@@ -143,8 +143,6 @@ class PhysicsEng(var gravity: Float = 9.8f,
             val axisN = Math.normalize3(axis)
             var result : Array<FloatArray>? = null
             if (axisN != null && divisionCount > 0) {
-                var rotations : MutableList<FloatArray>
-                    = ArrayList<FloatArray>()
                 // time displacement
                 val totalRadians = (PI * 2 * rotationCount).toFloat()
                 // displacement of radian
@@ -184,8 +182,7 @@ class PhysicsEng(var gravity: Float = 9.8f,
 
             var result: Pair<Array<FloatArray>, IntArray>? = null
             if (vMotionMat != null && sMotionMat != null) {
-                var matrices: Array<FloatArray>? = null
-                matrices = Array<FloatArray>(vMotionMat.first.size) {
+                val matrices = Array<FloatArray>(vMotionMat.first.size) {
                     i ->
                     Matrix.multiply(vMotionMat.first[i], sMotionMat[i])!!
                 }        
@@ -203,7 +200,6 @@ class PhysicsEng(var gravity: Float = 9.8f,
             rotationCount: Float,
             divisionCount: Int): Pair<Array<FloatArray>, IntArray>? {
             val v = 0.5f * g * t
-            val totalRadians = (PI * 2 * abs(rotationCount)).toFloat()
             val vMotionMat = createVerticalMotion(v, g, divisionCount)
             val sMotionMat = calcSpin(axis, divisionCount, rotationCount)
             var result: Pair<Array<FloatArray>, IntArray>? = null
@@ -225,14 +221,13 @@ class PhysicsEng(var gravity: Float = 9.8f,
             rotationCount: Float,
             divisionCount: Int): Array<FloatArray>? {
             val v = 0.5f * g * t
-            val totalRadians = (PI * 2 * abs(rotationCount)).toFloat()
             val vMotionMat = createVerticalMotion(v, g, divisionCount)
             val sMotionMat = calcSpin(axis, 
                 divisionCount, rotationCount)
             var result: Array<FloatArray>? = null
             if (vMotionMat != null && sMotionMat != null) {
                 result = Array<FloatArray>(vMotionMat.first.size) {
-                    i -> sMotionMat[i]!!
+                    i -> sMotionMat[i]
                 }        
             } 
             return result 
@@ -276,7 +271,6 @@ class PhysicsEng(var gravity: Float = 9.8f,
     fun calcSpinAndVerticalMotion1(t: Float,
         axis: FloatArray,
         rotationCount: Float): Pair<Array<FloatArray>, IntArray>? {
-        val frameDulation = this.frameDuration
         val countOfFrames = this.calcCountOfFrames(t)         
         return PhysicsEng.calcSpinAndVerticalMotion(
             frameDuration * countOfFrames, gravity,

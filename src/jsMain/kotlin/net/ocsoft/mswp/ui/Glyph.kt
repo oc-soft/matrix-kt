@@ -326,7 +326,6 @@ class Glyph(
      */
     fun createFontawesomeIconDef(prefix: String,
         iconName : String) : fontawesome.IconDefinition {
-        val imgSize = round(this.buttonTextureSize * buttonTextRatio).toInt()
         var fa = window.get("FontAwesome")
         val result : fontawesome.IconDefinition = fa.findIconDefinition(
             object {
@@ -358,13 +357,13 @@ class Glyph(
      */
 
     fun multiply(a: DOMMatrix, b: DOMMatrix): DOMMatrix {
-        var res: DOMMatrix? = null
+        var res: DOMMatrix? 
         if (js("typeof a.multiplySelf === 'function'")) {
             res = a.multiplySelf(b)
         } else {
             res = a.multiply(b)
         }
-        return res!!
+        return res
     }
 
     /**
@@ -388,7 +387,7 @@ class Glyph(
     fun createPath(pathStr: String): Path2D {
 
         val ua = window.navigator.userAgent; 
-        var result: Path2D? = null 
+        var result: Path2D?
         if (ua.indexOf("Edge") == -1) {
             result = ms.Svg.createPath2D(pathStr)
             // result = Path2D(pathStr)
@@ -396,7 +395,7 @@ class Glyph(
             result = ms.Svg.createPath2D(pathStr)
         }
 
-        return result!!
+        return result
     }
 
     /**

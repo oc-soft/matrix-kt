@@ -43,8 +43,7 @@ class Path {
             handler: (Element)->Boolean,
             errorHandler: ((Int)->Unit)?): Boolean {
             val st = Stream(pathData)
-            var result = false
-            result = parse0(st, handler, errorHandler)
+            var result = parse0(st, handler, errorHandler)
             return result
         }       
 
@@ -54,8 +53,7 @@ class Path {
         fun parse0(stream: Stream, 
             handler: (Element)->Boolean,
             errorHandler: ((Int)->Unit)?): Boolean {
-            var result = parseWspZeroOrMore(stream)
-            result = parseMoveto(stream, handler, errorHandler) 
+            var result = parseMoveto(stream, handler, errorHandler) 
             if (result) {
                 do {
                     parseWspZeroOrMore(stream)
@@ -137,6 +135,7 @@ class Path {
         /**
          * parse close path
          */
+	@Suppress("UNUSED_PARAMETER")
         fun parseClosepath(stream: Stream,
             handler: ((Element)->Boolean),
             errorHandler: ((Int)->Unit)?): Boolean {
@@ -297,9 +296,8 @@ class Path {
          */
         fun parseCurvetoCoordinateSequence(stream: Stream,
             coordinates: MutableList<Pair<Double, Double>>?): Boolean {
-            var result = false
              
-            result = parseCoordinatePairTriplet(stream, coordinates)
+            var result = parseCoordinatePairTriplet(stream, coordinates)
             if (result) {
                 val savedIdx = stream.index
                 parseCommaWsp(stream)
@@ -369,8 +367,7 @@ class Path {
         fun parseSmoothCurvetoCoordinateSequence(
             stream: Stream,
             coordinates: MutableList<Pair<Double, Double>>?): Boolean {
-            var result = false
-            result = parseCoordinatePairDouble(stream, coordinates) 
+            var result = parseCoordinatePairDouble(stream, coordinates) 
             if (result) {
                 parseCommaWsp(stream)
                 parseSmoothCurvetoCoordinateSequence(stream, coordinates)
@@ -438,8 +435,7 @@ class Path {
         fun parseQuadraticBezierCurvetoCoordinateSequence(
             stream: Stream,
             coordinates: MutableList<Pair<Double, Double>>?): Boolean {
-            var result = false
-            result = parseCoordinatePairDouble(stream, coordinates)
+            var result = parseCoordinatePairDouble(stream, coordinates)
             if (result) {
                 parseWsp(stream)
                 parseQuadraticBezierCurvetoCoordinateSequence(stream,
@@ -496,9 +492,8 @@ class Path {
                 var closingRes: Element? = null
                 val savedIndex = stream.index
                 parseCommaWsp(stream)
-                var closingArgPathRes = false
                 val closingArgs = ArrayList<Double>()
-                closingArgPathRes = parseEllipticalArcClosingArgument(
+                var closingArgPathRes = parseEllipticalArcClosingArgument(
                     stream, closingArgs) {
                         closingRes = it
                         true
@@ -657,9 +652,8 @@ class Path {
         fun parseBearingArgumentSequence(
             stream: Stream,
             bearingArgs: MutableList<Double>?): Boolean {
-            var result = false
             var num = 0.0  
-            result = parseNumber(stream, { num = it })
+            var result = parseNumber(stream, { num = it })
             if (result) {
                 bearingArgs?.add(num)
                 parseBearingArgumentSequence(stream, bearingArgs)
@@ -720,7 +714,7 @@ class Path {
             }
             if (result) {
                 catmullArgs?.addAll(tmpArgs)
-                var state = true
+                var state : Boolean
                 do {
                     state = parseCoordinatePair(stream) {
                         catmullArgs?.add(it)
@@ -737,9 +731,8 @@ class Path {
             coordinatePairs: MutableList<Pair<Double, Double>>?): Boolean {
             
             val coordinates = ArrayList<Pair<Double, Double>>()
-            var result = false
             val savedIndex = stream.index
-            result = parseCoordinatePair(stream) { coordinates.add(it) }
+            var result = parseCoordinatePair(stream) { coordinates.add(it) }
             if (result) {
                 parseCommaWsp(stream)
                 result = parseCoordinatePair(stream) {
@@ -761,9 +754,8 @@ class Path {
         fun parseCoordinatePairTriplet(stream: Stream,
             coordinatePairs: MutableList<Pair<Double, Double>>?): Boolean {
             val pairList = ArrayList<Pair<Double, Double>>() 
-            var result = false
             val savedIndex = stream.index
-            result = parseCoordinatePair(stream, { pairList.add(it) })
+            var result = parseCoordinatePair(stream, { pairList.add(it) })
             if (result) {
                 for (i in 0..1) {
                     parseCommaWsp(stream)
@@ -840,8 +832,7 @@ class Path {
          */
         fun parseCoordinate(stream: Stream, 
             handler: ((Double)->Unit)?): Boolean {
-            var result = false
-            result = parseNumber(stream) { 
+            var result = parseNumber(stream) { 
                 if (handler != null) {
                     handler(it)
                 }
@@ -915,7 +906,7 @@ class Path {
         fun parseDigitSequence(stream: Stream,
             handler: ((Int)->Unit)?): Boolean {
             var result = false 
-            var hit = false
+            var hit: Boolean 
             var number = 0 
             do {
                 var pc = stream.peekChar
@@ -977,9 +968,8 @@ class Path {
             if (result) {
                 var fractionalNum = 0.0
                 if (fractionalPart > 0) {
-                    var expNum = 0.0
                     var fracPartF =  fractionalPart.toDouble()
-                    expNum = log10(fracPartF + 1)
+                    var expNum = log10(fracPartF + 1)
                     expNum = ceil(expNum)
                     fractionalNum = fracPartF * 10.0.pow(-expNum)
                 }
@@ -1048,9 +1038,8 @@ class Path {
          */
         fun parseFlag(stream: Stream,
             handler: (Double)->Unit): Boolean {
-            var result = false
             var pc = stream.peekChar
-            result = '0' == pc || '1' == pc
+            var result = '0' == pc || '1' == pc
             if (result) {
                 val iVal = pc!! - '0'
                 handler(iVal.toDouble())
@@ -1063,8 +1052,7 @@ class Path {
          * parse comma and white space
          */
         fun parseCommaWsp(stream: Stream): Boolean {
-            var result = false
-            result = parseWsp(stream)
+            var result = parseWsp(stream)
             if (result) {
                 var pc = stream.peekChar
                 if (',' == pc) {
@@ -1091,7 +1079,7 @@ class Path {
             var result = false
             var pc = stream.peekChar 
             if (pc != null) {
-                val aChar = pc!!
+                val aChar = pc
                 if ('\u0009' == aChar
                     || '\u0020' == aChar
                     || '\u000A' == aChar 
@@ -1206,8 +1194,7 @@ class Path {
             }
             val clockwise = thetaDelta >= 0 
             
-            var theta2 = 0.0
-            theta2 = theta + thetaDelta
+            var theta2 = theta + thetaDelta
             val phaiRotMat = Matrix2(cosPhai, -sinPhai, sinPhai, cosPhai)
             var p12Hal = Pair(
                 (point1.first + point2.first) / 2,

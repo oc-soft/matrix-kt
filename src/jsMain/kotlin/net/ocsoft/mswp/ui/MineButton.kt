@@ -6,6 +6,7 @@ import net.ocsoft.mswp.*
 /**
  * button to cover mine
  */
+@Suppress("UNUSED_PARAMETER")
 class MineButton(
     colorScheme: ColorScheme,
     frontColor: FloatArray = colorScheme[ColorScheme.ButtonFront],

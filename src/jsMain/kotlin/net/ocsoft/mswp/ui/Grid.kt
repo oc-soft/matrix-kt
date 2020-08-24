@@ -47,12 +47,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                 val oldAppSettings = field 
                 if (oldAppSettings != null) {
                     oldAppSettings.handleToEditLighting = null
+                    oldAppSettings.colorSchemeContainer = null
                 }
                 field = value
                 if (value != null) {
                     value.handleToEditLighting = { 
                         onEditLightSetting()
-                    }                               
+                    }
+                    value.colorSchemeContainer = colorSchemeContainer
                 }
             }
         }
@@ -159,6 +161,33 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             return pointLightSetting.isEditing
         }
 
+    /**
+     * color scheme
+     */
+    var colorScheme: ColorScheme = colorScheme
+        get() {
+            return field 
+        }
+        set(value) {
+            field = value  
+        }
+
+    /**
+     * color scheme container
+     */
+    val colorSchemeContainer: ColorSchemeContainer
+        get() {
+            val grid = this
+            return object : ColorSchemeContainer {
+                override var colorScheme: ColorScheme
+                    get() {
+                        return grid.colorScheme
+                    } 
+                    set(value) {
+                        grid.colorScheme = value 
+                    }
+            }
+        }
 
     /**
      * total button size
@@ -284,7 +313,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * set up shadow dummy
      */
     val setupShadow0: ((Grid, WebGLRenderingContext)->Unit) = {
-            grid, gl ->
+            _, _->
         }
 
     /**

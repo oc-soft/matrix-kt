@@ -1,4 +1,7 @@
 package net.ocsoft.mswp
+
+import kotlin.math.min
+
 /**
  * color scheme
  */
@@ -6,14 +9,14 @@ class ColorScheme(
     /** 
      * color [0,1] values
      */
-    val colors: Array<FloatArray> = Array<FloatArray>(
+    colors: Array<FloatArray> = Array<FloatArray>(
         ColorScheme.colors.size) {
             ColorScheme.colors[it].copyOf()
         },
     /**
      * environment colors
      */
-    val envColors: Array<FloatArray> = Array<FloatArray>(
+    envColors: Array<FloatArray> = Array<FloatArray>(
         ColorScheme.envColors.size) { 
             ColorScheme.envColors[it].copyOf()
         }) {
@@ -47,7 +50,8 @@ class ColorScheme(
          * environment colors
          */
         val envColors = arrayOf(
-            floatArrayOf(0f, 0f, 0f, 1f))
+            floatArrayOf(0f, 0f, 0f, 1f),
+            floatArrayOf(1f, 1f, 1f, 1f))
 
         /**
          * board color index
@@ -79,8 +83,24 @@ class ColorScheme(
          * environment background color index
          */
         val Background: Int = 0
+
+        /**
+         * environment foreground color index
+         */
+        val Foreground: Int = 1
     }
     
+    /**
+     * colors
+     */
+    val colors = Array<FloatArray>(colors.size) { colors[it].copyOf() }
+
+    /**
+     * environment colors
+     */
+    val envColors =
+        Array<FloatArray>(envColors.size) { envColors[it].copyOf() }
+
     /**
      * get a indexed color
      */
@@ -111,9 +131,54 @@ class ColorScheme(
      */
     val backgournd: FloatArray
         get() {
-            return envColors[ColorScheme.Background]
-        }    
+            return getEnvironment(Background)!!.copyOf()
+        }
 
+    /**
+     * foreground color
+     */
+    val foreground: FloatArray
+        get() {
+            return getEnvironment(Foreground)!!.copyOf()
+        }
+
+    /**
+     * size of environment color
+     */
+    val envColorSize: Int
+        get() {
+            return envColors.size
+        }
+
+    /**
+     * constructor
+     */
+    constructor(colorScheme: ColorScheme): 
+        this(colorScheme.colors, colorScheme.envColors) {
+    }
+
+
+    /**
+     * get environment color
+     */
+    fun getEnvironment(index: Int): FloatArray? {
+        var result: FloatArray? = null 
+        if (0 <= index && index < envColorSize) {
+            result = envColors[index].copyOf()
+        }
+        return result
+    }
+
+    /**
+     * set environment color
+     */
+    fun setEnvironment(index: Int, color: FloatArray) {
+        if (0 <= index && index < envColorSize) {
+            for (i in 0 until min(envColors[index].size, color.size)) {
+                envColors[index][i] = color[i]
+            }
+        }         
+    }
     
 }
 // vi: se ts=4 sw=4 et:

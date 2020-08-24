@@ -21,8 +21,7 @@ class CellIndex(val row: Int,
      * compare the other object
      */
     override fun compareTo(other: CellIndex): Int {
-        var result = -1 
-        result = row  - other.row
+        var result = row  - other.row
         if (result == 0) {
             result = column - other.column
         }
@@ -35,7 +34,7 @@ class CellIndex(val row: Int,
         var result = this === other 
         if (!result) {
             if (other is CellIndex) {
-                val otherIndices = other as CellIndex 
+                val otherIndices = other
                 result = compareTo(otherIndices) == 0
                  
             } 

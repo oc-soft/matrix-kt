@@ -3,6 +3,7 @@ package net.ocsoft.mswp.ui
 import jQuery
 import JQueryEventObject
 import kotlin.js.Json
+import net.ocsoft.mswp.ColorSchemeContainer
 
 /**
  * setting user interface
@@ -43,6 +44,10 @@ class AppSettings(val option : Option) {
      */
     var handleToEditLighting: (()->Unit)? = null 
 
+    /**
+     * this is called when color selector is visible
+     */
+    var colorSchemeContainer: ColorSchemeContainer? = null
      
     /**
      * bind to html
@@ -79,6 +84,15 @@ class AppSettings(val option : Option) {
         if (handler != null) {
             handler()
         }
+    }
+
+    /**
+     * edit color scheme
+     */
+    fun editColorScheme() {
+        colorSelector?.colorSchemeContainer = colorSchemeContainer 
+        colorSelector?.show()
+ 
     }
 }
 // vi: se ts=4 sw=4 et: 
