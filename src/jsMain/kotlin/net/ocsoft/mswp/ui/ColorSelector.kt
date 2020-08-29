@@ -84,12 +84,7 @@ class ColorSelector(
         val itemEnv0Query: String,
         val itemEnv1Query: String,
         val itemClassName: String,
-        val item0TooltipQuery: String,
-        val item1TooltipQuery: String,
-        val item3TooltipQuery: String,
-        val item4TooltipQuery: String,
-        val itemEnv0TooltipQuery: String,
-        val itemEnv1TooltipQuery: String)
+        val descriptionQuery: String)
 
     /**
      * color picker user interface
@@ -199,21 +194,7 @@ class ColorSelector(
                 colorEnv1Ui = value.getEnvironment(1)
             }
         }
-    /**
-     * color item and tooltip query pairs
-     */
-    val colorItemTooltipQuerys: Array<Pair<String, String>>
-        get() {
-            return arrayOf(
-                Pair(option.item0Query, option.item0TooltipQuery),
-                Pair(option.item1Query, option.item1TooltipQuery),
-                Pair(option.item3Query, option.item3TooltipQuery),
-                Pair(option.item4Query, option.item4TooltipQuery),
-                Pair(option.itemEnv0Query, option.itemEnv0TooltipQuery),
-                Pair(option.itemEnv1Query, option.itemEnv1TooltipQuery))
-       }
-
-      
+    
     /**
      * item 0 color value
      */
@@ -387,7 +368,45 @@ class ColorSelector(
                 }
             }
         }
-
+    /**
+     * description
+     */
+    var descriptionUi: String?
+        get() {
+            var result: String? = null
+            val elem = descriptionItemUi
+            if (elem != null) {
+                result = elem.innerText
+            }
+            return result 
+        }
+        set(value) {
+            val elem = descriptionItemUi
+            if (elem != null) {
+                if (value == null) {
+                    elem.innerText = ""
+                } else {
+                    elem.innerText = value!!
+                }
+            }
+        }
+    /**
+     * description
+     */
+    val descriptionItemUi: HTMLElement?
+        get() {
+            var result: HTMLElement? = null
+            val jqModal = jQuery(option.modalQuery)
+            if (jqModal.length.toInt() > 0) {
+                val elem = jQuery(selector = option.descriptionQuery,
+                    context = jqModal)
+                if (elem.length.toInt() > 0) {
+                    result = elem[0] as HTMLElement
+                }
+            }
+            return result 
+        }
+ 
     /**
      * color item 0 user interface
      */
@@ -470,21 +489,6 @@ class ColorSelector(
         return result 
     }
 
-    /**
-     * get color tooltip item
-     */
-    fun getColorTootipItem(className: String): HTMLElement? {
-        var result: HTMLElement? = null
-        val modal = jQuery(option.modalQuery)
-        if (modal.length.toInt() > 0) {
-            val elem = jQuery(selector = className, context = modal.eq(0))
-            if (elem.length.toInt() > 0) {
-                result = elem[0] as HTMLElement
-            }
-        }
-        return result
-    }
-
 
     /**
      * visible modal color selector
@@ -526,7 +530,6 @@ class ColorSelector(
         this.colorPicker?.bind(jQuery(option.modalQuery)[0] as HTMLElement) 
         this.colorPicker?.addEventListener("pickerLocation", 
             colorPickerHdlr!!)
-        bindTooltips()
         this.colorSchemeUi = this.colorScheme 
 
 
@@ -573,29 +576,6 @@ class ColorSelector(
 
     }
     /**
-     * connect tooltip into user interface
-     */
-    fun bindTooltips() {
-        val colorItemTooltips = colorItemTooltipQuerys
-        val poppers = Array<popper.Instance?>(colorItemTooltips.size) {
-            val first = getColorItem(colorItemTooltips[it].first) 
-            val second = getColorTootipItem(colorItemTooltips[it].second)
-
-            if (first != null && second != null) {
-                jQuery(first).data("tooltip-query",
-                    colorItemTooltips[it].second)  
-                Popper.createPopper(first, second, 
-                    object {
-                        val placement: String = "top"
-                    } )
-            } else {
-                null
-            }
-        }
-        this.poppers = poppers
-    }
-
-    /**
      * detach functions from modal user interface.
      */
     fun unbindModal() {
@@ -630,24 +610,7 @@ class ColorSelector(
             colorPickerHdlr = null
         }
     }
-    /**
-     * disconnect tooltip into user interface
-     */
-    fun unbindTooltips() {
-        val poppers = this.poppers
 
-        if (poppers != null) {
-            poppers.forEach {
-                if (it != null) {
-                    val elem = it.state.elements.reference as HTMLElement
-                    jQuery(elem).removeData("tooltip-query")
-                    it.destroy()
-                }
-            }
-        }
-        this.poppers = null
-    }
- 
     /**
      * setup modal dialog contents
      */
@@ -660,7 +623,6 @@ class ColorSelector(
      * tear down modal dialog contents
      */
     fun teardownContents() {
-        unbindTooltips()
         unbindColorPicker()
     }
 
@@ -712,15 +674,15 @@ class ColorSelector(
                 syncColorPickerWithSelectedSchemeColor()
             })  
             window.setTimeout({
-                syncColorItemTooltipWithSelection()
+                syncDescriptionWithSelection()
             })
         }
     }
 
     /**
-     * synchronize color item tooltip with selection
+     * synchronize description with selection
      */
-    fun syncColorItemTooltipWithSelection() {
+    fun syncDescriptionWithSelection() {
         val jqModal = jQuery(option.modalQuery)
 
         val colorItemsContainer = jQuery(
@@ -729,23 +691,14 @@ class ColorSelector(
         val colorItems = jQuery(selector = ".${option.itemClassName}",
             context = colorItemsContainer)
         
-        colorItems.each {
-            idx, _ -> 
-            val htmlElem = getColorTootipItem(
-                colorItems.eq(idx).data("tooltip-query") as String)
-            if (htmlElem != null) {
-                jQuery(htmlElem).removeClass("visible")
-            }
-        } 
+ 
         val selectedItem = jQuery(
             selector = ".selected", 
             context = colorItemsContainer) 
         if (selectedItem.length.toInt() > 0) {
-            val htmlElem = getColorTootipItem(
-                selectedItem.eq(0).data("tooltip-query") as String)
-            if (htmlElem != null) {
-                jQuery(htmlElem).addClass("visible")
-            }
+            descriptionUi = selectedItem.eq(0).data("tooltip") as String
+        } else {
+            descriptionUi = null
         }
     }
 
