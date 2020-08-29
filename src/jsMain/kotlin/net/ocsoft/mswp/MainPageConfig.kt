@@ -58,7 +58,13 @@ data class MainPageConfig(
             ".color-item-4",
             ".color-item-env-0",
             ".color-item-env-1",
-            "color-scheme"),
+            "color-scheme",
+            ".tooltip.color-item-0",
+            ".tooltip.color-item-1",
+            ".tooltip.color-item-3",
+            ".tooltip.color-item-4",
+            ".tooltip.color-item-env-0",
+            ".tooltip.color-item-env-1"),
         PointLightSetting.Option("#synchronizing-icon-2"))) {
 }
 

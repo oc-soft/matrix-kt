@@ -10,6 +10,7 @@ import net.ocsoft.mswp.ColorSchemeContainer
 import jQuery
 import JQuery
 import JQueryEventObject
+import popper.Popper
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLCanvasElement
@@ -82,12 +83,24 @@ class ColorSelector(
         val item4Query: String,
         val itemEnv0Query: String,
         val itemEnv1Query: String,
-        val itemClassName: String)
+        val itemClassName: String,
+        val item0TooltipQuery: String,
+        val item1TooltipQuery: String,
+        val item3TooltipQuery: String,
+        val item4TooltipQuery: String,
+        val itemEnv0TooltipQuery: String,
+        val itemEnv1TooltipQuery: String)
 
     /**
      * color picker user interface
      */
     var colorPicker: net.ocsoft.color.picker.UI? = null
+
+
+    /**
+     * poppper instances
+     */
+    var poppers: Array<popper.Instance?>? = null
 
     /**
      * called this method when modal is hidden
@@ -110,14 +123,13 @@ class ColorSelector(
      */
     var colorItemClickHdlr: ((JQueryEventObject, Any?)->Any)? = null
 
-
+ 
     /**
      * handle event form color picker user interface
      */
-    var colorPickerHdlr: ((String, Any) -> Unit)? = null
+    var colorPickerHdlr: ((net.ocsoft.color.picker.`T$13`) -> Unit)? = null
     
-    
- 
+
     /**
      * color scheme
      */
@@ -187,6 +199,20 @@ class ColorSelector(
                 colorEnv1Ui = value.getEnvironment(1)
             }
         }
+    /**
+     * color item and tooltip query pairs
+     */
+    val colorItemTooltipQuerys: Array<Pair<String, String>>
+        get() {
+            return arrayOf(
+                Pair(option.item0Query, option.item0TooltipQuery),
+                Pair(option.item1Query, option.item1TooltipQuery),
+                Pair(option.item3Query, option.item3TooltipQuery),
+                Pair(option.item4Query, option.item4TooltipQuery),
+                Pair(option.itemEnv0Query, option.itemEnv0TooltipQuery),
+                Pair(option.itemEnv1Query, option.itemEnv1TooltipQuery))
+       }
+
       
     /**
      * item 0 color value
@@ -444,6 +470,21 @@ class ColorSelector(
         return result 
     }
 
+    /**
+     * get color tooltip item
+     */
+    fun getColorTootipItem(className: String): HTMLElement? {
+        var result: HTMLElement? = null
+        val modal = jQuery(option.modalQuery)
+        if (modal.length.toInt() > 0) {
+            val elem = jQuery(selector = className, context = modal.eq(0))
+            if (elem.length.toInt() > 0) {
+                result = elem[0] as HTMLElement
+            }
+        }
+        return result
+    }
+
 
     /**
      * visible modal color selector
@@ -485,7 +526,7 @@ class ColorSelector(
         this.colorPicker?.bind(jQuery(option.modalQuery)[0] as HTMLElement) 
         this.colorPicker?.addEventListener("pickerLocation", 
             colorPickerHdlr!!)
- 
+        bindTooltips()
         this.colorSchemeUi = this.colorScheme 
 
 
@@ -516,9 +557,11 @@ class ColorSelector(
         modalShownHdlr = { e, arg -> onShownModal(e, arg) }
         okHdlr = { e, arg -> onOk(e, arg) }
         colorItemClickHdlr = { e, args -> onColorItemClick(e, args) }
-        colorPickerHdlr = { t, _ -> onMarkColorChanged(t) }
+        colorPickerHdlr = { e -> onMarkColorChanged(e) }
 
         val jqModalQuery = jQuery(option.modalQuery)
+
+        
         jQuery(option.okQuery).on("click", okHdlr!!)
         jqModalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
         jqModalQuery.on("shown.bs.modal", this.modalShownHdlr!!)
@@ -528,6 +571,28 @@ class ColorSelector(
  
         setupContents()
 
+    }
+    /**
+     * connect tooltip into user interface
+     */
+    fun bindTooltips() {
+        val colorItemTooltips = colorItemTooltipQuerys
+        val poppers = Array<popper.Instance?>(colorItemTooltips.size) {
+            val first = getColorItem(colorItemTooltips[it].first) 
+            val second = getColorTootipItem(colorItemTooltips[it].second)
+
+            if (first != null && second != null) {
+                jQuery(first).data("tooltip-query",
+                    colorItemTooltips[it].second)  
+                Popper.createPopper(first, second, 
+                    object {
+                        val placement: String = "top"
+                    } )
+            } else {
+                null
+            }
+        }
+        this.poppers = poppers
     }
 
     /**
@@ -560,23 +625,42 @@ class ColorSelector(
         }
         if (colorPickerHdlr != null) {
             val colorPicker = this.colorPicker  
-            colorPicker?.removeEventListener("pickerLocation", 
+            colorPicker?.removeEventListener(null, 
                 colorPickerHdlr!!)
             colorPickerHdlr = null
         }
     }
+    /**
+     * disconnect tooltip into user interface
+     */
+    fun unbindTooltips() {
+        val poppers = this.poppers
 
+        if (poppers != null) {
+            poppers.forEach {
+                if (it != null) {
+                    val elem = it.state.elements.reference as HTMLElement
+                    jQuery(elem).removeData("tooltip-query")
+                    it.destroy()
+                }
+            }
+        }
+        this.poppers = null
+    }
+ 
     /**
      * setup modal dialog contents
      */
     fun setupContents() {
         bindColorPicker()
+
     }
 
     /**
      * tear down modal dialog contents
      */
     fun teardownContents() {
+        unbindTooltips()
         unbindColorPicker()
     }
 
@@ -605,10 +689,15 @@ class ColorSelector(
     /**
      * handle picker marker changed event
      */
-    fun onMarkColorChanged(kind: String) {
-        if (kind == "pickerLocation") {
-            window.setTimeout({ syncSeletectedSchemeColorWithColorPicker() })  
+    fun onMarkColorChanged(e: net.ocsoft.color.picker.`T$13`) {
+        when (e.type) {
+            "pickerLocation",
+            "indexValue" -> {
+                window.setTimeout(
+                    { syncSeletectedSchemeColorWithColorPicker() })  
+            }
         }
+        
     }
 
     /**
@@ -619,7 +708,44 @@ class ColorSelector(
         if (!jqColorItem.hasClass("selected")) {
             jqColorItem.siblings().removeClass("selected")
             jqColorItem.addClass("selected")
-            window.setTimeout({ syncColorPickerWithSelectedSchemeColor() })  
+            window.setTimeout({
+                syncColorPickerWithSelectedSchemeColor()
+            })  
+            window.setTimeout({
+                syncColorItemTooltipWithSelection()
+            })
+        }
+    }
+
+    /**
+     * synchronize color item tooltip with selection
+     */
+    fun syncColorItemTooltipWithSelection() {
+        val jqModal = jQuery(option.modalQuery)
+
+        val colorItemsContainer = jQuery(
+            selector = option.itemsContainerQuery,
+            context = jqModal)
+        val colorItems = jQuery(selector = ".${option.itemClassName}",
+            context = colorItemsContainer)
+        
+        colorItems.each {
+            idx, _ -> 
+            val htmlElem = getColorTootipItem(
+                colorItems.eq(idx).data("tooltip-query") as String)
+            if (htmlElem != null) {
+                jQuery(htmlElem).removeClass("visible")
+            }
+        } 
+        val selectedItem = jQuery(
+            selector = ".selected", 
+            context = colorItemsContainer) 
+        if (selectedItem.length.toInt() > 0) {
+            val htmlElem = getColorTootipItem(
+                selectedItem.eq(0).data("tooltip-query") as String)
+            if (htmlElem != null) {
+                jQuery(htmlElem).addClass("visible")
+            }
         }
     }
 
@@ -636,7 +762,7 @@ class ColorSelector(
             val savedPickerHdlr = colorPickerHdlr
             picker.removeEventListener("pickerLocation", colorPickerHdlr!!)
             picker.markColor = color255
-            picker.addEventListener("pickerLocation", savedPickerHdlr!!)
+            picker.addEventListener(null, savedPickerHdlr!!)
         }
     }
 

@@ -18,32 +18,37 @@ import org.w3c.performance.*
 import org.w3c.workers.*
 import org.w3c.xhr.*
 
-external interface `T$8` {
+external interface `T$12` {
     var value: String
     var colorCircleCanvas: String
 }
 
-external interface `T$9` {
+external interface `T$13` {
+    var type: String
+    var sender: Any
+}
+
+external interface `T$14` {
     var loc: Array<Number>
     var radius: Number
 }
 
-external interface `T$10` {
+external interface `T$15` {
     var radius: Number
     var radian: Number
 }
 
-external interface `T$11` {
+external interface `T$16` {
     var indexValue: Number
-    var pickerLocation: `T$10`
+    var pickerLocation: `T$15`
 }
 
-external interface `T$12` {
+external interface `T$17` {
     var radian: Number
     var radius: Number
 }
 
-external open class UI(template: String? = definedExternally, classMapping: `T$8`? = definedExternally, indexValue: Number = definedExternally, colorType: String = definedExternally) {
+external open class UI(template: String? = definedExternally, classMapping: `T$12`? = definedExternally, indexValue: Number = definedExternally, colorType: String = definedExternally) {
     open var indexValueField: Any
     open var colorTypeField: Any
     open var pickerLocationField: Any
@@ -62,8 +67,8 @@ external open class UI(template: String? = definedExternally, classMapping: `T$8
     open var markColor: Array<Number>?
     open fun bind(rootElement: HTMLElement)
     open fun unbind()
-    open fun addEventListener(type: String, listener: (type: String, sender: Any) -> Unit)
-    open fun removeEventListener(type: String, listener: (type: String, sender: Any) -> Unit)
+    open fun addEventListener(type: String?, listener: (arg: `T$13`) -> Unit)
+    open fun removeEventListener(type: String?, listener: (arg: `T$13`) -> Unit)
     open fun notify(type: String)
     open fun bindValue(rootElement: HTMLElement)
     open fun unbindValue(rootElement: HTMLElement)
@@ -71,16 +76,16 @@ external open class UI(template: String? = definedExternally, classMapping: `T$8
     open fun unbindColorCircle(rootElement: HTMLElement)
     open fun postHandleClickInColorCircle(event: Event)
     open fun handleClickInColorCircle(event: MouseEvent)
-    open fun getColorCircleLocRadius(colorCanvas: HTMLCanvasElement): `T$9`
+    open fun getColorCircleLocRadius(colorCanvas: HTMLCanvasElement): `T$14`
     open fun postUpdateColorCircleCanvas()
     open fun updateColorCircleCanvas(rootElement: HTMLElement)
-    open fun convertPickerLocToRgb(pickerLoc: `T$10`): Array<Number>
-    open fun convertRgbToPickerLocationAndIndex(rgb255: Array<Number>): `T$11`
+    open fun convertPickerLocToRgb(pickerLoc: `T$15`): Array<Number>
+    open fun convertRgbToPickerLocationAndIndex(rgb255: Array<Number>): `T$16`
     open fun updateColorCircle(ctx: CanvasRenderingContext2D)
     open fun updateColorCircleProgress(ctx: CanvasRenderingContext2D)
     open fun updatePickerMarker(ctx: CanvasRenderingContext2D)
-    open fun calcCanvasLocationFromPickerLocation(canvas: HTMLCanvasElement, pickerLocation: `T$10`): Array<Number>
-    open fun calcPickerLocationFromCanvasLocation(canvas: HTMLCanvasElement, cartesian: Array<Number>): `T$12`
+    open fun calcCanvasLocationFromPickerLocation(canvas: HTMLCanvasElement, pickerLocation: `T$15`): Array<Number>
+    open fun calcPickerLocationFromCanvasLocation(canvas: HTMLCanvasElement, cartesian: Array<Number>): `T$17`
     open fun handleValueValidate()
     open fun handleValue(event: Event)
     open fun syncValueWithUi()
