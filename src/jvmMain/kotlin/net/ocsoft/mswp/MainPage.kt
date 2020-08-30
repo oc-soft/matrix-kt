@@ -6,13 +6,12 @@ package net.ocsoft.mswp
 actual class MainPage {
 
     actual fun setupBody(model : Model, camera: Camera, 
-        pointLight: PointLight) {
+        pointLight: PointLight,
+        colorScheme: ColorScheme) {
     }
     
     actual fun setup(settings: Settings) {
     }
    
 }
-
-
-
+// vi: se ts=4 sw=4 et:

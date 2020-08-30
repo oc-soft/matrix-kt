@@ -50,7 +50,7 @@ data class MainPageConfig(
         ColorSelector.Option(
             "#color-selector",
             "#color-selector .oc-color-circle",
-            "#color-seletor .ok",
+            "#color-selector .ok",
             ".colors.container",
             ".color-item-0",
             ".color-item-1",
@@ -59,7 +59,8 @@ data class MainPageConfig(
             ".color-item-env-0",
             ".color-item-env-1",
             "color-scheme",
-            ".description"),
+            ".description",
+            "#synchronizing-icon"),
         PointLightSetting.Option("#synchronizing-icon-2"))) {
 }
 

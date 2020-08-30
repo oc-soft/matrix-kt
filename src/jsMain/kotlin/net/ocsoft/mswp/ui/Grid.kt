@@ -169,7 +169,10 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             return field 
         }
         set(value) {
-            field = value  
+            if (value != field) {
+                field = value 
+                postSyncWithColorScheme() 
+            }
         }
 
     /**
@@ -717,6 +720,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         model: Model,
         camera: Camera,
         pointLight: net.ocsoft.mswp.PointLight,
+        colorScheme: ColorScheme,
         shaderPrograms: ShaderPrograms,
         appSettings: AppSettings) {
         
@@ -728,6 +732,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         this.board.textures = this.textures
         this.camera = camera
         this.pointLight = pointLight
+        this.colorScheme = colorScheme
         this.shaderPrograms = shaderPrograms
         this.canvasId = settings.canvasId 
         this.gameOverModalId = settings.gameOverModalId
@@ -801,6 +806,36 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
+            textures.updateOkImageTexture(gl, glyph)
+            textures.updateNgImageTexture(gl, glyph) 
+            postDrawScene(gl)
+        }
+    }
+    
+    /**
+     * synchronize this with color scheme lately
+     */
+    fun postSyncWithColorScheme() {
+        window.setTimeout({
+            syncWithColorScheme() 
+        })
+    }
+
+    /**
+     * synchronize this with color scheme
+     */
+    fun syncWithColorScheme() {
+        buttons.updateColorScheme(colorScheme)
+        glyph.updateColorScheme(colorScheme)
+        board.updateColorScheme(colorScheme)
+
+        val iconSetting = this.iconSetting
+        if (iconSetting != null) {
+            glyph.updateImages(iconSetting)
+            val canvasNode = jQuery(canvasId!!)
+            val canvas = canvasNode[0] as HTMLCanvasElement
+            var gl = canvas.getContext("webgl") as WebGLRenderingContext
+            textures.updateNumberImageBlankTexture(gl, glyph)
             textures.updateOkImageTexture(gl, glyph)
             textures.updateNgImageTexture(gl, glyph) 
             postDrawScene(gl)

@@ -15,7 +15,8 @@ fun main(args: Array<String>) {
     val mainPage = MainPage()
     val boardCam = Camera()
     val pointLight = PointLight()
-    mainPage.setupBody(model, boardCam, pointLight)
+    val colorScheme = ColorScheme()
+    mainPage.setupBody(model, boardCam, pointLight, colorScheme)
     mainPage.setup(Settings())
     Context.mainPage = mainPage 
     run()

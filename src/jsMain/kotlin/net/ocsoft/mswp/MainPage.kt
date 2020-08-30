@@ -49,7 +49,12 @@ actual class MainPage {
      * light
      */
     var pointLight: PointLight? = null
-   
+
+    /**
+     * color scheme
+     */
+    var colorScheme: ColorScheme? = null
+ 
     /**
      * start gaming
      */
@@ -65,10 +70,12 @@ actual class MainPage {
      * setup body
      */ 
     actual fun setupBody(model : Model, camera: Camera, 
-        pointLight: PointLight) {
+        pointLight: PointLight,
+        colorScheme: ColorScheme) {
         this.model = model
         this.camera = camera
         this.pointLight = pointLight        
+        this.colorScheme = colorScheme
     }
     /**
      * setup for html page
@@ -79,32 +86,35 @@ actual class MainPage {
      * run program
      */ 
     fun run(settings: Any) {
-        var settingObj : dynamic? = null 
-        if (settings != null) {
-            settingObj = settings
-        } else {
-            settingObj = Settings()
-        }
+        var settingObj : dynamic
+        settingObj = settings
             
-        var promises = ArrayList<Promise<Any>>()
-        
-        promises.add(loadFont(settingObj.textureText))
-        promises.add(Polyfill.load())
-        Promise.all(Array<Promise<Any>>(promises.size) { promises[it] }).then {
-            setupBodyI(model!!, 
-            camera!!, 
-            pointLight!!,
-            settingObj!!.rootDir,
-            settingObj!!.progDir,
-            settingObj!!.ui) 
+        if (settingObj != null) {
+            var promises = ArrayList<Promise<Any>>()
+            
+            promises.add(loadFont(settingObj.textureText))
+            promises.add(Polyfill.load())
+            Promise.all(Array<Promise<Any>>(promises.size) { 
+                promises[it] 
+            }).then {
+                setupBodyI(model!!, 
+                camera!!, 
+                pointLight!!,
+                colorScheme!!,
+                settingObj.rootDir,
+                settingObj.progDir,
+                settingObj.ui) 
+            }
         }
     }
     fun setupBodyI(model : Model, 
         camera: Camera, 
         pointLight: PointLight,
+        colorScheme: ColorScheme,
         rootDir: String,
         progDir: String,
         uiSetting: Json) {
+
         appSettings.runtimeConfig = uiSetting
         jQuery { 
             val grid = Grid(appSettings.option.pointLightSettingOption)
@@ -141,6 +151,14 @@ actual class MainPage {
                     }
                     Unit
                 }))
+            var colorScheme0 : ColorScheme? = null
+            promises.add(
+                Persistence.loadColorScheme().then({
+                    if (it != null) {
+                        colorScheme0 = it
+                    }
+                    Unit
+                }))
             val promisesArray = Array<Promise<Any>>(promises.size) {
                 promises[it]
             }
@@ -161,10 +179,17 @@ actual class MainPage {
                     this.pointLight = pointLight0!!
                     pointLightParam = pointLight0!!
                 }
-                
+                var colorSchemeParam = colorScheme
+                if (colorScheme0 != null) {
+                    this.colorScheme = colorScheme0!!
+                    colorSchemeParam = colorScheme0!!
+                }
+                 
                 grid.bind(config.gridSettings,
                     model, camera, 
-                    pointLightParam, shaderPrograms,
+                    pointLightParam, 
+                    colorSchemeParam,
+                    shaderPrograms,
                     appSettings)
                 appSettings.bind()
                 readyToPlay() 
@@ -186,7 +211,7 @@ actual class MainPage {
      */
     fun loadFont(textToLoad : String) : Promise<Unit> {
         val result = Promise<Unit> {
-            resolve, reject -> Unit  
+            resolve, _ -> Unit  
             val activeCallback = {
                 resolve(Unit) 
             }

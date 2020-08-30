@@ -2,6 +2,7 @@ package net.ocsoft.mswp.ui
 
 import org.khronos.webgl.*
 import net.ocsoft.mswp.*
+import kotlin.math.min
 
 /**
  * game board
@@ -157,6 +158,17 @@ class Board(
         get() {
             return getTransparentTexture()
         }
+
+    /**
+     * update color scheme
+     */
+    fun updateColorScheme(colorScheme: ColorScheme) {
+        val color = colorScheme[ColorScheme.Board]
+        for (i in 0 until min(color.size, this.color.size)) {
+            this.color[i] = color[i]
+        }
+    }
+
     /**
      * create vertices color
      */

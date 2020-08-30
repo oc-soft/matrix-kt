@@ -1,4 +1,5 @@
 package net.ocsoft.mswp.ui
+
 import jQuery
 import JQuery
 import JQueryAjaxSettings
@@ -6,9 +7,15 @@ import kotlin.js.Promise
 import kotlin.collections.Map
 import kotlin.collections.HashMap
 import kotlin.browser.window
+import kotlin.text.toIntOrNull
+import kotlin.math.roundToInt
+import kotlin.math.min
+import kotlin.math.max
 import org.w3c.fetch.RequestInit
 import org.w3c.fetch.Response
 import org.w3c.xhr.FormData
+
+import net.ocsoft.mswp.ColorScheme
 
 /**
  * manage user interface persistence data.
@@ -67,22 +74,48 @@ class Persistence {
                 window.fetch("persistence.php",
                     RequestInit(
                         method = "POST",
-                        body = body)).then(
-                    {
+                        body = body)).then({
                         res ->
                         res.json()
-                    }).then(
-                    {
+                    }).then({
                         res ->
                         resolve(res) 
-                    }).catch( 
-                    {
+                    }).catch({
                         reason ->
                         reject(Throwable(reason))
                     })
             })
             return result
         }
+
+        /**
+         * save color scheme 
+         */
+        fun saveColorScheme(data: ColorScheme): Promise<Any?> {
+            val strData = JSON.stringify(colorSchemeToDynamic(data)) 
+            val result = Promise<Any?>({
+                resolve, reject ->
+                val body = FormData()
+                body.append("color-scheme", "write")
+                body.append("data", strData)
+
+                window.fetch("persistence.php",
+                    RequestInit(
+                        method = "POST",
+                        body = body)).then({
+                        res ->
+                        res.json()
+                    }).then({
+                        res ->
+                        resolve(res) 
+                    }).catch({
+                        reason ->
+                        reject(Throwable(reason))
+                    })
+            })
+            return result
+        }
+
 
         /**
          * save point light
@@ -118,7 +151,7 @@ class Persistence {
         }
          
         /**
-         * convert 
+         * convert icon map to dynamic object
          */
         fun iconMapToDynamic(iconMap : Map<String, Icon>): dynamic {
             val result: dynamic = object {}
@@ -130,6 +163,9 @@ class Persistence {
             result["icons"] = icons
             return result
         }
+        /**
+         * convert dynamic object to icon map
+         */
         fun dynamicToIconMap(iconData: dynamic): Map<String, Icon>? {
             val verstr = iconData["version"] as String?
             var result : Map<String, Icon>? = null
@@ -163,6 +199,94 @@ class Persistence {
             }
             return result
         }
+
+        /**
+         * convert dynamic object to color scheme
+         */
+        fun dynamicToColorScheme(
+            colorScheme: dynamic) : ColorScheme? {
+            var result: ColorScheme? = null
+            val colorSchemeObj: dynamic = colorScheme["color-scheme"]
+            val colorsSource = arrayOf(
+                colorSchemeObj["colors"], 
+                colorSchemeObj["environment"])
+            val defaultColor = arrayOf(
+                ColorScheme.colors,
+                ColorScheme.envColors)
+
+            var colorsParam: Array<Array<FloatArray>?> = arrayOf(
+                null,
+                null)
+            for (idx0 in 0 until colorsParam.size) {
+                if (colorsSource[idx0] != null) {
+                    val colors0 = defaultColor[idx0]
+                    var replaced = false
+                    for (idx1 in 0 until colors0.size) {
+                        val colorSource = colorsSource[idx1]
+                        if (colorSource != null) {
+                            for(idx2 in 0 until colors0[idx1].size) {
+                                val colorVal = colorSource["${idx2}"]
+                                if (colorVal != null) {
+                                    var intColor =
+                                        colorVal.toString().toIntOrNull() 
+                                    if (intColor != null) {
+                                        intColor = min(0xff, intColor)
+                                        intColor = max(0, intColor)   
+                                        colors0[idx1][idx2] = 
+                                            intColor.toFloat() / 0xff.toFloat()
+                                        replaced = true      
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (replaced) {
+                        colorsParam[idx0] = colors0 
+                    } 
+                }
+            }
+            if (colorsParam[0] != null
+                || colorsParam[1] != null) {
+                for (idx in 0..colorsParam.size) {
+                    if (colorsParam[idx] == null) {
+                        colorsParam[idx] = defaultColor[idx]
+                    }
+                }
+                result = ColorScheme(
+                    colorsParam[0]!!,
+                    colorsParam[1]!!)
+            }
+            return result
+        }
+
+        /**
+         * convert color scheme to dynamic object
+         */
+        fun colorSchemeToDynamic(colorScheme: ColorScheme): dynamic {
+            val result: dynamic = object {
+            }
+            val colors = colorScheme.colors
+            val colorSchemeObj: dynamic = object {
+            }
+            colorSchemeObj["colors"] = Array<IntArray>(colors.size) {
+                val color = colors[it] 
+                IntArray(color.size) {
+                    max(min(
+                        (color[it] * 0xff.toFloat()).roundToInt(), 0xff), 0)
+                }
+            }
+            val envColors = colorScheme.envColors
+            colorSchemeObj["environment"] = Array<IntArray>(envColors.size) {
+                val color = envColors[it] 
+                IntArray(color.size) {
+                    max(min(
+                        (color[it] * 0xff.toFloat()).roundToInt(), 0xff), 0)
+                }
+            }
+            result["version"] = 0
+            result["color-scheme"] = colorSchemeObj
+            return result
+        } 
 
         /**
          * convert dynamic object to pointLight
@@ -271,7 +395,35 @@ class Persistence {
                 })
                 
             }
+            return result
+        }
 
+        /**
+         * load color scheme
+         */
+        fun loadColorScheme(): Promise<ColorScheme?> {
+            val result = Promise<ColorScheme?> {
+                resolve, reject ->
+                val body = FormData()
+                body.append("color-scheme", "read")
+                var prm = window.fetch("persistence.php", 
+                    RequestInit(
+                        method = "POST",
+                        body = body))
+                prm.then({
+                    it.json()
+                }).then({  
+                    val res0: dynamic = it
+                    var colorScheme: ColorScheme? = null
+                    if (res0.data != null) {
+                        val tmpColorScheme = JSON.parse<dynamic>(res0.data)
+                        colorScheme = dynamicToColorScheme(tmpColorScheme)
+                    }
+                    resolve(colorScheme)
+                }).catch({
+                    reject(Throwable(it))
+                })
+            } 
             return result
         }
     }
@@ -284,6 +436,7 @@ class Persistence {
         val prefix: String,
         @JsName("iconName")
         val iconName: String)   
+
 }
 
 // vi: se ts=4 sw=4 et: 

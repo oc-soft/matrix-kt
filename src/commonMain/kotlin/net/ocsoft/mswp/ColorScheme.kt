@@ -3,6 +3,23 @@ package net.ocsoft.mswp
 import kotlin.math.min
 
 /**
+ * equals extension
+ */
+fun FloatArray.elementEquals(other: FloatArray): Boolean {
+    val otherFloatArray = other
+    var result = this.size == otherFloatArray.size
+    if (result) {
+        for (i in 0 until this.size) {
+            result = this[i] == otherFloatArray[i]
+            if (!result) {
+                break
+            }
+        }
+    }
+    return result
+}
+
+/**
  * color scheme
  */
 class ColorScheme(
@@ -179,6 +196,37 @@ class ColorScheme(
             }
         }         
     }
-    
+
+    /**
+     * equals 
+     */
+    override fun equals(other: Any?): Boolean {
+        var result = other is ColorScheme
+        if (result) {
+            val otherColorScheme = other as ColorScheme
+            result = size == otherColorScheme.size  
+            if (result) {
+                for (i in 0 until size) {
+                    result = this[i].elementEquals(otherColorScheme[i])
+                    if (!result) {
+                        break
+                    }
+                }
+            }
+            if (result) {
+                result = envColorSize == otherColorScheme.envColorSize
+            }
+            if (result) {
+                for (i in 0 until envColorSize) {
+                    result = getEnvironment(i)!!.elementEquals(
+                        otherColorScheme.getEnvironment(i)!!)
+                    if (!result) {
+                        break
+                    }
+                }
+            }
+        }
+        return result
+    }
 }
 // vi: se ts=4 sw=4 et:

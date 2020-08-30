@@ -223,6 +223,29 @@ class Glyph(
         }
     }
 
+    /**
+     * update all image with specied icon setting.
+     */
+    fun updateImages(
+        iconSetting: IconSetting) {
+        val nodeId = this.nodeId     
+        if (nodeId != null) {
+            val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
+            val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+     
+            updateImages(ctx, iconSetting)
+        }
+    }
+
+
+    /**
+     * update all images
+     */
+    fun updateImages(
+        ctx: CanvasRenderingContext2D,
+        iconSetting: IconSetting) {
+        setup(ctx, iconSetting)
+    }
 
     /**
      * update special image with specied icon setting.
@@ -492,6 +515,17 @@ class Glyph(
             result = numberImageMap[number] 
         }
         return result
+    }
+
+
+    /**
+     * update color scheme
+     */
+    fun updateColorScheme(colorScheme: ColorScheme) {
+        val color = colorScheme[ColorScheme.MineNumber] 
+        for (i in 0 until min(numberColor.size, color.size)) {
+            numberColor[i] = color[i]
+        }
     }
 
     /**

@@ -150,6 +150,15 @@ class MineButton(
     var backColor : FloatArray = backColor
 
 
+    /**
+     * update color
+     */
+    fun updateColorScheme(colorScheme: ColorScheme) {
+        frontColor = colorScheme[ColorScheme.ButtonFront]
+        backColor = colorScheme[ColorScheme.ButtonBack]
+    }
+
+
     fun createPolygons(xDivider: Int, yDivider: Int): FloatArray {
         val thickness = buttonSize.min()!! * this.thickness
         val frontV = Polygon.divideSquare2(buttonSize, 

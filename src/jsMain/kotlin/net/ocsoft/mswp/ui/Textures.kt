@@ -72,10 +72,8 @@ class Textures {
      */
     fun getNumberImageBlankTexture(num : Int): WebGLTexture? {
         var numTexMap = this.numberImageBlankTextureMap
-        var result: WebGLTexture? = null
-        if (numTexMap != null) {
-            result = numTexMap[num];
-        } 
+        var result: WebGLTexture?
+        result = numTexMap[num]
         return result
     }
     
@@ -163,7 +161,7 @@ class Textures {
                         WebGLRenderingContext.UNSIGNED_BYTE,
                         numImage)
                     gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-                    numberImageBlankTextureMap[num] = tex!!
+                    numberImageBlankTextureMap[num] = tex
                 }
             }
         }
@@ -183,6 +181,16 @@ class Textures {
             }
         }
         numberImageBlankTextureMap.clear()
+    }
+
+    /**
+     * update number image blank texture
+     */
+    fun updateNumberImageBlankTexture(
+        gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        teardownNumberImageBlankTexture(gl)
+        setupNumberImageBlankTexture(gl, glyph)
     }
 
     /**

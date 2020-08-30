@@ -3,10 +3,10 @@ package net.ocsoft.mswp.ui.grid
 import kotlin.math.*
 import net.ocsoft.mswp.ui.*
 import net.ocsoft.mswp.CellIndex
+import net.ocsoft.mswp.ColorScheme
 import org.khronos.webgl.*
 import net.ocsoft.mswp.Logic
 import org.w3c.dom.*
-
 
 
 class Buttons(var mineButton : MineButton,
@@ -103,6 +103,14 @@ class Buttons(var mineButton : MineButton,
         get() {
             return getTransparentTexture()
         }
+
+    /**
+     * update color scheme
+     */
+    fun updateColorScheme(colorScheme: ColorScheme) {
+        mineButton.updateColorScheme(colorScheme)
+    }
+
     /**
      * get picking color at row and column.
      */
@@ -157,8 +165,7 @@ class Buttons(var mineButton : MineButton,
         var logic = this.logic
         var textures = this.textures
         if (textures != null && logic != null) {
-            var num : Int? = null 
-            num = logic.getNumberIfOpened(rowIndex, colIndex)  
+            val num = logic.getNumberIfOpened(rowIndex, colIndex)  
             if (num != null && num > 0) {
                 result = textures.getNumberImageBlankTexture(num)
             }  

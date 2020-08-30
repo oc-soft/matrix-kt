@@ -19,7 +19,12 @@ $db_table_creation = array(
         . 'DATA CHAR(64),'
         . 'PRIMARY KEY (ID)'
 	. ')',
-    
+    'color_scheme' => 'CREATE TABLE IF NOT EXISTS %scolor_scheme ' 
+        . '('
+        . 'ID CHAR(23),'
+        . 'DATA CHAR(255),'
+        . 'PRIMARY KEY (ID)'
+    . ')'
 );
 
 $db_access_update = array(
@@ -39,6 +44,7 @@ $db_select_expired_records = array(
 );
 
 $db_remove_expired_records = array(
+    'color_scheme' => 'DELETE FROM %scolor_schem WHERE ID in (%s)',
     'point_light' => 'DELETE FROM %spoint_light WHERE ID in (%s)',
     'icon' => 'DELETE FROM %sicon WHERE ID in (%s)',
     'session' => 'DELETE FROM %ssession WHERE ID in (%s)'
@@ -64,6 +70,18 @@ $db_point_light_manipulation = array(
     ),
     'read' => array(
         'query' => 'SELECT DATA FROM %spoint_light WHERE ID = ?',
+        'params' => array('s')
+    )
+);
+
+$db_color_scheme_manipulation = array(
+    'write' => array(
+        'query' => 'INSERT INTO %scolor_scheme (ID,DATA) VALUES(?,?) '
+            . 'ON DUPLICATE KEY UPDATE DATA = VALUES(DATA)',
+        'params'=> array('ss')
+    ),
+    'read' => array(
+        'query' => 'SELECT DATA FROM %scolor_scheme WHERE ID = ?',
         'params' => array('s')
     )
 );

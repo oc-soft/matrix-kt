@@ -84,7 +84,8 @@ class ColorSelector(
         val itemEnv0Query: String,
         val itemEnv1Query: String,
         val itemClassName: String,
-        val descriptionQuery: String)
+        val descriptionQuery: String,
+        val syncIconTemplateQuery: String)
 
     /**
      * color picker user interface
@@ -123,7 +124,12 @@ class ColorSelector(
      * handle event form color picker user interface
      */
     var colorPickerHdlr: ((net.ocsoft.color.picker.`T$13`) -> Unit)? = null
-    
+   
+    /**
+     * contens of ok ui control, this list is keeping while ajax request. 
+     */
+    var okContents: MutableList<String>? = null 
+
 
     /**
      * color scheme
@@ -386,7 +392,7 @@ class ColorSelector(
                 if (value == null) {
                     elem.innerText = ""
                 } else {
-                    elem.innerText = value!!
+                    elem.innerText = value
                 }
             }
         }
@@ -503,7 +509,8 @@ class ColorSelector(
      * hide modal color selector
      */
     fun hide() {
-        unbindModal()
+        val modalObj = jQuery(option.modalQuery)
+        modalObj.asDynamic().modal("hide") 
     }
 
     /**
@@ -688,9 +695,6 @@ class ColorSelector(
         val colorItemsContainer = jQuery(
             selector = option.itemsContainerQuery,
             context = jqModal)
-        val colorItems = jQuery(selector = ".${option.itemClassName}",
-            context = colorItemsContainer)
-        
  
         val selectedItem = jQuery(
             selector = ".selected", 
@@ -749,9 +753,53 @@ class ColorSelector(
      * do save setting
      */
     private fun postSave() {
+        window.setTimeout({ doSave() })
+    }
+
+    /**
+     * save color scheme
+     */
+    fun doSave() {
+        val colorScheme = this.colorSchemeUi
+        if (colorScheme != null) {
+            changeUiOkToSync()
+            Persistence.saveColorScheme(colorScheme).then({
+                this.colorScheme = colorScheme
+                restoreOkFromSync()
+                hide()
+            }, {
+                restoreOkFromSync()
+            })
+        }
+    }
+
+    /**
+     * change ok to synchronizing icon
+     */
+    fun changeUiOkToSync() {
+        val syncHtml = jQuery(option.syncIconTemplateQuery).html()
+
+        okContents = ArrayList<String>()
+        jQuery(option.okQuery).html({
+            _, oldHtml ->
+            okContents?.add(oldHtml) 
+            syncHtml
+        })
+    }
+    /**
+     * restore ok from synchronizing icon
+     */
+    fun restoreOkFromSync() {
+        val okContents = this.okContents
+        if (okContents != null) {
+            jQuery(option.okQuery).html({
+                index, _ ->
+                okContents[index.toInt()]
+            })
+            this.okContents = null
+        } 
     }
  
-
     /**
      * synchronize canvas size with client size.
      */
