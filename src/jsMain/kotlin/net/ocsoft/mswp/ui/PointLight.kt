@@ -14,6 +14,7 @@ import org.khronos.webgl.get
 import org.khronos.webgl.set
 import net.ocsoft.mswp.ui.grid.Display
 import net.ocsoft.mswp.ui.Grid
+import net.ocsoft.mswp.Activity
 
 
 /**
@@ -365,6 +366,7 @@ class PointLight(
                 lightPointW[0], lightPointW[1], lightPointW[2]) 
             setPointLightCoordinate(grid, wgl, lightPoint)
         }
+        Activity.record()
     }
     
     /**

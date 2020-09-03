@@ -134,7 +134,7 @@
             <div class="color-scheme color-item-3"
               data-tooltip="<?php echo _("Button back face"); ?>"></div>
             <div class="color-scheme color-item-4"
-              data-toolitp="<?php echo _("Board"); ?>"></div>
+              data-tooltip="<?php echo _("Board"); ?>"></div>
             <div class="color-scheme color-item-env-0"
               data-tooltip="<?php echo _("Backgournd"); ?>"></div>
             <div class="color-scheme color-item-env-1"
@@ -148,11 +148,20 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button"
-            class="btn btn-primary ok"><?php echo _("OK"); ?></button>
-          <button type="button"
-            data-dismiss="modal" 
-            class="btn btn-secondary"><?php echo _("Cacel"); ?></button>
+          <div class="left-side">
+            <button type="button"
+              class="btn btn-secondary initial-setting"><?php 
+                echo _("Initial Setting"); ?></button>
+          </div>
+          <div class="right-side">
+            <button type="button"
+              class="btn btn-primary ok"><?php
+                echo _("OK"); ?></button>
+            <button type="button"
+              data-dismiss="modal" 
+              class="btn btn-secondary"><?php
+                echo _("Cacel"); ?></button>
+          </div>
         </div>
       </div>
     </div>

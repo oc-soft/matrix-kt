@@ -220,21 +220,26 @@ class Persistence {
             for (idx0 in 0 until colorsParam.size) {
                 if (colorsSource[idx0] != null) {
                     val colors0 = defaultColor[idx0]
+                    val colorSource = colorsSource[idx0]
                     var replaced = false
-                    for (idx1 in 0 until colors0.size) {
-                        val colorSource = colorsSource[idx1]
-                        if (colorSource != null) {
-                            for(idx2 in 0 until colors0[idx1].size) {
-                                val colorVal = colorSource["${idx2}"]
-                                if (colorVal != null) {
-                                    var intColor =
-                                        colorVal.toString().toIntOrNull() 
-                                    if (intColor != null) {
-                                        intColor = min(0xff, intColor)
-                                        intColor = max(0, intColor)   
-                                        colors0[idx1][idx2] = 
-                                            intColor.toFloat() / 0xff.toFloat()
-                                        replaced = true      
+                    if (colorSource != null) {
+                        for (idx1 in 0 until colors0.size) {
+                            val colorItem = colorSource["${idx1}"]
+                            if (colorItem != null) {
+                                for(idx2 in 0 until colors0[idx1].size) {
+                                    val colorVal = colorItem["${idx2}"]
+                                    if (colorVal != null) {
+                                        val strColor = colorVal.toString()
+                                        var intColor = strColor.toIntOrNull()
+                                        if (intColor != null) {
+                                            intColor = min(0xff, intColor)
+                                            intColor = max(0, intColor)   
+                                            colors0[idx1][idx2] = 
+                                                intColor.toFloat() 
+                                            colors0[idx1][idx2] /= 
+                                                0xff.toFloat()
+                                            replaced = true
+                                        }
                                     }
                                 }
                             }
@@ -247,7 +252,7 @@ class Persistence {
             }
             if (colorsParam[0] != null
                 || colorsParam[1] != null) {
-                for (idx in 0..colorsParam.size) {
+                for (idx in 0 until colorsParam.size) {
                     if (colorsParam[idx] == null) {
                         colorsParam[idx] = defaultColor[idx]
                     }
@@ -265,19 +270,18 @@ class Persistence {
         fun colorSchemeToDynamic(colorScheme: ColorScheme): dynamic {
             val result: dynamic = object {
             }
-            val colors = colorScheme.colors
             val colorSchemeObj: dynamic = object {
             }
-            colorSchemeObj["colors"] = Array<IntArray>(colors.size) {
-                val color = colors[it] 
+            colorSchemeObj["colors"] = Array<IntArray>(colorScheme.size) {
+                val color = colorScheme[it] 
                 IntArray(color.size) {
                     max(min(
                         (color[it] * 0xff.toFloat()).roundToInt(), 0xff), 0)
                 }
             }
-            val envColors = colorScheme.envColors
-            colorSchemeObj["environment"] = Array<IntArray>(envColors.size) {
-                val color = envColors[it] 
+            colorSchemeObj["environment"] = Array<IntArray>(
+                colorScheme.envColorSize) {
+                val color = colorScheme.getEnvironment(it)!!
                 IntArray(color.size) {
                     max(min(
                         (color[it] * 0xff.toFloat()).roundToInt(), 0xff), 0)

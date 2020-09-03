@@ -4,6 +4,7 @@ import jQuery
 import JQueryEventObject
 import kotlin.js.Json
 import net.ocsoft.mswp.ColorSchemeContainer
+import net.ocsoft.mswp.Environment
 
 /**
  * setting user interface
@@ -14,6 +15,7 @@ class AppSettings(val option : Option) {
      */
     data class Option(
         val gameSettingsOption: GameSettings.Option, 
+        val environmentOption: Environment.Option,
         val iconOption : IconSelector.Option,
         val colorOption: ColorSelector.Option,
         val pointLightSettingOption: PointLightSetting.Option)
@@ -61,7 +63,6 @@ class AppSettings(val option : Option) {
         iconSelector?.bind()
 
         colorSelector = ColorSelector(option.colorOption)
-        
     }
 
     /**

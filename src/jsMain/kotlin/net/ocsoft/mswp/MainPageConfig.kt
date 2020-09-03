@@ -32,6 +32,11 @@ data class MainPageConfig(
                 "#lighting-setting"),
             GameSettings.Option.Menu(
                 arrayOf(0, 20))),
+        Environment.Option(
+            "#game_grid",
+            "body" ,
+            ".setting.menu",
+            "#back-to-main svg"),
         IconSelector.Option("#icon_list",
             "#icon_list .icons", 
             "#icon_list .icons li",
@@ -51,6 +56,7 @@ data class MainPageConfig(
             "#color-selector",
             "#color-selector .oc-color-circle",
             "#color-selector .ok",
+            "#color-selector .initial-setting",
             ".colors.container",
             ".color-item-0",
             ".color-item-1",

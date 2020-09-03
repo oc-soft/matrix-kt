@@ -256,6 +256,10 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             }).toFloatArray()
         }
     /**
+     * environment
+     */
+    var environment: Environment? = null
+    /**
      * web gl rendering context
      */
     var canvasId : String? = null
@@ -721,6 +725,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         camera: Camera,
         pointLight: net.ocsoft.mswp.PointLight,
         colorScheme: ColorScheme,
+        environment: Environment,
         shaderPrograms: ShaderPrograms,
         appSettings: AppSettings) {
         
@@ -739,6 +744,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         this.playerWonModalId = settings.playerWonModalId
         this.backToMainQuery = settings.backToMainQuery
         this.mainMenuItemQuery = settings.mainMenuItemQuery
+        this.environment = environment
         this.appSettings = appSettings
         this.onMineIconChanged = {
             sender, msg ->
@@ -766,6 +772,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             
             setup(gl)
             
+            environment?.syncWithColorScheme()
             drawScene(gl)
         } 
     }
@@ -775,6 +782,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * disconnect creaged grid from node.
      */
     fun unbind() {
+        this.environment = null
         this.iconSetting?.removeListener(this.onMineIconChanged!!)
         this.onMineIconChanged = null
         this.iconSetting = null
@@ -828,6 +836,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         buttons.updateColorScheme(colorScheme)
         glyph.updateColorScheme(colorScheme)
         board.updateColorScheme(colorScheme)
+        updateColorScheme(colorScheme) 
 
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
@@ -835,10 +844,25 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             val canvasNode = jQuery(canvasId!!)
             val canvas = canvasNode[0] as HTMLCanvasElement
             var gl = canvas.getContext("webgl") as WebGLRenderingContext
+            updateColorBuffer(gl)
             textures.updateNumberImageBlankTexture(gl, glyph)
             textures.updateOkImageTexture(gl, glyph)
             textures.updateNgImageTexture(gl, glyph) 
+            textures.updatePointLightMarkerTexture(gl, glyph)
             postDrawScene(gl)
+        }
+    }
+
+    /**
+     * update color scheme
+     */
+    fun updateColorScheme(colorScheme: ColorScheme) {
+        environment?.colorScheme = colorScheme
+        val background = colorScheme.getEnvironment(ColorScheme.Background)
+        if (background != null) {
+            for (i in 0 until min(backColorForDrawing.size, background.size)) {
+                backColorForDrawing[i] = background[i]
+            }
         }
     }
 
@@ -890,21 +914,47 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         } 
         window.requestAnimationFrame { render(it) }
     }
-        
+    /**
+     * setup buffer
+     */        
     private fun setupBuffer(gl: WebGLRenderingContext) {
         renderingCtx.buttonBuffer = createButtonBuffer(gl)
         renderingCtx.buttonNormalVecBuffer = createButtonNormalVecBuffer(gl)
-        renderingCtx.buttonColorBuffer = createButtonColorBuffer(gl)
         renderingCtx.buttonTextureCoordinatesBuffer =
             createButtonTextureCoordinateBuffer(gl)
         
         renderingCtx.boardBuffer = createBoardBuffer(gl)
         renderingCtx.boardNormalVecBuffer = createBoardNormalVecBuffer(gl)
-        renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
         renderingCtx.boardTextureCoordinateBuffer =
             createBoardTextureCoordinateBuffer(gl)
+        setupColorBuffer(gl)
 
     }
+
+    /**
+     * setup color buffer
+     */
+    private fun setupColorBuffer(gl: WebGLRenderingContext) {
+        renderingCtx.boardColorBuffer = createBoardColorBuffer(gl)
+        renderingCtx.buttonColorBuffer = createButtonColorBuffer(gl)
+    }
+
+    /**
+     * tear down board color buffer
+     */
+    private fun teardownColorBuffer(gl: WebGLRenderingContext) {
+        renderingCtx.teardownColorBuffers(gl)
+    }
+
+    /**
+     * update color buffer
+     */
+    private fun updateColorBuffer(gl: WebGLRenderingContext) {
+        teardownColorBuffer(gl)
+        setupColorBuffer(gl)
+    }
+
+
     private fun setupRenderbufferForPicking(gl: WebGLRenderingContext) {
         renderingCtx.pickingBuffer = createPickingBuffer(gl)
         renderingCtx.depthBufferForWorking = 

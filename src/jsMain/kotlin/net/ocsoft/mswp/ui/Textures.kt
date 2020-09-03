@@ -299,6 +299,18 @@ class Textures {
         teardownNgImageTexture(gl)
         setupNgImageTexture(gl, glyph)
     }
+
+    /**
+     * update point light marker texture
+     */
+    fun updatePointLightMarkerTexture(
+        gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        teardownPointLightMarkerTexture(gl)
+        setupPointLightMarkerTexture(gl, glyph)
+    }
+
+
     /**
      * update ng image texture
      */

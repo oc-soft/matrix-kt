@@ -300,14 +300,13 @@ class RenderingCtx() {
      * free buffer
      */
     private fun teardownBuffer(gl: WebGLRenderingContext) {
+        teardownColorBuffers(gl)
         arrayOf(buttonBuffer, 
             buttonNormalVecBuffer,
-            buttonColorBuffer,
             buttonPickingColorBuffer,
             buttonTextureCoordinatesBuffer,
             boardBuffer,
             boardNormalVecBuffer,
-            boardColorBuffer,
             boardTextureCoordinateBuffer,
             boardPickingColorBuffer,
             lightingTableBuffer,
@@ -321,15 +320,29 @@ class RenderingCtx() {
         pointLightMarkerBuffer = null
         buttonBuffer = null
         buttonNormalVecBuffer = null
-        buttonColorBuffer = null
         buttonTextureCoordinatesBuffer = null
         buttonPickingColorBuffer = null
         boardBuffer = null
         boardNormalVecBuffer = null
-        boardColorBuffer = null
         boardPickingColorBuffer = null
         boardTextureCoordinateBuffer = null
     }
+
+    /**
+     * tear down color buffers
+     */
+    fun teardownColorBuffers(gl: WebGLRenderingContext) {
+        arrayOf(buttonColorBuffer,
+            boardColorBuffer).forEach {
+                buffer ->
+                if (buffer != null) {
+                    gl.deleteBuffer(buffer)
+                }
+            }
+        buttonColorBuffer = null
+        boardColorBuffer = null
+    }
+
     fun teardownRenderBuffer(gl: WebGLRenderingContext) {
         arrayOf(pickingBuffer,
             depthBufferForWorking,

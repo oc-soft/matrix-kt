@@ -1,6 +1,7 @@
 package net.ocsoft.mswp
 
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * equals extension
@@ -27,22 +28,22 @@ class ColorScheme(
      * color [0,1] values
      */
     colors: Array<FloatArray> = Array<FloatArray>(
-        ColorScheme.colors.size) {
-            ColorScheme.colors[it].copyOf()
+        ColorScheme.colorsI.size) {
+            ColorScheme.colorsI[it].copyOf()
         },
     /**
      * environment colors
      */
     envColors: Array<FloatArray> = Array<FloatArray>(
-        ColorScheme.envColors.size) { 
-            ColorScheme.envColors[it].copyOf()
+        ColorScheme.envColorsI.size) { 
+            ColorScheme.envColorsI[it].copyOf()
         }) {
     
     companion object {
         /**
          * color [0,1] values
          */
-        val colors = arrayOf<FloatArray> (
+        private val colorsI = arrayOf<FloatArray> (
             floatArrayOf(0xF2/(0xFF).toFloat(),  
                 0xF2 / (0xFF).toFloat(),
                 0xEF / (0xFF).toFloat(),
@@ -63,12 +64,33 @@ class ColorScheme(
                 0x4D / (0xFF).toFloat(),
                 0x5F / (0xFF).toFloat(),
                 1f))
+
+        /**
+         * initial setting colors
+         */ 
+        val colors: Array<FloatArray>
+            get() {
+                return Array<FloatArray>(colorsI.size) {
+                    colorsI[it].copyOf()
+                }
+            }
         /**
          * environment colors
          */
-        val envColors = arrayOf(
+        private val envColorsI = arrayOf(
             floatArrayOf(0f, 0f, 0f, 1f),
             floatArrayOf(1f, 1f, 1f, 1f))
+
+        /**
+         * environment initial colors
+         */
+        val envColors: Array<FloatArray>
+            get() {
+                return Array<FloatArray>(envColorsI.size) {
+                    envColorsI[it].copyOf()
+                }
+            }
+
 
         /**
          * board color index
@@ -105,17 +127,29 @@ class ColorScheme(
          * environment foreground color index
          */
         val Foreground: Int = 1
+
+
+        /**
+         * convert html rgb string from float array [0,1.0]
+         */
+        fun toHtmlRgb(color: FloatArray): String {
+            val intColor = IntArray(3) {
+                (color[it] * 0xff.toFloat()).roundToInt()
+            }
+            return "rgb(${intColor[0]}, ${intColor[1]}, ${intColor[2]})"
+        }
     }
     
     /**
      * colors
      */
-    val colors = Array<FloatArray>(colors.size) { colors[it].copyOf() }
+    private val colors =
+        Array<FloatArray>(colors.size) { colors[it].copyOf() }
 
     /**
      * environment colors
      */
-    val envColors =
+    private val envColors =
         Array<FloatArray>(envColors.size) { envColors[it].copyOf() }
 
     /**

@@ -7,6 +7,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import net.ocsoft.mswp.ColorScheme
 import net.ocsoft.mswp.ColorSchemeContainer
+import net.ocsoft.mswp.Activity
 import jQuery
 import JQuery
 import JQueryEventObject
@@ -76,6 +77,7 @@ class ColorSelector(
     data class Option(val modalQuery: String,
         val canvasQuery: String,
         val okQuery: String,
+        val initialSettingQuery: String,
         val itemsContainerQuery: String,
         val item0Query: String,
         val item1Query: String,
@@ -107,6 +109,12 @@ class ColorSelector(
      * ok button handler
      */
     var okHdlr: ((JQueryEventObject, Any?)->Any)? = null
+
+
+    /**
+     * initial setting button handler
+     */
+    var initialSettingHdlr: ((JQueryEventObject, Any?)->Any)? = null
 
     /**
      * called this method when modal is showing.
@@ -566,6 +574,7 @@ class ColorSelector(
         modalHiddenHdlr = { e, arg -> onModalHidden(e, arg) }
         modalShownHdlr = { e, arg -> onShownModal(e, arg) }
         okHdlr = { e, arg -> onOk(e, arg) }
+        initialSettingHdlr = { e, args -> onInitialSetting(e, args) }
         colorItemClickHdlr = { e, args -> onColorItemClick(e, args) }
         colorPickerHdlr = { e -> onMarkColorChanged(e) }
 
@@ -573,6 +582,7 @@ class ColorSelector(
 
         
         jQuery(option.okQuery).on("click", okHdlr!!)
+        jQuery(option.initialSettingQuery).on("click", initialSettingHdlr!!)
         jqModalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
         jqModalQuery.on("shown.bs.modal", this.modalShownHdlr!!)
         jQuery(selector = option.itemsContainerQuery,
@@ -597,9 +607,19 @@ class ColorSelector(
             jqModalQuery.off("shown.bs.modal", modalShownHdlr!!)
             modalShownHdlr = null
         }
+        val selectedItem = selectedColorSchemeItem
+        if (selectedItem != null) {
+            val jqSelectedItem = jQuery(selectedItem)
+            jqSelectedItem.removeClass("selected")
+        }
 
         colorSchemeContainer = null
 
+        if (initialSettingHdlr != null) {
+            jQuery(option.initialSettingQuery).off(
+                "click", initialSettingHdlr!!)
+            initialSettingHdlr = null
+        }
         if (okHdlr != null) {
             jQuery(option.okQuery).off("click", okHdlr!!)
             okHdlr = null
@@ -651,6 +671,7 @@ class ColorSelector(
             window.setTimeout({ 
                 selectColorItem(e.target as HTMLElement) 
             })           
+            Activity.record()
         } 
     }
 
@@ -664,6 +685,7 @@ class ColorSelector(
             "indexValue" -> {
                 window.setTimeout(
                     { syncSeletectedSchemeColorWithColorPicker() })  
+                Activity.record()
             }
         }
         
@@ -746,6 +768,25 @@ class ColorSelector(
     @Suppress("UNUSED_PARAMETER")
     fun onOk(e: JQueryEventObject, args: Any?): Any {
         postSave()
+        // update session
+        Activity.record()
+
+        return Unit
+    }
+
+    /**
+     * handle initial setting
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun onInitialSetting(e: JQueryEventObject, args: Any?): Any {
+        val colorScheme = ColorScheme()
+        this.colorSchemeUi = colorScheme
+        window.setTimeout({
+            syncColorPickerWithSelectedSchemeColor()
+        })
+        // update session
+        Activity.record()
+
         return Unit
     }
 

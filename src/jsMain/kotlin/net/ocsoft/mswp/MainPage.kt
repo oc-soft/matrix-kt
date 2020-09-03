@@ -118,6 +118,7 @@ actual class MainPage {
         appSettings.runtimeConfig = uiSetting
         jQuery { 
             val grid = Grid(appSettings.option.pointLightSettingOption)
+            
             val shaders = arrayOf(
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/fragment.gls",
@@ -184,11 +185,15 @@ actual class MainPage {
                     this.colorScheme = colorScheme0!!
                     colorSchemeParam = colorScheme0!!
                 }
+                val env = Environment(
+                    appSettings.option.environmentOption,
+                    colorSchemeParam)
                  
                 grid.bind(config.gridSettings,
                     model, camera, 
                     pointLightParam, 
                     colorSchemeParam,
+                    env,
                     shaderPrograms,
                     appSettings)
                 appSettings.bind()

@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Mine sweeper 0.3.0\n"
+"Project-Id-Version: Mine sweeper 0.4.0\n"
 "Report-Msgid-Bugs-To: toshi@oc-soft.net\n"
-"POT-Creation-Date: 2020-07-11 19:22+0900\n"
+"POT-Creation-Date: 2020-09-03 07:50+0900\n"
 "PO-Revision-Date: 2019-12-08 14:55+0900\n"
 "Last-Translator: toshi@oc-soft.net\n"
 "Language-Team: Language en\n"
@@ -51,3 +51,30 @@ msgstr "Labels ..."
 
 msgid "Lighting"
 msgstr "Lighting"
+
+msgid "Colors ..."
+msgstr "Colors ..."
+
+msgid "Please choose color"
+msgstr "Please select icons"
+
+msgid "Label"
+msgstr "Label"
+
+msgid "Button front face"
+msgstr "Button front face"
+
+msgid "Button back face"
+msgstr "Button back face"
+
+msgid "Board"
+msgstr "Board"
+
+msgid "Backgournd"
+msgstr "Background"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Initial Setting"
+msgstr "Initial Setting"
