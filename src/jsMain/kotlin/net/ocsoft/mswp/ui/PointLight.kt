@@ -236,6 +236,28 @@ class PointLight(
         }
     } 
 
+    /**
+     * update field with scene buffer
+     */
+    fun updateWithSceneBuffer(grid: Grid) {
+        val projectionMatrix = createProjectionMatrix(grid)    
+        val viewport = grid.viewport!!
+        val lightEditingTable = this.lightEditingTable
+        val glrs = grid.glrs
+        this.viewport = viewport
+        this.projectionMatrix = projectionMatrix
+        if (glrs != null 
+            && lightEditingTable != null
+            && projectionMatrix != null
+            && viewport != null) { 
+            lightEditViewTable = calcLightEditViewTable(
+                glrs,
+                lightEditingTable,
+                projectionMatrix,
+                viewport)
+        }
+
+    }
 
     /**
      * calculate board bounds.
@@ -728,61 +750,6 @@ class PointLight(
         return result
     }
  
-    /**
-     * create depth buffer as rendering buffer
-     */
-    fun createDepthBufferRead(
-        gl: WebGLRenderingContext): WebGLRenderbuffer? {
-
-        val result = gl.createRenderbuffer()
-        if (result != null) {
-            val savedBuffer = gl.getParameter(
-                WebGLRenderingContext.RENDERBUFFER_BINDING) 
-                    as WebGLRenderbuffer?
-            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-                result)
-            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
-                WebGLRenderingContext.RGBA4,
-                gl.canvas.width, gl.canvas.height)
-
-            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
-                WebGLRenderingContext.COLOR_ATTACHMENT0, 
-                WebGLRenderingContext.RENDERBUFFER, result)
- 
-            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-                savedBuffer) 
-        }  
-        return result
-    }
-
-    /**
-     * crate depth buffer for depth rendering
-     */
-    fun createDepthBufferForDepthRendering(
-        gl: WebGLRenderingContext,
-        renderingCtx: RenderingCtx): WebGLRenderbuffer? {
-        val result = gl.createRenderbuffer()
-        if (result != null) {
-            val savedBuffer = gl.getParameter(
-                WebGLRenderingContext.RENDERBUFFER_BINDING) 
-                    as WebGLRenderbuffer?
-            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-                result) 
-            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
-                WebGLRenderingContext.DEPTH_COMPONENT16,
-                gl.canvas.width, gl.canvas.height);
-
-            gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
-                WebGLRenderingContext.DEPTH_ATTACHMENT, 
-                WebGLRenderingContext.RENDERBUFFER, result)
-
-            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-                savedBuffer) 
-        }
-        return result
-    }
-
-
     /**
      * open gl buffer
      */

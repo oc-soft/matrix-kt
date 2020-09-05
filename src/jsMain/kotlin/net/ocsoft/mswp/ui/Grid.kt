@@ -265,6 +265,35 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     var canvasId : String? = null
 
     /**
+     * canvas element
+     */
+    val canvas: HTMLElement?
+        get() {
+            var result: HTMLElement? = null
+            val canvasId = this.canvasId
+            if (canvasId != null) {
+                val canvasNode = jQuery(canvasId!!)
+                if (canvasNode.length.toInt() > 0) {
+                    result = canvasNode[0] as HTMLCanvasElement
+                }
+            }
+            return result 
+        }
+    /**
+     * rendering context
+     */
+    val renderingContext: WebGLRenderingContext?
+        get() {
+            var result: WebGLRenderingContext? = null
+            val canvasElem = this.canvas
+            if (canvasElem != null) {
+                val canvas = canvasElem as HTMLCanvasElement 
+                result = canvas.getContext("webgl") as WebGLRenderingContext
+            }
+            return result
+        }
+ 
+    /**
      * game over modal dialog
      */
     var gameOverModalId : String? = null
@@ -305,6 +334,12 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * play again button handler
      */
     var onClickToPlayAgainHandler: ((JQueryEventObject, Any) -> Any)? = null
+
+    /**
+     * hadler to respond window resize
+     */
+    var onResizedHdlr: ((event: Event) -> Unit)? = null
+
     
     /**
      * next game operation
@@ -360,7 +395,6 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     /**
      * lighting context for drawing
      */
-    //val lightingContextEnabledForDrawing = false 
      val lightingContextEnabledForDrawing = true
  
      
@@ -393,20 +427,20 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * draw scene
      */
     fun drawScene() {
-        val canvasNode = jQuery(canvasId!!)
-        val canvas = canvasNode[0] as HTMLCanvasElement
-        val gl = canvas.getContext("webgl") as WebGLRenderingContext
-        drawScene(gl) 
+        val gl = this.renderingContext
+        if (gl != null) {
+            drawScene(gl) 
+        }
     }
 
     /**
      * draw scen lately.
      */
     fun postDrawScene() {
-        val canvasNode = jQuery(canvasId!!)
-        val canvas = canvasNode[0] as HTMLCanvasElement
-        val gl = canvas.getContext("webgl") as WebGLRenderingContext
-        postDrawScene(gl)  
+        val gl = this.renderingContext
+        if (gl != null) {
+            postDrawScene(gl)
+        }
     }
       
     /**
@@ -511,15 +545,18 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * set up camera
      */
     fun setupCamera(gl: WebGLRenderingContext) {
-        val cam = this.camera
-        if (cam != null) {
-            detachCameraListener()
-            var aspect = gl.canvas.clientWidth.toFloat()
-            aspect /= gl.canvas.clientHeight
-            cam.aspect = aspect
-            attachCameraListener() 
-        } 
+        detachCameraListener()
+        syncCameraAspectWithContext(gl)
+        attachCameraListener() 
     }
+    /**
+     * synchronize camera aspect with rendering context
+     */
+    fun syncCameraAspectWithContext(gl: WebGLRenderingContext) {
+        var aspect = gl.canvas.clientWidth.toFloat()
+        aspect /= gl.canvas.clientHeight
+        this.camera?.aspect = aspect
+     }
 
     /**
      * set up frame buffer for picking
@@ -549,7 +586,10 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         renderingCtx.sceneBuffer = gl.getParameter(
             WebGLRenderingContext.RENDERBUFFER_BINDING)
                 as WebGLRenderbuffer?
+
     }
+    
+
 
     /**
      * setup textrues
@@ -600,13 +640,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         }
 
     }
-    /**
-     * on resizing event
-     */
-    @Suppress("UNUSED_PARAMETER")
-    fun onResize(event: Event) {
-        
-    }
+
     /**
      * handle user input
      */ 
@@ -619,13 +653,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      * handle user input
      */
     fun handleUserInput(x : Double, y: Double) {
-        val canvas = document.querySelector(
-            canvasId!!) as HTMLCanvasElement
-        val gl = canvas.getContext("webgl") as WebGLRenderingContext
-        if (!isEditingPointLight) {
-            handleUserInput(gl, round(x).toInt(), round(y).toInt())
-        } else {
-            handleUserInputForLightEdit(gl, round(x).toInt(), round(y).toInt())
+        val gl = renderingContext
+        if (gl != null) {
+            if (!isEditingPointLight) {
+                handleUserInput(gl, round(x).toInt(), round(y).toInt())
+            } else {
+                handleUserInputForLightEdit(
+                    gl, round(x).toInt(), round(y).toInt())
+            }
         }
         
     } 
@@ -754,26 +789,31 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         this.iconSetting = settings.iconSetting
         this.iconSetting?.addListener(this.onMineIconChanged!!)
         jQuery {
-            val canvasNode = jQuery(canvasId!!)
-            val canvas = canvasNode[0] as HTMLCanvasElement
-            var gl = canvas.getContext("webgl") as WebGLRenderingContext
+           
             onClickHandler = { event -> this.onClick(event) }
             onClickToPlayAgainHandler = {
                 event, args ->
                 this.handleClickToPlayAgain(event, args)
                 Activity.record()
             }
+            onResizedHdlr = {
+                event ->
+                onResized(event)
+            }
 
             setupGameOverModal()
             setupPlayerWonModal()
+            val canvas = this.canvas
             syncCanvasWithClientSize { syncViewportWithCanvasSize() }
-            canvas.addEventListener("click", onClickHandler)
+            window.addEventListener("resize", onResizedHdlr!!)
+            canvas?.addEventListener("click", onClickHandler)
             glyph.bind(settings.glyphCanvasId, settings.iconSetting)
-            
-            setup(gl)
-            
-            environment?.syncWithColorScheme()
-            drawScene(gl)
+            var gl = renderingContext
+            if (gl != null) {             
+                setup(gl)
+                environment?.syncWithColorScheme()
+                drawScene(gl)
+            }
         } 
     }
 
@@ -789,6 +829,8 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         val canvasNode = jQuery(this.canvasId!!)
         val canvas = canvasNode[0] as HTMLCanvasElement
         canvas.removeEventListener("click", onClickHandler) 
+        window.removeEventListener("resize", onResizedHdlr!!)
+        onResizedHdlr = null
         this.onClickHandler = null
         this.appSettings = null
     }
@@ -811,12 +853,12 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
             glyph.updateSpecialImage(iconSetting)
-            val canvasNode = jQuery(canvasId!!)
-            val canvas = canvasNode[0] as HTMLCanvasElement
-            var gl = canvas.getContext("webgl") as WebGLRenderingContext
-            textures.updateOkImageTexture(gl, glyph)
-            textures.updateNgImageTexture(gl, glyph) 
-            postDrawScene(gl)
+            var gl = renderingContext
+            if (gl != null) {
+                textures.updateOkImageTexture(gl, glyph)
+                textures.updateNgImageTexture(gl, glyph) 
+                postDrawScene(gl)
+            }
         }
     }
     
@@ -841,15 +883,15 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
             glyph.updateImages(iconSetting)
-            val canvasNode = jQuery(canvasId!!)
-            val canvas = canvasNode[0] as HTMLCanvasElement
-            var gl = canvas.getContext("webgl") as WebGLRenderingContext
-            updateColorBuffer(gl)
-            textures.updateNumberImageBlankTexture(gl, glyph)
-            textures.updateOkImageTexture(gl, glyph)
-            textures.updateNgImageTexture(gl, glyph) 
-            textures.updatePointLightMarkerTexture(gl, glyph)
-            postDrawScene(gl)
+            val gl = renderingContext
+            if (gl != null) {
+                updateColorBuffer(gl)
+                textures.updateNumberImageBlankTexture(gl, glyph)
+                textures.updateOkImageTexture(gl, glyph)
+                textures.updateNgImageTexture(gl, glyph) 
+                textures.updatePointLightMarkerTexture(gl, glyph)
+                postDrawScene(gl)
+            }
         }
     }
 
@@ -1117,15 +1159,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         gl: WebGLRenderingContext): WebGLRenderbuffer? {
         val result = gl.createRenderbuffer()
         if (result != null) {
+
             val savedBuffer = gl.getParameter(
                 WebGLRenderingContext.RENDERBUFFER_BINDING) 
                     as WebGLRenderbuffer?
  
             gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
                 result)
-            gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
-                WebGLRenderingContext.RGB5_A1,
-                gl.canvas.width, gl.canvas.height)
+            syncPickingBufferSizeWithSceneBufferI(gl)
 
             gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER,
                 WebGLRenderingContext.COLOR_ATTACHMENT0, 
@@ -1137,6 +1178,45 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         return result
     }
 
+    /**
+     * synchronize picking buffer size with main scene buffer
+     */  
+    fun syncPickingBufferSizeWithSceneBuffer(
+        gl: WebGLRenderingContext) {
+        val renderBuffer = renderingCtx.pickingBuffer
+        if (renderBuffer != null) {
+            syncPickingBufferSizeWithSceneBuffer(gl, renderBuffer) 
+        }
+    }
+ 
+    /**
+     * synchronize picking buffer size with main scene buffer
+     */  
+    fun syncPickingBufferSizeWithSceneBuffer(
+        gl: WebGLRenderingContext,
+        renderBuffer: WebGLRenderbuffer) {
+        val savedBuffer = gl.getParameter(
+            WebGLRenderingContext.RENDERBUFFER_BINDING) 
+                as WebGLRenderbuffer?
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            renderBuffer)
+        syncPickingBufferSizeWithSceneBufferI(gl)
+
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            savedBuffer) 
+    }
+         
+    /**
+     * synchronize picking buffer size with main scene buffer
+     */  
+    private fun syncPickingBufferSizeWithSceneBufferI(
+        gl: WebGLRenderingContext) {
+
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+            WebGLRenderingContext.RGB5_A1,
+            gl.canvas.width, gl.canvas.height)
+    }
+ 
     /**
      * create depth buffer for working
      */
@@ -1156,8 +1236,48 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         }  
         return result
     }
+    /**
+     * synchronize the size of depth buffer for working  with scene buffer
+     */
+    private fun syncWorkingDepthBufferSizeWithSceneBuffer(
+        gl: WebGLRenderingContext) {
+        val renderBuffer = renderingCtx.depthBufferForWorking
+        if (renderBuffer != null) {
+            syncWorkingDepthBufferSizeWithSceneBuffer(
+                gl, renderBuffer)
+        }
 
+    }
  
+    /**
+     * synchronize the size of depth buffer for working  with scene buffer
+     */
+    private fun syncWorkingDepthBufferSizeWithSceneBuffer(
+        gl: WebGLRenderingContext,
+        renderBuffer: WebGLRenderbuffer) {
+        val savedBuffer = gl.getParameter(
+            WebGLRenderingContext.RENDERBUFFER_BINDING) 
+                as WebGLRenderbuffer?
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            renderBuffer)
+        syncWorkingDepthBufferSizeWithSceneBufferI(gl)
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+            savedBuffer) 
+          
+    }
+    /**
+     * synchronize the size of depth buffer for working  with scene buffer
+     */
+    private fun syncWorkingDepthBufferSizeWithSceneBufferI(
+        gl: WebGLRenderingContext) {
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+            WebGLRenderingContext.DEPTH_COMPONENT16,
+            gl.canvas.width, gl.canvas.height)
+    }
+
+    /**
+     * update view
+     */ 
     private fun updateView(gl: WebGLRenderingContext) {
         val shaderProg = this.renderingCtx.shaderProgram
         if (shaderProg != null) {
@@ -1536,9 +1656,17 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      */
     private fun syncViewportWithCanvasSize() {
 
-        val canvas = document.querySelector(
-            canvasId!!) as HTMLCanvasElement
-        var gl = canvas.getContext("webgl") as WebGLRenderingContext
+        var gl = renderingContext
+        if (gl != null) {
+            syncViewportWithCanvasSize(gl)
+        }
+    }
+    /**
+     * sync gl viewport with canvas size
+     */
+    private fun syncViewportWithCanvasSize(
+        gl: WebGLRenderingContext) {
+
         val curPort = gl.getParameter(
             WebGLRenderingContext.VIEWPORT) as Int32Array
         
@@ -1547,6 +1675,41 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             || portNew[2] != curPort[2] || portNew[3] != curPort[3]) {
             gl.viewport(portNew[0], portNew[1], portNew[2], portNew[3])
         } 
+    }
+
+
+    /**
+     * handle the event for resizing window
+     */
+    private fun onResized(event: Event) {
+        syncCanvasWithClientSize {
+            val gl = renderingContext
+            if (gl != null) { 
+                syncViewportWithCanvasSize(gl)
+                setupCamera(gl)
+                syncPickingBufferSizeWithSceneBuffer(gl)
+                syncWorkingDepthBufferSizeWithSceneBuffer(gl)
+                syncShadwoDepthWithSceneBuffer(gl)
+                syncPointLightEditWithSceneBuffer()
+                postDrawScene(gl)
+            }
+        }
+
+    }
+
+    /**
+     * synchronize shadow depth buffer with scene buffer
+     */
+    private fun syncShadwoDepthWithSceneBuffer(
+        gl: WebGLRenderingContext) {
+        shadowMap.syncShadwoDepthAndTextureWithSceneSize(gl, renderingCtx)
+    }
+
+    /**
+     * sychronize point edit light with scene buffer
+     */
+    private fun syncPointLightEditWithSceneBuffer() {
+        pointLightEdit.updateWithSceneBuffer(this)
     }
     /**
      * display game over modal

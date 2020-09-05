@@ -45,17 +45,14 @@ class ShadowMap {
         
         val viewport = gl.getParameter(
             WebGLRenderingContext.VIEWPORT) as Int32Array?
-        val canvas = gl.canvas as HTMLCanvasElement 
 
-        frameBufferSize = intArrayOf(
-            Display.calcPower2Value(canvas.width),
-            Display.calcPower2Value(canvas.height))
+        val frameBufferSize = calcFrameBufferSizeForShadowDepth(gl)
 
-
+        this.frameBufferSize = frameBufferSize
         val texture = createShadowDepthTexture(gl,
-            frameBufferSize!![0], frameBufferSize!![1])
+            frameBufferSize[0], frameBufferSize[1])
         val depthBuffer = createRenderDepthBuffer(gl,
-            frameBufferSize!![0], frameBufferSize!![1])
+            frameBufferSize[0], frameBufferSize[1])
 
         val renderingCtx = grid.renderingCtx
         renderingCtx.shadowDepthTexture = texture
@@ -66,7 +63,38 @@ class ShadowMap {
         orthoGraphic = calcOrtho(grid)
     } 
 
+    /**
+     * synchronize shadow depth buffer and texture with scene
+     */
+    fun syncShadwoDepthAndTextureWithSceneSize(
+        gl: WebGLRenderingContext,
+        renderingCtx: RenderingCtx) {
+        val depthBuffer = renderingCtx.depthForShadowDepth
+        val frameBufferSize = calcFrameBufferSizeForShadowDepth(gl)
+        this.frameBufferSize = frameBufferSize
+        if (depthBuffer != null) {
+            updateDepthBufferSize(gl, depthBuffer, 
+                frameBufferSize[0], frameBufferSize[1]) 
+        }
+        val texture = renderingCtx.shadowDepthTexture 
+        if (texture != null) {
+            updateShadowDepthTextureSize(
+                gl, texture, frameBufferSize[0], frameBufferSize[1])
+        }
+    }
+             
 
+    /**
+     * calculate frame buffer size
+     */
+    fun calcFrameBufferSizeForShadowDepth(
+        gl: WebGLRenderingContext): IntArray {
+        val canvas = gl.canvas as HTMLCanvasElement 
+
+        return intArrayOf(
+            Display.calcPower2Value(canvas.width),
+            Display.calcPower2Value(canvas.height))
+    }
     
     /**
      * draw shadow depth
@@ -330,20 +358,43 @@ class ShadowMap {
         width: Int,
         height: Int): WebGLRenderbuffer? {
         val result = gl.createRenderbuffer()
+        if (result != null) {
+            updateDepthBufferSize(gl, result, width, height)
+        } 
+        return result
+    }
+    /**
+     * update depth buffer size
+     */
+    fun updateDepthBufferSize(
+        gl: WebGLRenderingContext,
+        depthBuffer: WebGLRenderbuffer,
+        width: Int,
+        height: Int) {
+
         val savedRenderbuffer = gl.getParameter(
             WebGLRenderingContext.RENDERBUFFER_BINDING) as WebGLRenderbuffer?
-        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, result)
-
-        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
-            WebGLRenderingContext.DEPTH_COMPONENT16,
-            width, height)  
-       
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, depthBuffer)
+        updateDepthBufferSizeI(gl, width, height)
         gl.bindRenderbuffer(
             WebGLRenderingContext.RENDERBUFFER,
             savedRenderbuffer) 
-        return result
+ 
     }
-
+ 
+    /**
+     * update depth buffer size
+     */
+    fun updateDepthBufferSizeI(
+        gl: WebGLRenderingContext,
+        width: Int,
+        height: Int) {
+        
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER,
+            WebGLRenderingContext.DEPTH_COMPONENT16,
+            width, height)  
+     }
+  
 
     /**
      * create shadow depth texture
@@ -361,10 +412,7 @@ class ShadowMap {
         var txtNumber = Textures.ShadowmappingTextureIndex
         gl.activeTexture(txtNumber)
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, result)
-        gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
-            WebGLRenderingContext.RGBA, width, height,
-            0, WebGLRenderingContext.RGBA,
-            WebGLRenderingContext.UNSIGNED_BYTE, null)
+        updateShadowDepthTextureSizeI(gl, width, height)
         gl.texParameteri(WebGLRenderingContext.TEXTURE_2D,
             WebGLRenderingContext.TEXTURE_WRAP_S,
             WebGLRenderingContext.CLAMP_TO_EDGE);
@@ -377,9 +425,45 @@ class ShadowMap {
 
         gl.activeTexture(savedActiveTexture)
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, savedTexture)
-
         return result
     }
+
+    /**
+     * set shadow depth texture size
+     */
+    fun updateShadowDepthTextureSize(
+        gl: WebGLRenderingContext,
+        texture: WebGLTexture,
+        width: Int,
+        height: Int) {
+        val savedTexture = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
+        var txtNumber = Textures.ShadowmappingTextureIndex
+        gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture)
+        updateShadowDepthTextureSizeI(gl, width, height)
+        gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
+            WebGLRenderingContext.RGBA, width, height,
+            0, WebGLRenderingContext.RGBA,
+            WebGLRenderingContext.UNSIGNED_BYTE, null)
+        gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, savedTexture)
+    }
+ 
+    /**
+     * set shadow depth texture size
+     */
+    fun updateShadowDepthTextureSizeI(
+        gl: WebGLRenderingContext,
+        width: Int,
+        height: Int) {
+        gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
+            WebGLRenderingContext.RGBA, width, height,
+            0, WebGLRenderingContext.RGBA,
+            WebGLRenderingContext.UNSIGNED_BYTE, null)
+    }
+ 
+
+
+
     /**
      * calc orth graphic parameter
      */

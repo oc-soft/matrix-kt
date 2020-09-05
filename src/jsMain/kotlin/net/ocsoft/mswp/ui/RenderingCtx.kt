@@ -249,20 +249,24 @@ class RenderingCtx() {
      * get scene render buffer size
      */
     fun getSceneBufferSize(gl: WebGLRenderingContext) : IntArray {
-        val savedBuffer = gl.getParameter(
-            WebGLRenderingContext.RENDERBUFFER_BINDING) as
-                WebGLRenderbuffer?
-        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-            sceneBuffer)
-        
-        val width = gl.getRenderbufferParameter(
-            WebGLRenderingContext.RENDERBUFFER,
-            WebGLRenderingContext.RENDERBUFFER_WIDTH) as Int
-        val height = gl.getRenderbufferParameter(
-            WebGLRenderingContext.RENDERBUFFER,
-            WebGLRenderingContext.RENDERBUFFER_HEIGHT) as Int
-        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
-            savedBuffer) 
+        var width = 0
+        var height = 0
+        if (sceneBuffer != null) {
+            val savedBuffer = gl.getParameter(
+                WebGLRenderingContext.RENDERBUFFER_BINDING) as
+                    WebGLRenderbuffer?
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                sceneBuffer)
+            
+            width = gl.getRenderbufferParameter(
+                WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.RENDERBUFFER_WIDTH) as Int
+            height = gl.getRenderbufferParameter(
+                WebGLRenderingContext.RENDERBUFFER,
+                WebGLRenderingContext.RENDERBUFFER_HEIGHT) as Int
+            gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER,
+                savedBuffer) 
+        }
         return intArrayOf(width, height)
     }
     
