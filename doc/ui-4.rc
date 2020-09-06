@@ -1,0 +1,30 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/changing-game-color.png",
+            "title": "Select colors for game",
+            "type": "website"
+        },
+        "css" : [
+            "doc/ui-4.css"
+        ], 
+        "title": "Select colors for game",
+        "using": [
+            "fontawesome"
+        ]	
+    },
+    "body" : {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/changing-game-color.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    },
+    "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}

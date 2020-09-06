@@ -1,0 +1,14 @@
+# 色の変更
+
+メニューから色を選択することによって、ゲームの各要素の色を変更することができます。
+
+![color menu item](img/menu-item-color-picker.png)
+
+カラーボックスを選択します。カラーボックスはゲームの要素に関連しています。
+
+![color boxes](img/color-picker-0.png)
+
+カラー取得領域と明るさ調整によって、色を選びます。
+
+![color picker region and lightness slider](img/color-picker-1.png)
+

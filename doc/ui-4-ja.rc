@@ -1,0 +1,30 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/changing-game-color.png",
+            "title": "色の選択",
+            "type": "website"
+        },
+        "css" : [
+            "doc/ui-4.css"
+        ], 
+        "title": "色の選択",
+        "using": [
+            "fontawesome"
+        ]	
+    },
+    "body" : {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/changing-game-color.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">マインスイーパーをプレイ</a>"
+        ]
+    },
+    "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/color-picker.png",
+            "title": "Color picker",
+            "type": "website"
+        },
+        "title": "Color picker",
+        "customs" : [
+
+        ], 
+        "css" : [
+            "doc/develop-6.css"
+        ], 
+        "using": [
+        ]	
+    },
+    "body": {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/color-picker.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    },
+    "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}

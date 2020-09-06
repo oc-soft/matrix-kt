@@ -1,0 +1,17 @@
+# Change color
+
+You can change each game element color by selecting color menu item.
+
+![color menu item](img/menu-item-color-picker.png)
+
+You select color box to change the color. Each color boxes are tied a kind of game parts.
+
+![color boxes](img/color-picker-0.png)
+
+You choose a color on color picker region and lightness slider.
+
+![color picker region and lightness slider](img/color-picker-1.png)
+
+
+
+

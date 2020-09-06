@@ -1,0 +1,24 @@
+# Choose color
+
+## Painter (ver 1.0)
+I was moved that I used the painter(ver 1.0) on macintosh computer 1994.
+The painter had the ablility to represent water color image.
+It was unbelivable experiance for me that I could draw a picture on the macintosh.
+
+## Revised color picker 
+The color picker user interface was nice for me to select some color from gradient color circle region. When the painter(ver 2.0) was released, It channged the color picker user inteface.
+I could not see the color picker like the painter ver 1.0.
+I may understand the reson why the painter changed the color picker now. On the color picker (ver 1.0), it may be difficult to get the extact color on some conditions you think.
+
+## Develop color picker 
+2016, Nov I would like to create a color picker for me to create my web page.
+At that I was learning javascript too.
+I made up mind that I get the beautiful color picker like painter ver 1.0.
+I learned not only javascipt language but also computer color system -- hsv, hsl.
+When I had developed the color picker about 80%, I had to stop the color picker project. Because I had to develop an aplication for my partner company. 
+
+## Embeded the color picker into mine sweeper
+I could not have time to develop my project about 3 years. 2019 July, I could have time to develop my software. I started to develop small simple video game for my kids. Yes, this is mine sweeper. 
+2020 july, I reached the mile stone to make the game have color picker. 
+I used the color picker 3 years ago. I changed some source code with modern syntax. I embeded it into mine sweeper.
+
