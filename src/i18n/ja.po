@@ -56,7 +56,7 @@ msgid "Colors ..."
 msgstr "色..."
 
 msgid "Please choose color"
-msgstr "アイコンを選択してください"
+msgstr "色を選択してください"
 
 msgid "Label"
 msgstr "ラベル"
