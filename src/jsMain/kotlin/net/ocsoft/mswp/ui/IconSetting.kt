@@ -10,6 +10,7 @@ import kotlin.collections.HashMap
 class IconSetting(
     ngIcon: Persistence.Icon = Persistence.Icon("fas", "skull"),
     okIcon: Persistence.Icon = Persistence.Icon("fas", "star"),
+    flagIcon: Persistence.Icon = Persistence.Icon("fas", "flag"),
     lightMarkerIcon: Persistence.Icon = Persistence.Icon("fas", "sun")) {
 
     /**
@@ -26,6 +27,11 @@ class IconSetting(
         val OK_ICON = "ok"
 
         /**
+         * flag icon property name
+         */
+        val FLAG_ICON = "flag"
+
+        /**
          * light origin marker
          */
         val LIGHT_MARKER = "light-marker"
@@ -38,6 +44,7 @@ class IconSetting(
                 val result = arrayOf(
                     NG_ICON,
                     OK_ICON,
+                    FLAG_ICON, 
                     LIGHT_MARKER)
                 return result
             }
@@ -65,6 +72,17 @@ class IconSetting(
             }
         }
     /**
+     * Flag icon
+     */
+    var flagIcon: Persistence.Icon = flagIcon
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyChange(FLAG_ICON)
+            }
+        }
+ 
+    /**
      * light origin marker icon
      */
     var lightMarkerIcon: Persistence.Icon = lightMarkerIcon
@@ -83,6 +101,7 @@ class IconSetting(
             val result = HashMap<String, Persistence.Icon>()
             result[OK_ICON] = okIcon
             result[NG_ICON] = ngIcon
+            result[FLAG_ICON] = flagIcon
             result[LIGHT_MARKER] = lightMarkerIcon
             return result
         }

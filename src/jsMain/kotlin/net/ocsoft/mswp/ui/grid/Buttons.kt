@@ -82,7 +82,7 @@ class Buttons(var mineButton : MineButton,
     val zGapForDrawing : FloatArray
         get() {
             val totalButtonSize = this.totalButtonSize
-            val maxSize = totalButtonSize.max() as Float
+            val maxSize = totalButtonSize.maxOrNull() as Float
             return buttonZGap.map({ it * maxSize }).toFloatArray()
         }
 
@@ -167,7 +167,7 @@ class Buttons(var mineButton : MineButton,
         if (textures != null && logic != null) {
             val num = logic.getNumberIfOpened(rowIndex, colIndex)  
             if (num != null && num > 0) {
-                result = textures.getNumberImageBlankTexture(num)
+                result = textures.getNumberBlankTexture(num)
             }  
         }
         return result
@@ -208,7 +208,7 @@ class Buttons(var mineButton : MineButton,
         var textures = this.textures
         var result : WebGLTexture? = null
         if (textures != null) {
-            result = textures.ngImageTexture 
+            result = textures.ngTexture 
         }
         return result
     }
@@ -220,7 +220,7 @@ class Buttons(var mineButton : MineButton,
         var textures = this.textures
         var result : WebGLTexture? = null
         if (textures != null) {
-            result = textures.okImageTexture 
+            result = textures.okTexture 
         }
         return result
     }

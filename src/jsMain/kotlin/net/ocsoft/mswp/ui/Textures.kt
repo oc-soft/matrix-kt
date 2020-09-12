@@ -43,20 +43,36 @@ class Textures {
     /**
      * number texture map
      */
-    val numberImageBlankTextureMap : MutableMap<Int, WebGLTexture>
+    val numberBlankTextureMap : MutableMap<Int, WebGLTexture>
         = HashMap<Int, WebGLTexture>() 
+    /**
+     * number flag texture map
+     */
+    val numberFlagTextureMap : MutableMap<Int, WebGLTexture>
+        = HashMap<Int, WebGLTexture>() 
+
 
     /**
      * ng texture
      */
-    var ngImageTexture: WebGLTexture? = null
+    var ngTexture: WebGLTexture? = null
+
+    /**
+     * ng flag texture
+     */
+    var ngFlagTexture: WebGLTexture? = null
+
 
     /**
      * ok texture
      */
-    var okImageTexture: WebGLTexture? = null
+    var okTexture: WebGLTexture? = null
         
-
+    /**
+     * ok flag texture
+     */
+    var okFlagTexture: WebGLTexture? = null
+ 
     /**
      * point light marker
      */
@@ -70,21 +86,34 @@ class Textures {
     /**
      * get number texture
      */
-    fun getNumberImageBlankTexture(num : Int): WebGLTexture? {
-        var numTexMap = this.numberImageBlankTextureMap
+    fun getNumberBlankTexture(num : Int): WebGLTexture? {
+        var numTexMap = this.numberBlankTextureMap
         var result: WebGLTexture?
         result = numTexMap[num]
         return result
     }
-    
+    /**
+     * get number flag texture
+     */
+    fun getNumberFlagTexture(num : Int): WebGLTexture? {
+        var numTexMap = this.numberFlagTextureMap
+        var result: WebGLTexture?
+        result = numTexMap[num]
+        return result
+    }
+     
     /**
      * setup
      */
     fun setup(gl: WebGLRenderingContext, glyph: Glyph) {
         setupTransparentBlackTexture(gl)
-        setupNumberImageBlankTexture(gl, glyph)
-        setupNgImageTexture(gl, glyph)
-        setupOkImageTexture(gl, glyph)
+        setupNumberBlankTexture(gl, glyph)
+        setupNumberFlagTexture(gl, glyph)
+        setupNgTexture(gl, glyph)
+        setupOkTexture(gl, glyph)
+        setupNgFlagTexture(gl, glyph)
+        setupOkFlagTexture(gl, glyph)
+         
         setupPointLightMarkerTexture(gl, glyph)
     }
     /**
@@ -92,9 +121,12 @@ class Textures {
      */
     fun teardown(gl: WebGLRenderingContext) {
         teardownPointLightMarkerTexture(gl)
-        teardownOkImageTexture(gl)
-        teardownNgImageTexture(gl)
-        teardownNumberImageBlankTexture(gl)
+        teardownOkFlagTexture(gl)
+        teardownNgFlagTexture(gl)
+        teardownOkTexture(gl)
+        teardownNgTexture(gl)
+        teardownNumberFlagTexture(gl)
+        teardownNumberBlankTexture(gl)
         teardownTransparentBlackTexture(gl) 
         teardownPointLightMarkerTexture(gl)
     }
@@ -121,7 +153,7 @@ class Textures {
                 1, 1, 0,
                 WebGLRenderingContext.RGBA,
                 WebGLRenderingContext.UNSIGNED_BYTE,
-                transBlack as ArrayBufferView)
+                transBlack)
             this.blackTransparentTexture = tex
         }
         gl.bindTexture(
@@ -140,14 +172,14 @@ class Textures {
     /**
      * setup number texture
      */
-    fun setupNumberImageBlankTexture(gl : WebGLRenderingContext,
+    fun setupNumberBlankTexture(gl : WebGLRenderingContext,
         glyph : Glyph) {
         
         val savedTex = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D)
 
         for (num in 0..9) {
-            val numImage = glyph.getNumberImageBlank(num)
+            val numImage = glyph.getNumberBlank(num)
             if (numImage != null) {
                 val tex = gl.createTexture();
                 if (tex != null) {
@@ -161,7 +193,7 @@ class Textures {
                         WebGLRenderingContext.UNSIGNED_BYTE,
                         numImage)
                     gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-                    numberImageBlankTextureMap[num] = tex
+                    numberBlankTextureMap[num] = tex
                 }
             }
         }
@@ -173,36 +205,92 @@ class Textures {
     /**
      * tear down number texture
      */
-    fun teardownNumberImageBlankTexture(gl: WebGLRenderingContext) {
+    fun teardownNumberBlankTexture(gl: WebGLRenderingContext) {
         for (num in 0..9) {
-            val tex = numberImageBlankTextureMap[num] 
+            val tex = numberBlankTextureMap[num] 
             if (tex != null) {
                 gl.deleteTexture(tex)
             }
         }
-        numberImageBlankTextureMap.clear()
+        numberBlankTextureMap.clear()
     }
-
     /**
-     * update number image blank texture
+     * setup number flag texture
      */
-    fun updateNumberImageBlankTexture(
-        gl : WebGLRenderingContext,
-        glyph : Glyph) {
-        teardownNumberImageBlankTexture(gl)
-        setupNumberImageBlankTexture(gl, glyph)
-    }
-
-    /**
-     * setup ok image texture
-     */
-    fun setupOkImageTexture(gl : WebGLRenderingContext,
+    fun setupNumberFlagTexture(gl : WebGLRenderingContext,
         glyph : Glyph) {
         
         val savedTex = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D)
 
-        val okImage = glyph.okImageBlank
+        for (num in 0..9) {
+            val numImage = glyph.getNumberFlag(num)
+            if (numImage != null) {
+                val tex = gl.createTexture();
+                if (tex != null) {
+                    gl.bindTexture(
+                        WebGLRenderingContext.TEXTURE_2D,
+                        tex)
+                    gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                        0,
+                        WebGLRenderingContext.RGBA,
+                        WebGLRenderingContext.RGBA,
+                        WebGLRenderingContext.UNSIGNED_BYTE,
+                        numImage)
+                    gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                    numberFlagTextureMap[num] = tex
+                }
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex as WebGLTexture?)
+
+    }
+    /**
+     * tear down number flag texture
+     */
+    fun teardownNumberFlagTexture(gl: WebGLRenderingContext) {
+        for (num in 0..9) {
+            val tex = numberFlagTextureMap[num] 
+            if (tex != null) {
+                gl.deleteTexture(tex)
+            }
+        }
+        numberFlagTextureMap.clear()
+    }
+  
+    /**
+     * update number image blank texture
+     */
+    fun updateNumberBlankTexture(
+        gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        teardownNumberBlankTexture(gl)
+        setupNumberBlankTexture(gl, glyph)
+    }
+
+    /**
+     * update number flag texture
+     */
+    fun updateNumberFlagTexture(
+        gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        teardownNumberFlagTexture(gl)
+        setupNumberFlagTexture(gl, glyph)
+    }
+
+ 
+    /**
+     * setup ok image texture
+     */
+    fun setupOkTexture(gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+        val okImage = glyph.okBlank
         if (okImage != null) {
             val tex = gl.createTexture();
             if (tex != null) {
@@ -216,7 +304,39 @@ class Textures {
                     WebGLRenderingContext.UNSIGNED_BYTE,
                     okImage)
                 gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-                okImageTexture = tex
+                okTexture = tex
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex as WebGLTexture?)
+
+    }
+
+    /**
+     * setup ok flag texture
+     */
+    fun setupOkFlagTexture(gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+        val okImage = glyph.okFlag
+        if (okImage != null) {
+            val tex = gl.createTexture();
+            if (tex != null) {
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    tex)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    okImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                okFlagTexture = tex
             }
         }
         gl.bindTexture(
@@ -226,16 +346,17 @@ class Textures {
     }
 
 
+
     /**
      * setup ng image texture
      */
-    fun setupNgImageTexture(gl : WebGLRenderingContext,
+    fun setupNgTexture(gl : WebGLRenderingContext,
         glyph : Glyph) {
         
         val savedTex = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D)
 
-        val ngImage = glyph.mineImageBlank
+        val ngImage = glyph.mineBlank
         if (ngImage != null) {
             val tex = gl.createTexture();
             if (tex != null) {
@@ -249,7 +370,7 @@ class Textures {
                     WebGLRenderingContext.UNSIGNED_BYTE,
                     ngImage)
                 gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-                ngImageTexture = tex
+                ngTexture = tex
             }
         }
         gl.bindTexture(
@@ -258,48 +379,122 @@ class Textures {
 
     }
 
-    
+    /**
+     * setup ng flag image texture
+     */
+    fun setupNgFlagTexture(gl : WebGLRenderingContext,
+        glyph : Glyph) {
+        
+        val savedTex = gl.getParameter(
+            WebGLRenderingContext.TEXTURE_BINDING_2D)
+
+        val ngImage = glyph.mineFlag
+        if (ngImage != null) {
+            val tex = gl.createTexture();
+            if (tex != null) {
+                gl.bindTexture(
+                    WebGLRenderingContext.TEXTURE_2D,
+                    tex)
+                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
+                    0,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.RGBA,
+                    WebGLRenderingContext.UNSIGNED_BYTE,
+                    ngImage)
+                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
+                ngFlagTexture = tex
+            }
+        }
+        gl.bindTexture(
+            WebGLRenderingContext.TEXTURE_2D,
+            savedTex as WebGLTexture?)
+
+    }
+
     /**
      * tear down ok image texture
      */
-    fun teardownOkImageTexture(gl: WebGLRenderingContext) {
-        val tex = okImageTexture
+    fun teardownOkTexture(gl: WebGLRenderingContext) {
+        val tex = okTexture
         if (tex != null) {
             gl.deleteTexture(tex)
         }
-        this.okImageTexture = null
+        this.okTexture = null
     }
  
 
     /**
      * tear down ng image texture
      */
-    fun teardownNgImageTexture(gl: WebGLRenderingContext) {
-        val tex = ngImageTexture
+    fun teardownNgTexture(gl: WebGLRenderingContext) {
+        val tex = ngTexture
         if (tex != null) {
             gl.deleteTexture(tex)
         }
-        this.ngImageTexture = null
+        this.ngTexture = null
     }
 
     /**
-     * update ok image texture
+     * tear down ok flag texture
      */
-    fun updateOkImageTexture(gl: WebGLRenderingContext,
+    fun teardownOkFlagTexture(gl: WebGLRenderingContext) {
+        val tex = okFlagTexture
+        if (tex != null) {
+            gl.deleteTexture(tex)
+        }
+        this.okFlagTexture = null
+    }
+ 
+
+    /**
+     * tear down ng flag texture
+     */
+    fun teardownNgFlagTexture(gl: WebGLRenderingContext) {
+        val tex = ngFlagTexture
+        if (tex != null) {
+            gl.deleteTexture(tex)
+        }
+        this.ngFlagTexture = null
+    }
+
+
+    /**
+     * update ok texture
+     */
+    fun updateOkTexture(gl: WebGLRenderingContext,
         glyph: Glyph) {
-        teardownOkImageTexture(gl)
-        setupOkImageTexture(gl, glyph)
+        teardownOkTexture(gl)
+        setupOkTexture(gl, glyph)
+    }
+ 
+    /**
+     * update ng texture
+     */
+    fun updateNgTexture(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        teardownNgTexture(gl)
+        setupNgTexture(gl, glyph)
+    }
+
+    /**
+     * update ok flag texture
+     */
+    fun updateOkFlagTexture(gl: WebGLRenderingContext,
+        glyph: Glyph) {
+        teardownOkFlagTexture(gl)
+        setupOkFlagTexture(gl, glyph)
     }
  
     /**
      * update ng image texture
      */
-    fun updateNgImageTexture(gl: WebGLRenderingContext,
+    fun updateNgFlagTexture(gl: WebGLRenderingContext,
         glyph: Glyph) {
-        teardownNgImageTexture(gl)
-        setupNgImageTexture(gl, glyph)
+        teardownNgFlagTexture(gl)
+        setupNgFlagTexture(gl, glyph)
     }
 
+ 
     /**
      * update point light marker texture
      */
@@ -308,36 +503,6 @@ class Textures {
         glyph: Glyph) {
         teardownPointLightMarkerTexture(gl)
         setupPointLightMarkerTexture(gl, glyph)
-    }
-
-
-    /**
-     * update ng image texture
-     */
-    fun updateNgImageTexture1(gl: WebGLRenderingContext,
-        glyph: Glyph) {
-        val mineImage = glyph.mineImageBlank
-        if (mineImage != null) {
-            if (ngImageTexture != null) {
-                val savedTex = gl.getParameter(
-                    WebGLRenderingContext.TEXTURE_BINDING_2D)
-
-                gl.bindTexture(
-                    WebGLRenderingContext.TEXTURE_2D,
-                    ngImageTexture)
-                gl.texImage2D(WebGLRenderingContext.TEXTURE_2D,
-                    0,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.RGBA,
-                    WebGLRenderingContext.UNSIGNED_BYTE,
-                    mineImage)
-                gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D)
-
-                gl.bindTexture(
-                    WebGLRenderingContext.TEXTURE_2D,
-                    savedTex as WebGLTexture?)
-            }
-        }
     }
 
     /**

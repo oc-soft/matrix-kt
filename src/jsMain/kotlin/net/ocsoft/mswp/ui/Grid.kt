@@ -7,7 +7,8 @@ import jQuery
 import JQueryEventObject
 import net.ocsoft.mswp.*
 import kotlin.collections.Set
-import kotlin.browser.*
+import kotlinx.browser.document
+import kotlinx.browser.window
 import net.ocsoft.mswp.ui.grid.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -272,7 +273,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             var result: HTMLElement? = null
             val canvasId = this.canvasId
             if (canvasId != null) {
-                val canvasNode = jQuery(canvasId!!)
+                val canvasNode = jQuery(canvasId)
                 if (canvasNode.length.toInt() > 0) {
                     result = canvasNode[0] as HTMLCanvasElement
                 }
@@ -811,7 +812,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             var gl = renderingContext
             if (gl != null) {             
                 setup(gl)
-                environment?.syncWithColorScheme()
+                environment.syncWithColorScheme()
                 drawScene(gl)
             }
         } 
@@ -841,9 +842,11 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     @Suppress("UNUSED_PARAMETER")
     fun handleIconChanged(sender: Any?, msg: String) {
         
-        if (msg == IconSetting.NG_ICON
-            || msg == IconSetting.OK_ICON) { 
-            syncIconImageWithSettings()
+        when (msg) { 
+            IconSetting.NG_ICON,
+            IconSetting.OK_ICON,
+            IconSetting.FLAG_ICON -> 
+                syncIconImageWithSettings()
         }
     }
     /**
@@ -855,8 +858,9 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             glyph.updateSpecialImage(iconSetting)
             var gl = renderingContext
             if (gl != null) {
-                textures.updateOkImageTexture(gl, glyph)
-                textures.updateNgImageTexture(gl, glyph) 
+                textures.updateOkTexture(gl, glyph)
+                textures.updateNgTexture(gl, glyph) 
+                textures.updateNumberFlagTexture(gl, glyph)
                 postDrawScene(gl)
             }
         }
@@ -886,9 +890,9 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             val gl = renderingContext
             if (gl != null) {
                 updateColorBuffer(gl)
-                textures.updateNumberImageBlankTexture(gl, glyph)
-                textures.updateOkImageTexture(gl, glyph)
-                textures.updateNgImageTexture(gl, glyph) 
+                textures.updateNumberBlankTexture(gl, glyph)
+                textures.updateOkTexture(gl, glyph)
+                textures.updateNgTexture(gl, glyph) 
                 textures.updatePointLightMarkerTexture(gl, glyph)
                 postDrawScene(gl)
             }
@@ -1681,6 +1685,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     /**
      * handle the event for resizing window
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun onResized(event: Event) {
         syncCanvasWithClientSize {
             val gl = renderingContext

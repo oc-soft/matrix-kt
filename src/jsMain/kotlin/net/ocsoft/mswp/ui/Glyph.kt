@@ -97,7 +97,12 @@ class Glyph(
     /**
      * number image and blank data map
      */
-    var numberImageBlankMap : Map<Int, ImageData>? = null
+    var numberBlankMap : Map<Int, ImageData>? = null
+    /**
+     * number image and flag data map
+     */
+    var numberFlagMap : Map<Int, ImageData>? = null
+
 
     /**
      * special image map
@@ -105,10 +110,15 @@ class Glyph(
     var specialImageMap : MutableMap<String, ImageData>? = null
     
     /**
-     * special image blank map
+     * special blank map
      */
-    var specialImageBlankMap : MutableMap<String, ImageData>? = null
+    var specialBlankMap : MutableMap<String, ImageData>? = null
 
+    /**
+     * special image map
+     */
+    var specialFlagMap : MutableMap<String, ImageData>? = null
+ 
     /**
      * ok image
      */
@@ -127,9 +137,9 @@ class Glyph(
     /**
      * ok blank image
      */
-    val okImageBlank : ImageData?
+    val okBlank : ImageData?
         get() {
-            val imgMap = this.specialImageBlankMap
+            val imgMap = this.specialBlankMap
             var result : ImageData? = null
             if (imgMap != null) {
                 if (IconSetting.OK_ICON in imgMap) {
@@ -139,7 +149,22 @@ class Glyph(
             return result
         } 
 
- 
+    /**
+     * ok flag image
+     */
+    val okFlag : ImageData?
+        get() {
+            val imgMap = this.specialFlagMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.OK_ICON in imgMap) {
+                    result = imgMap[IconSetting.OK_ICON]
+                }
+            }
+            return result
+        } 
+
+  
     /**
      * mine image
      */
@@ -158,9 +183,9 @@ class Glyph(
     /**
      * mine blank image
      */
-    val mineImageBlank : ImageData?
+    val mineBlank : ImageData?
         get() {
-            val imgMap = this.specialImageBlankMap
+            val imgMap = this.specialBlankMap
             var result : ImageData? = null
             if (imgMap != null) {
                 if (IconSetting.NG_ICON in imgMap) {
@@ -169,6 +194,40 @@ class Glyph(
             }
             return result
         } 
+
+    /**
+     * mine flag image
+     */
+    val mineFlag: ImageData?
+        get() {
+            val imgMap = this.specialFlagMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.NG_ICON in imgMap) {
+                    result = imgMap[IconSetting.NG_ICON]
+                }
+            }
+            return result
+        } 
+
+
+    /**
+     * flag image
+     */
+    val flagImage : ImageData?
+        get() {
+            val imgMap = this.specialImageMap
+            var result : ImageData? = null
+            if (imgMap != null) {
+                if (IconSetting.FLAG_ICON in imgMap) {
+                    result = imgMap[IconSetting.FLAG_ICON]
+                }
+            }
+            return result
+        }
+
+
+
     /**
      * light marker image
      */
@@ -196,11 +255,19 @@ class Glyph(
         setup(ctx, iconSetting)
     }
     
-
+    /**
+     * set up glyph 
+     */
     fun setup(ctx : CanvasRenderingContext2D, 
         iconSetting: IconSetting) {
         setupNumbers(ctx)
-        setupSpecialImages(ctx, iconSetting)
+        setupSpecialImages(ctx, iconSetting, IconSetting.allIcons)
+        setupSpecialImageBlanks(ctx, iconSetting, 
+            arrayOf(IconSetting.NG_ICON,
+                IconSetting.OK_ICON))
+        setupSpecialImageFlags(ctx, iconSetting,
+            arrayOf(IconSetting.NG_ICON,
+                IconSetting.OK_ICON))
     }
     /**
      * setup numbers
@@ -218,10 +285,12 @@ class Glyph(
         if (nodeId != null) {
             val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
             val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-     
             updateSpecialImage(ctx, iconSetting)
+            updateNumberFlags()
         }
     }
+
+    
 
     /**
      * update all image with specied icon setting.
@@ -232,7 +301,6 @@ class Glyph(
         if (nodeId != null) {
             val canvas = jQuery(nodeId)[0] as HTMLCanvasElement
             val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-     
             updateImages(ctx, iconSetting)
         }
     }
@@ -253,36 +321,82 @@ class Glyph(
     fun updateSpecialImage(
         ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting) {
-        setupSpecialImages(ctx, iconSetting)
+        setupSpecialImages(ctx, iconSetting, IconSetting.allIcons)
+        setupSpecialImageBlanks(ctx, iconSetting, 
+            arrayOf(IconSetting.NG_ICON,
+                IconSetting.OK_ICON))
+        setupSpecialImageFlags(ctx, iconSetting, 
+            arrayOf(IconSetting.NG_ICON,
+                IconSetting.OK_ICON))
     }
 
     /**
      * setup special images
      */
     fun setupSpecialImages(ctx: CanvasRenderingContext2D,
-        iconSetting: IconSetting) {
-        specialImageBlankMap = HashMap<String, ImageData>()  
+        iconSetting: IconSetting,
+        iconKeys: Array<String>) {
         specialImageMap = HashMap<String, ImageData>()
         val iconMap = iconSetting.icons
         val paramMap =  specialImageParameterMap
-        iconMap.forEach { 
+
+        iconKeys.forEach { 
             var textureSize: Int = defaultTextureSize
             var textureRatio: Float = defaultTextureRatio
-            if (it.key in paramMap) {
-                val param = paramMap[it.key]
+            if (it in paramMap) {
+                val param = paramMap[it]
                 textureSize = param!!.textureSize
                 textureRatio = param.contentsRatio 
             } 
-            val imgSrc = createImage(ctx, it.value,
-                textureSize, textureRatio)
-            val imgBlank = createImageBlank(imgSrc)
-            specialImageMap!![it.key] = imgSrc
-            specialImageBlankMap!![it.key] = imgBlank
-             
+            val icon = iconMap[it]
+            if (icon != null) {
+                val imgSrc = createImage(ctx, icon,
+                    textureSize, textureRatio)
+                specialImageMap!![it] = imgSrc
+            }
         } 
-        
-       // drawScal()
     }
+
+    /**
+     * setup special images
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun setupSpecialImageBlanks(ctx: CanvasRenderingContext2D,
+        iconSetting: IconSetting,
+        iconKeys: Array<String>) {
+        specialBlankMap = HashMap<String, ImageData>()  
+
+        iconKeys.forEach { 
+            val imgSrc = specialImageMap!![it]
+            if (imgSrc != null) {
+                val imgBlank = createImageBlank(imgSrc)
+                specialBlankMap!![it] = imgBlank
+            }
+        } 
+    }
+
+    /**
+     * setup special images
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun setupSpecialImageFlags(ctx: CanvasRenderingContext2D,
+        iconSetting: IconSetting,
+        iconKeys: Array<String>) {
+        specialFlagMap = HashMap<String, ImageData>()  
+        val imgFlagSrc = specialImageMap!![IconSetting.FLAG_ICON]
+        if (imgFlagSrc != null) {
+            iconKeys.forEach { 
+                val imgSrc = specialImageMap!![it]
+                if (imgSrc != null) {
+                    val imgFlag = createVerticalImageSequence(
+                        arrayOf(imgSrc, imgFlagSrc))
+                    specialFlagMap!![it] = imgFlag!!
+                }
+            } 
+        }
+    }
+
+   
 
     /**
      * setup numbers
@@ -512,18 +626,39 @@ class Glyph(
      * setup number image-blank map
      */
     fun setupNumbers1() {
-       val numberImageMap = this.numberImageMap
+        val numberImageMap = this.numberImageMap
         if (numberImageMap != null) {
-            val numberImageBlankMap = numberImageMap.mapValues({ 
+            val numberBlankMap = numberImageMap.mapValues({ 
                 val arr = Uint8ClampedArray(
                     it.value.width * it.value.height * 2 * 4) 
                 arr.set(it.value.data, 0) 
                 ImageData(arr, it.value.width)
             })
-            this.numberImageBlankMap = numberImageBlankMap
+            this.numberBlankMap = numberBlankMap
         } 
     }
 
+    /**
+     * set up number flags
+     */
+    fun setupNumberFlags() {
+        val numberImageMap = this.numberImageMap
+        if (numberImageMap != null) {
+            val flagImg = specialImageMap!![IconSetting.FLAG_ICON]
+            val numberFlagMap = numberImageMap.mapValues({ 
+                createVerticalImageSequence(arrayOf(
+                    it.value, flagImg!!))!!
+            })
+            this.numberFlagMap = numberFlagMap
+        } 
+    }
+    /**
+     * update number flag image map
+     */ 
+    fun updateNumberFlags() {
+        setupNumberFlags()  
+    }
+ 
     /**
      * get an image related number.
      */
@@ -535,17 +670,30 @@ class Glyph(
         }
         return result
     }
+
     /**
-     * get an image-blank related number.
+     * get an number-blank image.
      */
-    fun getNumberImageBlank(number : Int): ImageData? {
-        val numberImageMap = this.numberImageBlankMap
+    fun getNumberBlank(number : Int): ImageData? {
+        val numberMap = this.numberBlankMap
         var result : ImageData? = null
-        if (numberImageMap != null) {
-            result = numberImageMap[number] 
+        if (numberMap != null) {
+            result = numberMap[number] 
         }
         return result
     }
+    /**
+     * get an number-flag image.
+     */
+    fun getNumberFlag(number : Int): ImageData? {
+        val numberMap = this.numberFlagMap
+        var result : ImageData? = null
+        if (numberMap != null) {
+            result = numberMap[number] 
+        }
+        return result
+    }
+
 
 
     /**
@@ -558,21 +706,7 @@ class Glyph(
         }
     }
 
-    /**
-     * simple test
-     */ 
-    fun draw3() {
-        val img = getNumberImage(3)!!
-        val canvas = jQuery(nodeId!!)[0] as HTMLCanvasElement
-        val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-        ctx.putImageData(img, 10.0, 10.0)         
-    }
-    fun drawScal() {
-        val img = mineImage
-        val canvas = jQuery(nodeId!!)[0] as HTMLCanvasElement
-        val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-        ctx.putImageData(img!!, 10.0, 10.0)         
-    }
+
 }
 
 // vi: se ts=4 sw=4 et:

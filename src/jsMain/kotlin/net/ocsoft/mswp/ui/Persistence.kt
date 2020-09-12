@@ -159,7 +159,7 @@ class Persistence {
             iconMap.forEach({
                 icons[it.key] = it.value 
             })
-            result["version"] = "0.1"
+            result["version"] = "0.2"
             result["icons"] = icons
             return result
         }
@@ -169,17 +169,25 @@ class Persistence {
         fun dynamicToIconMap(iconData: dynamic): Map<String, Icon>? {
             val verstr = iconData["version"] as String?
             var result : Map<String, Icon>? = null
-            if ("0.1" == verstr) {
+            if (verstr != null) {
                 val icons = iconData["icons"] 
                 if (icons != null) {
                     val strIconMap = HashMap<String, Icon>()
-                    val keys = arrayOf<String>(
-                        IconSetting.NG_ICON,
-                        IconSetting.OK_ICON)
+                    var keys: Array<String>
+                    if ("0.1" == verstr) {
+                        keys = arrayOf<String>(
+                            IconSetting.NG_ICON,
+                            IconSetting.OK_ICON)
+                    } else {
+                        keys = arrayOf<String>(
+                            IconSetting.NG_ICON,
+                            IconSetting.OK_ICON,
+                            IconSetting.FLAG_ICON)
+                    }
 
                     keys.forEach {
                         val item = icons[it]
-                        
+                         
                         val prefix = item["prefix"]
                         val iconName = item["iconName"]
                         if (prefix != null && iconName != null) {

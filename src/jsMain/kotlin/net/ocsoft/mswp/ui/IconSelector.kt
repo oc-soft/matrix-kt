@@ -147,18 +147,19 @@ class IconSelector(val option : Option) {
     var selectedIcon: Persistence.Icon? 
         get() {
             var result : Persistence.Icon? = null
-            if (IconSetting.NG_ICON == iconKindUI) {
-                result = selectedNgIcon 
-            } else if (IconSetting.OK_ICON == iconKindUI) {
-                result = selectedOkIcon
+            when (iconKindUI) {
+                IconSetting.NG_ICON -> result = selectedNgIcon 
+                IconSetting.OK_ICON -> result = selectedOkIcon
+                IconSetting.FLAG_ICON -> result = selectedFlagIcon
             }
+            
             return result
         }
         set(value) {
-            if (IconSetting.NG_ICON == iconKindUI) {
-                selectedNgIcon = value
-            } else if (IconSetting.OK_ICON == iconKindUI) {
-                selectedOkIcon = value
+            when (iconKindUI) {
+                IconSetting.NG_ICON -> selectedNgIcon = value
+                IconSetting.OK_ICON -> selectedOkIcon = value
+                IconSetting.FLAG_ICON -> selectedFlagIcon = value
             }
         }
 
@@ -173,6 +174,12 @@ class IconSelector(val option : Option) {
      * currently selected ok icon
      */
     var selectedOkIcon: Persistence.Icon? = null
+
+    /**
+     * currently selected flag icon
+     */
+    var selectedFlagIcon: Persistence.Icon? = null
+
 
     /**
      * icon kind in which user interface control
@@ -221,6 +228,7 @@ class IconSelector(val option : Option) {
         modalQuery.on("hidden.bs.modal", modalHiddenHdlr!!)
         selectedNgIcon = option.iconSetting.ngIcon 
         selectedOkIcon = option.iconSetting.okIcon
+        selectedFlagIcon = option.iconSetting.flagIcon
 
         val iconSelector = jQuery(option.iconKindSelectorQuery)
         iconSelector.on("change", iconKindChangeHdlr!!)
@@ -248,6 +256,7 @@ class IconSelector(val option : Option) {
         }
         selectedOkIcon = null
         selectedNgIcon = null
+        selectedFlagIcon = null
         iconItemClickHdlr = null
     }
 
@@ -286,14 +295,17 @@ class IconSelector(val option : Option) {
         changeUiOkToSync()
         val selectedNgIcon = this.selectedNgIcon!!
         val selectedOkIcon = this.selectedOkIcon!!
+        val selectedFlagIcon = this.selectedFlagIcon!!
         val iconMap = HashMap<String, Persistence.Icon>()
         iconMap[IconSetting.NG_ICON] = selectedNgIcon
         iconMap[IconSetting.OK_ICON] = selectedOkIcon 
+        iconMap[IconSetting.FLAG_ICON] = selectedFlagIcon
         Persistence.saveIcon(iconMap).then({
             jQuery(option.modalQuery).asDynamic().modal("hide")
             restoreOkFromSync()
             option.iconSetting.ngIcon = selectedNgIcon
             option.iconSetting.okIcon = selectedOkIcon
+            option.iconSetting.flagIcon = selectedFlagIcon
         }, {
             // todo: you have to display waring 
             restoreOkFromSync()   
@@ -430,7 +442,7 @@ class IconSelector(val option : Option) {
                     if (rc.icons.exclude["font-awesome"] != null) {
                         val excCode = HashSet<String>() 
                         val faEx = rc.icons.exclude["font-awesome"]
-                        for (i in 0..faEx.length - 1) {
+                        for (i in 0 until faEx.length) {
                             excCode.add(faEx[i].code) 
                         }
                         result = ids.filter({ it.code !in excCode })
