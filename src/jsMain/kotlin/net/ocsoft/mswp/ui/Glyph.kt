@@ -1,7 +1,7 @@
 package net.ocsoft.mswp.ui
 
-import kotlin.browser.document
-import kotlin.browser.window
+import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlin.collections.Map
 import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
@@ -347,20 +347,21 @@ class Glyph(
      */
     fun createVerticalImageSequence(images: Array<ImageData>): ImageData? {
         var result : ImageData?  = null
-/*
-        var width = images.maxOfOrNull { it.width.toDouble() }
-        if (width != null) {
-            val height = images.sumOf { it.height.toDouble() }
+        var width0 = images.maxOfOrNull { it.width.toDouble() }
+        if (width0 != null) {
+            val width = width0.toInt()
+            val height = images.sumOf({ it.height.toDouble() }).toInt()
             val arr = Uint8ClampedArray(
                 width * height * 4) 
-            var yCoord = 0f 
+            var yCoord = 0
             images.forEach {
-                val xCoord = (width - it.width) / 2f
+                val xCoord0 = (width.toDouble() - it.width.toDouble()) / 2.0
+                val xCoord = xCoord0.roundToInt()
                 if (xCoord > 0) {
                     for (rowIdx in 0 until it.height) {
                         val startIdx = rowIdx * it.width + xCoord
                         arr.set(
-                            it.data.slise(startIdx, startIdx + width),
+                            it.data.subarray(startIdx, startIdx + width),
                             width * yCoord)
                     } 
                 } else {
@@ -370,7 +371,6 @@ class Glyph(
             } 
             result = ImageData(arr, width) 
         }
-*/
         return result
     }
 

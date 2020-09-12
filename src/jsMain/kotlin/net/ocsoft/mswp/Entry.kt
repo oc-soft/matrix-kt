@@ -1,6 +1,6 @@
 package  net.ocsoft.mswp
 
-import kotlin.browser.window
+import kotlinx.browser.window
 import org.w3c.dom.get
 
 /**

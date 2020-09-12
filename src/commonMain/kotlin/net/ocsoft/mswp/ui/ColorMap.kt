@@ -64,7 +64,7 @@ class ColorMap {
             return ByteArray(rgb.size) { i -> 
                 round(rgb[i] 
                     * (ColorRange[1] - ColorRange[0])
-                    + ColorRange[0]).toByte()
+                    + ColorRange[0]).toInt().toByte()
             }
         }  
         fun byteColorToFloatColor(rgb : ByteArray) : FloatArray {

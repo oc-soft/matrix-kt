@@ -10,6 +10,7 @@ expect fun run(): Unit
 /**
  * entry point
  */
+@Suppress("UNUSED_PARAMETER")
 fun main(args: Array<String>) {
     val model = Model() 
     val mainPage = MainPage()
