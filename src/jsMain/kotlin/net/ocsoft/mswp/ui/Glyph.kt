@@ -342,7 +342,37 @@ class Glyph(
         arr.set(img.data, 0) 
         return ImageData(arr, img.width) 
     }
-
+    /**
+     * create veritical sequence images
+     */
+    fun createVerticalImageSequence(images: Array<ImageData>): ImageData? {
+        var result : ImageData?  = null
+/*
+        var width = images.maxOfOrNull { it.width.toDouble() }
+        if (width != null) {
+            val height = images.sumOf { it.height.toDouble() }
+            val arr = Uint8ClampedArray(
+                width * height * 4) 
+            var yCoord = 0f 
+            images.forEach {
+                val xCoord = (width - it.width) / 2f
+                if (xCoord > 0) {
+                    for (rowIdx in 0 until it.height) {
+                        val startIdx = rowIdx * it.width + xCoord
+                        arr.set(
+                            it.data.slise(startIdx, startIdx + width),
+                            width * yCoord)
+                    } 
+                } else {
+                    arr.set(it.data, yCoord * width)
+                } 
+                yCoord += it.height
+            } 
+            result = ImageData(arr, width) 
+        }
+*/
+        return result
+    }
 
     /**
      * create image with font awesome icon
