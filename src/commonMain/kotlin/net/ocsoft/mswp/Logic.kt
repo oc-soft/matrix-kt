@@ -49,6 +49,20 @@ class Logic(rowSize: Int,
         get() {
             return hitLocations
         }
+    /**
+     * locking locations
+     */
+    val lockingLocations: Set<CellIndex>
+        get() {
+            var result: Set<CellIndex>
+            val status = this.status
+            if (status != null) {
+                result = status.lockingButtons
+            } else {
+                result = HashSet<CellIndex>()
+            }
+            return result
+        }
 
     /**
      * get opened cells
@@ -183,11 +197,41 @@ class Logic(rowSize: Int,
      * register opened cell
      */
     fun registerOpened(rowIndex: Int, colIndex: Int) {
-        var status = this.status
+        val status = this.status
         if (status != null) {
             status.registerOpened(rowIndex, colIndex)
         }  
     }
+    /**
+     * lock 
+     */
+    fun lock(rowIndex: Int, colIndex: Int) {
+        val status = this.status
+        if (status != null) {
+            status.lockCell(rowIndex, colIndex)
+        }
+    }
+    /**
+     * unlock
+     */
+    fun unlock(rowIndex: Int, colIndex: Int) {
+        val status = this.status
+        if (status != null) {
+            status.unlockCell(rowIndex, colIndex)
+        }
+    }
+    /**
+     * get true if the location is locking
+     */
+    fun isLocking(rowIndex: Int, colIndex: Int): Boolean? {
+        val status = this.status
+        var result: Boolean? = null
+        if (status != null) {
+            result = status.isLocking(rowIndex, colIndex) 
+        } 
+        return result
+    }
+
     /**
      * get the number to display on button if it was opened
      */
@@ -254,6 +298,7 @@ class Logic(rowSize: Int,
                 val openableCells = HashSet<CellIndex>()
                 cellsProcessed.addAll(mineLocations)
                 cellsProcessed.addAll(openedCells)
+                cellsProcessed.addAll(lockingLocations)
                 cells.add(startCell) 
                 updateOpenableCells(cells, cellsProcessed, openableCells)
                 result.addAll(createUiOpenableCells(openableCells)) 
@@ -327,10 +372,11 @@ class Logic(rowSize: Int,
      * you get true if the cell is in 0..rowSize - 1 and 0..columnSize - 1
      */
     fun isValidCell(cell: CellIndex) : Boolean {
-        var result = cell.row in 0..rowSize - 1
+        var result = cell.row in 0 until rowSize
         if (result) {
-            result = cell.column in 0..columnSize - 1
+            result = cell.column in 0 until columnSize
         } 
         return result
     }
 }
+// vi: se ts=4 sw=4 et:

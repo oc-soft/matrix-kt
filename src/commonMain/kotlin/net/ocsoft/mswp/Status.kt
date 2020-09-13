@@ -25,6 +25,11 @@ class Status {
     var openingButtons: Set<CellIndex>? = null
 
     /**
+     * locking buttons 
+     */
+    val lockingButtons: MutableSet<CellIndex> = HashSet<CellIndex>()
+
+    /**
      * whether the game is started or not
      */
     val isStarted : Boolean
@@ -69,4 +74,26 @@ class Status {
     fun clearOpenedButtons() {
         openedButtons.clear()
     }
+
+    /**
+     * lock cell
+     */
+    fun lockCell(row: Int, column: Int) {
+        lockingButtons.add(CellIndex(row, column))
+    }
+
+    /**
+     * unlock cell
+     */
+    fun unlockCell(row: Int, column: Int) {
+        lockingButtons.remove(CellIndex(row, column))
+    }
+
+    /**
+     * isLocking
+     */
+    fun isLocking(row: Int, column: Int): Boolean {
+        return CellIndex(row, column) in lockingButtons
+    }
 }
+// vi: se ts=4 sw=4 et:

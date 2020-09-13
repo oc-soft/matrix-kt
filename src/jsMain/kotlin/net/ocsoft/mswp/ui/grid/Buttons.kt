@@ -166,8 +166,13 @@ class Buttons(var mineButton : MineButton,
         var textures = this.textures
         if (textures != null && logic != null) {
             val num = logic.getNumberIfOpened(rowIndex, colIndex)  
+            val locked = logic.isLocking(rowIndex, colIndex)
             if (num != null && num > 0) {
-                result = textures.getNumberBlankTexture(num)
+                if (locked != null && locked) {
+                    result = textures.getNumberFlagTexture(num)
+                } else {
+                    result = textures.getNumberBlankTexture(num)
+                }
             }  
         }
         return result
@@ -180,10 +185,19 @@ class Buttons(var mineButton : MineButton,
         var logic = this.logic
         if (logic != null) {
             val cell = CellIndex(rowIndex, colIndex)
+            val locked = logic.isLocking(rowIndex, colIndex)
             if (logic.isOver && cell in logic.mineLocations) {
-                result = getNgTexture() 
+                if (locked != null && locked) {
+                    result = getNgFlagTexture()
+                } else {
+                    result = getNgTexture() 
+                }
             } else {
-                result = getOkTexture()
+                if (locked != null && locked) {
+                    result = getOkFlagTexture()
+                } else {
+                    result = getOkTexture()
+                }
             }
         }
         return result
@@ -201,8 +215,9 @@ class Buttons(var mineButton : MineButton,
         }
         return result
     }
+
     /**
-     * get ng image texture
+     * get ng texture
      */
     fun getNgTexture() : WebGLTexture? {
         var textures = this.textures
@@ -214,13 +229,36 @@ class Buttons(var mineButton : MineButton,
     }
 
     /**
-     * get ok image texture
+     * get ok texture
      */
     fun getOkTexture() : WebGLTexture? {
         var textures = this.textures
         var result : WebGLTexture? = null
         if (textures != null) {
             result = textures.okTexture 
+        }
+        return result
+    }
+    /**
+     * get ng-flag texture
+     */
+    fun getNgFlagTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.ngFlagTexture 
+        }
+        return result
+    }
+
+    /**
+     * get ok-flag texture
+     */
+    fun getOkFlagTexture() : WebGLTexture? {
+        var textures = this.textures
+        var result : WebGLTexture? = null
+        if (textures != null) {
+            result = textures.okFlagTexture 
         }
         return result
     }
