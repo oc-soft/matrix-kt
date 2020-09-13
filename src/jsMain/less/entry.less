@@ -46,10 +46,16 @@ body {
     right: 0px;
 }
 
-
-.setting.menu {
-    color: @text-color;
+div.menu-bar {
+    display: flex;
+    div.setting.menu {
+        color: @text-color;
+    }
+    div.flags {
+        color: @text-color; 
+    }
 }
+
 .setting .menu.item {
     width: 1.5em;
     height: 1.5em;
@@ -68,6 +74,8 @@ body {
     display: none;
     cursor: default;
 }
+
+
 
 #back-to-main {
     display: none;

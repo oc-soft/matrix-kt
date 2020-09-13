@@ -319,6 +319,10 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
      */
     var onClickHandler : ((Event) -> Unit) ? = null
 
+    /**
+     * touch event handler
+     */
+    var onTouchHandler : ((TouchEvent) -> Unit) ? = null
 
     /**
      * game over modal hidden handler
@@ -639,7 +643,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             val x = mouseEvent.offsetX
             postHandleUserInput(x, y)
         }
+    }
 
+
+    /**
+     * on touch event
+     */
+    fun onTouch(event: TouchEvent) {
+        console.log(event.type) 
     }
 
     /**
@@ -792,6 +803,8 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         jQuery {
            
             onClickHandler = { event -> this.onClick(event) }
+            onTouchHandler = { event -> this.onTouch(event) }
+
             onClickToPlayAgainHandler = {
                 event, args ->
                 this.handleClickToPlayAgain(event, args)
@@ -802,12 +815,19 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                 onResized(event)
             }
 
+            val touchEventHandler = this.onTouchHandler as ((Event)->Unit)
+
             setupGameOverModal()
             setupPlayerWonModal()
             val canvas = this.canvas
             syncCanvasWithClientSize { syncViewportWithCanvasSize() }
             window.addEventListener("resize", onResizedHdlr!!)
             canvas?.addEventListener("click", onClickHandler)
+            canvas?.addEventListener("touchstart", touchEventHandler)
+            canvas?.addEventListener("touchend", touchEventHandler)
+            canvas?.addEventListener("touchcancel", touchEventHandler)
+            canvas?.addEventListener("touchmove", touchEventHandler)
+
             glyph.bind(settings.glyphCanvasId, settings.iconSetting)
             var gl = renderingContext
             if (gl != null) {             
@@ -829,9 +849,18 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         this.iconSetting = null
         val canvasNode = jQuery(this.canvasId!!)
         val canvas = canvasNode[0] as HTMLCanvasElement
+
+        val touchEventHandler = this.onTouchHandler as ((Event)->Unit)
+
+        canvas.removeEventListener("touchstart", touchEventHandler)
+        canvas.removeEventListener("touchend", touchEventHandler)
+        canvas.removeEventListener("touchcancel", touchEventHandler)
+        canvas.removeEventListener("touchmove", touchEventHandler)
+
         canvas.removeEventListener("click", onClickHandler) 
         window.removeEventListener("resize", onResizedHdlr!!)
         onResizedHdlr = null
+        this.onTouchHandler = null
         this.onClickHandler = null
         this.appSettings = null
     }

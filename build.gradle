@@ -298,7 +298,6 @@ task webpackDeploy(type: Copy) {
     def distDir = null
     distDir = jsBrowserDistributeResources.destinationDir
     if (web_app_pkg?.trim()) {
-        println "add web_app_pkg"
         distDir = new File(distDir, web_app_pkg)
     }
 
@@ -311,6 +310,7 @@ task webpackDeploy(type: Copy) {
         // include '**/*.js.map'
     }
 }
+
 jsMainClasses.dependsOn webpackDeploy
 
 
