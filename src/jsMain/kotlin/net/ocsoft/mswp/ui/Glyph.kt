@@ -3,6 +3,7 @@ package net.ocsoft.mswp.ui
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlin.collections.Map
+import kotlin.collections.MutableMap
 import kotlin.collections.HashMap
 import org.khronos.webgl.Uint8ClampedArray
 import org.w3c.dom.CanvasRenderingContext2D
@@ -108,6 +109,14 @@ class Glyph(
      * special image map
      */
     var specialImageMap : MutableMap<String, ImageData>? = null
+
+    /**
+     * upside down special image map
+     */
+    var udSpecialImageMap : MutableMap<String, ImageData>? = null
+
+
+
     
     /**
      * special blank map
@@ -262,6 +271,8 @@ class Glyph(
         iconSetting: IconSetting) {
         setupNumbers(ctx)
         setupSpecialImages(ctx, iconSetting, IconSetting.allIcons)
+        setupUdSpecialImages(ctx, iconSetting, arrayOf(IconSetting.FLAG_ICON))
+        setupNumberFlags()
         setupSpecialImageBlanks(ctx, iconSetting, 
             arrayOf(IconSetting.NG_ICON,
                 IconSetting.OK_ICON))
@@ -275,6 +286,7 @@ class Glyph(
     fun setupNumbers(ctx: CanvasRenderingContext2D) {
         setupNumbers0(ctx)
         setupNumbers1()
+
     }
     /**
      * update special image with specied icon setting.
@@ -335,10 +347,35 @@ class Glyph(
      */
     fun setupSpecialImages(ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting,
-        iconKeys: Array<String>) {
-        specialImageMap = HashMap<String, ImageData>()
+        iconKeys: Array<String>)  {
+        specialImageMap = createImageMap(ctx, iconSetting,
+            false, specialImageParameterMap,
+            iconKeys)
+    }
+
+    /**
+     * setup special images
+     */
+    fun setupUdSpecialImages(ctx: CanvasRenderingContext2D,
+        iconSetting: IconSetting,
+        iconKeys: Array<String>)  {
+        udSpecialImageMap = createImageMap(ctx, iconSetting,
+            true, specialImageParameterMap,
+            iconKeys)
+    }
+
+
+
+    /**
+     * setup special images
+     */
+    fun createImageMap(ctx: CanvasRenderingContext2D,
+        iconSetting: IconSetting,
+        upsideDown: Boolean,
+        paramMap: Map<String, ImageParameter>,
+        iconKeys: Array<String>): MutableMap<String, ImageData> {
+        val result = HashMap<String, ImageData>()
         val iconMap = iconSetting.icons
-        val paramMap =  specialImageParameterMap
 
         iconKeys.forEach { 
             var textureSize: Int = defaultTextureSize
@@ -351,10 +388,12 @@ class Glyph(
             val icon = iconMap[it]
             if (icon != null) {
                 val imgSrc = createImage(ctx, icon,
-                    textureSize, textureRatio)
-                specialImageMap!![it] = imgSrc
+                    upsideDown, textureSize, textureRatio)
+                result[it] = imgSrc
             }
         } 
+
+        return result
     }
 
     /**
@@ -383,7 +422,7 @@ class Glyph(
         iconSetting: IconSetting,
         iconKeys: Array<String>) {
         specialFlagMap = HashMap<String, ImageData>()  
-        val imgFlagSrc = specialImageMap!![IconSetting.FLAG_ICON]
+        val imgFlagSrc = udSpecialImageMap!![IconSetting.FLAG_ICON]
         if (imgFlagSrc != null) {
             iconKeys.forEach { 
                 val imgSrc = specialImageMap!![it]
@@ -476,10 +515,10 @@ class Glyph(
                         val startIdx = rowIdx * it.width + xCoord
                         arr.set(
                             it.data.subarray(startIdx, startIdx + width),
-                            width * yCoord)
+                            width * yCoord * 4)
                     } 
                 } else {
-                    arr.set(it.data, yCoord * width)
+                    arr.set(it.data, yCoord * width * 4)
                 } 
                 yCoord += it.height
             } 
@@ -501,6 +540,38 @@ class Glyph(
             })
         return result 
     }   
+
+    /**
+     * create upside down matrix
+     */
+    fun createUpsideDownMatrix(height: Double): DOMMatrix {
+        val svgElem = document.createElementNS("http://www.w3.org/2000/svg", 
+            "svg") as SVGSVGElement
+        val result = svgElem.createSVGMatrix()
+        result.a = 1.0 
+        result.b = 0.0
+        result.c = 0.0
+        result.d = -1.0
+        result.e = 0.0
+        result.f = height
+        return result
+    }
+    /**
+     * create unit matrix
+     */
+    fun createUnitMatrix(): DOMMatrix {
+        val svgElem = document.createElementNS("http://www.w3.org/2000/svg", 
+            "svg") as SVGSVGElement
+        val result = svgElem.createSVGMatrix()
+        result.a = 1.0 
+        result.b = 0.0
+        result.c = 0.0
+        result.d = 1.0
+        result.e = 0.0
+        result.f = 0.0
+        return result
+    }
+
 
     /**
      * create scale matrix
@@ -570,11 +641,13 @@ class Glyph(
      */
     fun createImage(ctx: CanvasRenderingContext2D,
         icon : Persistence.Icon,
+        upsideDown: Boolean,
         textureSize: Int,
         textureRatio: Float): ImageData {
         return createImage(ctx, 
             createFontawesomeIconDef(
                 icon.prefix, icon.iconName),
+                upsideDown,
                 textureSize, textureRatio)
     }
 
@@ -583,6 +656,7 @@ class Glyph(
      */
     fun createImage(ctx: CanvasRenderingContext2D,
         iconDef: fontawesome.IconDefinition,
+        upsideDown: Boolean,
         textureSize: Int = defaultTextureSize,
         textureRatio: Float = defaultTextureRatio): ImageData {
        
@@ -594,9 +668,16 @@ class Glyph(
         val displacement = DoubleArray(sizeDisplaying.size) {
             (textureSize.toDouble() -  sizeDisplaying[it]) / 2 
         }
+        var mtInitial: DOMMatrix
+        if (upsideDown) {
+            mtInitial = createUpsideDownMatrix(iconHeight.toDouble())
+        } else {
+            mtInitial = createUnitMatrix()
+        }
         val ms = createScaleMatrix(scale)
         val mt = createTranslateMatrix(displacement[0], displacement[1])
-        val m = multiply(mt, ms)
+        var m = multiply(ms, mtInitial)
+        m = multiply(mt, m)
         val pathSrc = createPath(iconDef.icon[4] as String)
         val path = pathSrc
         // val path = Path2D()
@@ -644,7 +725,7 @@ class Glyph(
     fun setupNumberFlags() {
         val numberImageMap = this.numberImageMap
         if (numberImageMap != null) {
-            val flagImg = specialImageMap!![IconSetting.FLAG_ICON]
+            val flagImg = udSpecialImageMap!![IconSetting.FLAG_ICON]
             val numberFlagMap = numberImageMap.mapValues({ 
                 createVerticalImageSequence(arrayOf(
                     it.value, flagImg!!))!!
