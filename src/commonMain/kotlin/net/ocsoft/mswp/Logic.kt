@@ -10,11 +10,42 @@ import kotlin.math.*
  */
 class Logic(rowSize: Int,
     columnSize: Int,
-    hitCount: Int) {
+    hitCount: Int,
+    lockableCount: Int) {
+    /**
+     * class instance
+     */
+    companion object {
+        /**
+         * locked count
+         */
+        val LOCKED_COUNT = "lockedcount"
+    }
+
+
     /**
      * game status
      */ 
     var status: Status? = null
+        set(value) {
+            val doSet = value != field
+
+            if (doSet) {
+                val oldLockedCount = lockedCount
+                val oldStatus = this.status
+                if (oldStatus != null) {
+                    detach(oldStatus)
+                }
+                field = value
+                if (value != null) {
+                    attach(value)
+                }
+                if (oldLockedCount != lockedCount) {
+                    notifyEvent(LOCKED_COUNT)
+                }
+            }
+        }
+
     /**
      * row size
      */
@@ -38,9 +69,42 @@ class Logic(rowSize: Int,
     var hitCount : Int = hitCount 
 
     /**
+     * number of lock to prevent from opening button
+     */
+    var lockableCount: Int = lockableCount
+
+    /**
      * hit location
      */ 
     val hitLocations : MutableSet<CellIndex> = HashSet<CellIndex>()
+
+
+    /**
+     * reasonalb number of lock to revent from opening button
+     */
+    val reasonableLockCount: Int
+        get() {
+            return min(cellsCount, lockableCount)
+        }
+    /**
+     * count of locking button
+     */
+    val lockedCount: Int
+        get() {
+            var result = 0
+            val status = this.status
+            if (status != null) {
+                result = status.lockingCount
+            }
+            return result
+        }
+    /**
+     * count of availability to lock button
+     */
+    val lockableAvailability: Int
+        get() {
+           return reasonableLockCount - lockedCount 
+        }
 
     /**
      * all mine locations
@@ -49,6 +113,18 @@ class Logic(rowSize: Int,
         get() {
             return hitLocations
         }
+
+    /**
+     * unlocking mine locations
+     */
+    val unlockingMineLocations: Set<CellIndex>
+        get() {
+            val result = HashSet<CellIndex>()
+            result.addAll(mineLocations) 
+            result.removeAll(lockingLocations)
+            return result
+        }
+
     /**
      * locking locations
      */
@@ -126,6 +202,16 @@ class Logic(rowSize: Int,
             }
             return result 
         }
+    /**
+     * event listeners
+     */
+    private val listeners: MutableList<(Any?, String)->Unit>
+        = ArrayList<(Any?, String)->Unit>()
+
+    /**
+     * handle the event from status object
+     */
+    private var statusEventHdlr: ((Any?, String)->Unit)? = null
  
     /**
      * start game if it did not start
@@ -202,14 +288,38 @@ class Logic(rowSize: Int,
             status.registerOpened(rowIndex, colIndex)
         }  
     }
+
+    /**
+     * toggle locking
+     */
+    fun toggleLock(rowIndex: Int, colIndex: Int): Boolean {
+        var result = false
+        val status = isLocking(rowIndex, colIndex)
+        if (status != null) {
+            if (status) {
+                unlock(rowIndex, colIndex)
+                result = true
+            } else {
+                result = lock(rowIndex, colIndex)
+            } 
+        }
+        return result
+    }
+
     /**
      * lock 
      */
-    fun lock(rowIndex: Int, colIndex: Int) {
+    fun lock(rowIndex: Int, colIndex: Int): Boolean {
         val status = this.status
+        var result = false 
         if (status != null) {
-            status.lockCell(rowIndex, colIndex)
+            if (gamingStatus == GamingStatus.NOT_PLAYING) {
+                if (lockableAvailability > 0) {
+                    result = status.lockCell(rowIndex, colIndex)
+                }
+            }
         }
+        return result
     }
     /**
      * unlock
@@ -286,26 +396,34 @@ class Logic(rowSize: Int,
      */ 
     fun getOpenableCells(
         rowIndex : Int, 
-        columnIndex : Int) : MutableSet<CellIndex> {
+        columnIndex : Int) : Pair<MutableSet<CellIndex>, Boolean> {
         
-        val result = HashSet<CellIndex>()
-        val startCell = CellIndex(rowIndex, columnIndex)
-        val cellNum = getNumber(startCell)
-        if (cellNum != null) {
-            if (cellNum == 0) {
-                val cellsProcessed = HashSet<CellIndex>()  
-                val cells = ArrayList<CellIndex>()
-                val openableCells = HashSet<CellIndex>()
-                cellsProcessed.addAll(mineLocations)
-                cellsProcessed.addAll(openedCells)
-                cellsProcessed.addAll(lockingLocations)
-                cells.add(startCell) 
-                updateOpenableCells(cells, cellsProcessed, openableCells)
-                result.addAll(createUiOpenableCells(openableCells)) 
-            } else {
-                result.add(startCell) 
-            } 
-        }  
+        val cellsRes = HashSet<CellIndex>()
+        val locking = isLocking(rowIndex, columnIndex)
+        var result : Pair<Set<CellIndex>, Boolean>
+        if (locking != null && !locking) {
+            val startCell = CellIndex(rowIndex, columnIndex)
+            val cellNum = getNumber(startCell)
+            if (cellNum != null) {
+                if (cellNum == 0) {
+                    val cellsProcessed = HashSet<CellIndex>()  
+                    val cells = ArrayList<CellIndex>()
+                    val openableCells = HashSet<CellIndex>()
+                    cellsProcessed.addAll(mineLocations)
+                    cellsProcessed.addAll(openedCells)
+                    cellsProcessed.addAll(lockingLocations)
+                    cells.add(startCell) 
+                    updateOpenableCells(cells, cellsProcessed, openableCells)
+                    cellsRes.addAll(createUiOpenableCells(openableCells)) 
+                } else {
+                    cellsRes.add(startCell) 
+                } 
+            }  
+            result = Pair(cellsRes, false)
+        } else {
+            result = Pair(cellsRes, true)
+        }
+        
         return result
     }
     /**
@@ -377,6 +495,59 @@ class Logic(rowSize: Int,
             result = cell.column in 0 until columnSize
         } 
         return result
+    }
+
+    /**
+     * connect this and status 
+     */
+    fun attach(status: Status) {
+        statusEventHdlr = { arg0, arg1 -> onStatusChanged(arg0, arg1) }
+        status.addListener(statusEventHdlr!!)
+    }
+
+    /**
+     * disconnect this and status
+     */
+    fun detach(status: Status) {
+        if (statusEventHdlr != null) {
+            status.removeListener(statusEventHdlr!!)
+            statusEventHdlr = null
+        }
+    }
+
+    /**
+     * handle evet for status
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun onStatusChanged(arg: Any?, kind: String) {
+        if (kind == Status.LOCKING_COUNT) {
+            notifyEvent(LOCKED_COUNT)
+        }
+    }
+
+    /**
+     * add listener
+     */ 
+    fun addListener(listener: (Any?, String)->Unit) {
+        listeners.add(listener) 
+    }
+    /**
+     * remove listener
+     */
+    fun removeListener(listener: (Any?, String)->Unit) {
+        val idx = listeners.indexOfLast { it == listener }
+        if (idx >= 0) {
+            listeners.removeAt(idx)
+        }
+    }
+
+
+    /**
+     * notify change
+     */
+    private fun notifyEvent(name: String) {
+        val listeners = ArrayList(this.listeners)
+        listeners.forEach { it(this, name) }
     }
 }
 // vi: se ts=4 sw=4 et:

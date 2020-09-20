@@ -55,7 +55,7 @@ class PointLight(
      */
     val lightEditingTableArray: Float32Array? 
         get() {
-            var result: Float32Array? = null
+            var result: Float32Array?
             result = lightEditingTableArrayCache  
             if (result == null) {
                 result = createLightEditingTableArray()
@@ -248,8 +248,7 @@ class PointLight(
         this.projectionMatrix = projectionMatrix
         if (glrs != null 
             && lightEditingTable != null
-            && projectionMatrix != null
-            && viewport != null) { 
+            && projectionMatrix != null) { 
             lightEditViewTable = calcLightEditViewTable(
                 glrs,
                 lightEditingTable,
@@ -277,7 +276,7 @@ class PointLight(
             val coords = glrs.matrix_apply_r_32(
                 matRef, 
                 Float32Array(arrayOf(elem[0], elem[1], elem[2], 1f)))
-            floatArrayOf(coords!![0], coords!![1], coords!![2]) 
+            floatArrayOf(coords!![0], coords[1], coords[2]) 
         }
         glrs.matrix_release(matRef)  
         return result
@@ -350,6 +349,7 @@ class PointLight(
     /**
      * calculate editing view table
      */
+    @Suppress("UNUSED_PARAMETER")
     fun calcLightEditViewTable(
         glrs: glrs.InitOutput,
         lightEditingTable: Array<FloatArray>,
@@ -394,13 +394,12 @@ class PointLight(
     /**
      * calculate light point window coordinate
      */
+    @Suppress("UNUSED_PARAMETER")
     fun calcLightPointWindowCoordinte(
         grid: Grid, 
         wgl: WebGLRenderingContext,
         xw: Int, yw: Int): FloatArray? {
         var result: FloatArray? = null
-        val pos = calcNewLightPointLocation(
-            grid.glrs!!, xw.toFloat(), yw.toFloat())
         val zw = readDepth(grid, xw, yw)
         if (zw != null) {
             result = floatArrayOf(xw.toFloat(), yw.toFloat(), zw)
@@ -529,7 +528,7 @@ class PointLight(
         val pt = Float64Array(arrayOf(xw.toDouble(), yw.toDouble()))
         calcEachDistanceFromEdges(
             glrs, pt,
-            lightEditViewTable!!).forEachIndexed {
+            lightEditViewTable).forEachIndexed {
             idx, elem ->
             result[idx] = elem
         }
@@ -626,7 +625,7 @@ class PointLight(
         } else {
             result = floatArrayOf(xw, yw) 
         }
-        return result!!
+        return result
     }          
 
     
@@ -783,6 +782,7 @@ class PointLight(
     /**
      * attach model matrix
      */
+    @Suppress("UNUSED_PARAMETER")
     fun attachModelMatrix(
         gl: WebGLRenderingContext,
         renderingCtx : RenderingCtx) {
@@ -835,6 +835,7 @@ class PointLight(
             0, 
             lightEditingTableArray!!.length / 3) 
 
+        gl.disableVertexAttribArray(verLoc)
         gl.bindBuffer(
             WebGLRenderingContext.ARRAY_BUFFER,
             savedBuffer)
@@ -901,6 +902,8 @@ class PointLight(
 
             
             gl.drawArrays(WebGLRenderingContext.POINTS, 0, 1)
+
+            gl.disableVertexAttribArray(verLoc)
             
             gl.bindBuffer(
                 WebGLRenderingContext.ARRAY_BUFFER,

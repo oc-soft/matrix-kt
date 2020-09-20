@@ -23,7 +23,10 @@
   </div>
   <div class="menu-bar">
     <div class="setting menu"><div class="menu item"><i class="fas fa-users-cog"></i></div></div>
-    <div class="flags"><i class="fas fa-flag"></i></div>
+    <div class="flags"><i class="<?php 
+        echo _($flag_icon_class);
+    ?> flag-icon"></i><span class="flag-count"><?php echo _($flag_count); ?></span></div>
+    <div><!-- placeholder --></div>
   </div>
   <canvas id="game_grid" class=play-ground></canvas>
   <canvas id="glyph_workarea" width="256" height="256"></canvas>

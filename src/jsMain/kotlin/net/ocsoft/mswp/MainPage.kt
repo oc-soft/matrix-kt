@@ -11,13 +11,14 @@ import org.w3c.dom.MutationRecord
 import org.w3c.dom.Node
 import org.w3c.dom.Element
 import org.w3c.dom.Image
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.collections.Set
 import kotlin.collections.HashSet
 import net.ocsoft.mswp.ui.GridSettings
 import net.ocsoft.mswp.ui.AppSettings
 import net.ocsoft.mswp.ui.Persistence
 import net.ocsoft.mswp.ui.IconSetting
+import net.ocsoft.mswp.ui.Flag
 
 /**
  * main page display
@@ -85,7 +86,7 @@ actual class MainPage {
     /**
      * run program
      */ 
-    fun run(settings: Any) {
+    fun run(settings: Any?) {
         var settingObj : dynamic
         settingObj = settings
             
@@ -118,7 +119,7 @@ actual class MainPage {
         appSettings.runtimeConfig = uiSetting
         jQuery { 
             val grid = Grid(appSettings.option.pointLightSettingOption)
-            
+            val flag = Flag(appSettings.option.flagOption)
             val shaders = arrayOf(
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/vertex.gls", 
                 "${rootDir}${progDir}net/ocsoft/mswp/ui/fragment.gls",
@@ -137,10 +138,7 @@ actual class MainPage {
             promises.add(
                 Persistence.loadIcon().then({ 
                     if (it != null) {
-                        if (IconSetting.NG_ICON in it) {
-                            config.gridSettings.iconSetting.ngIcon = 
-                                it[IconSetting.NG_ICON]!!
-                        }
+                        config.gridSettings.iconSetting.replaceIcons(it)
                     }
                     Unit
                 }))
@@ -188,10 +186,13 @@ actual class MainPage {
                 val env = Environment(
                     appSettings.option.environmentOption,
                     colorSchemeParam)
+                flag.logic = model.logic
+                flag.bind(window.document.body!!)
                  
                 grid.bind(config.gridSettings,
                     model, camera, 
                     pointLightParam, 
+                    flag,
                     colorSchemeParam,
                     env,
                     shaderPrograms,

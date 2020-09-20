@@ -2,6 +2,8 @@
 
 require_once implode('/', array(dirname(__DIR__), 'site', 'config.php'));
 require_once implode('/', array(__DIR__, 'db.php'));
+require_once implode('/', array(__DIR__, 'version.php'));
+
 
 /**
  * icon handler
@@ -78,6 +80,7 @@ class Icon {
         if (isset($specs['iconData'][$version])) {
             $data_template = $specs['iconData'][$version];
         }
+
         $result = NULL;
         if ($data_template) {
             $icons_1 = $this->get_necessary_data_i($data_template, $icons_0);
@@ -90,6 +93,7 @@ class Icon {
                 }
             } 
         }
+
         return $result;
     }
     /**
@@ -113,8 +117,42 @@ class Icon {
         } 
         return $result;
     }
+
+    /**
+     * read icon data as array 
+     */
+    function read_as_array($id) {
+        $icons_str = Icon::$instance->read($id);
+        $result = NULL;
+        if ($icons_str) {
+            $result = json_decode($icons_str, TRUE);
+        }
+        return $result;
+    }
+
+
+    /**
+     * get flag icon
+     */
+    function get_flag_icon($icons) {
+        if (is_string($icons)) {
+            $icons = json_decode($icons, TRUE);
+        }
+        $result = NULL;
+        if (is_array($icons)) {
+            if (isset($icons['version'])) {
+                $ver = array(
+                    new Version($icons['version']),
+                    new Version(array(0, 2)));
+                if ($ver[0]->compare($ver[1]) >= 0) {
+                    $icon_array = $icons['icons']; 
+                    $result = $icon_array['flag'];
+                }
+            } 
+        }
+        return $result;
+    }
 }
 
 Icon::$instance = new Icon();
-
-?>
+// vi: se ts=4 sw=4 et:

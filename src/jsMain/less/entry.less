@@ -46,13 +46,35 @@ body {
     right: 0px;
 }
 
+@keyframes color-to-transparent-1 {
+    0%, 20% { 
+        color: @text-color; 
+    }
+    80%, 100% {
+        color: fade(@text-color, 20);
+    }
+}
+
+
+
 div.menu-bar {
     display: flex;
+    justify-content: space-between;
     div.setting.menu {
         color: @text-color;
     }
     div.flags {
         color: @text-color; 
+        .blink-color {
+            animation-name: color-to-transparent-1;
+            animation-duration: 2s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+        }
+        span {
+            cursor: default;
+        }
     }
 }
 

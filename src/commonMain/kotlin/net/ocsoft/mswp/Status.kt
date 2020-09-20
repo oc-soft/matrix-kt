@@ -9,6 +9,15 @@ import kotlin.collections.HashSet
  */
 class Status {
 
+    /**
+     * class instance
+     */
+    companion object {
+        /**
+         * locked count
+         */
+        val LOCKING_COUNT = "lockingcount"
+    }
 
     /**
      * the game is in animating status
@@ -30,12 +39,26 @@ class Status {
     val lockingButtons: MutableSet<CellIndex> = HashSet<CellIndex>()
 
     /**
+     * count of locking to prevent from opening button
+     */
+    val lockingCount: Int
+        get() {
+           return lockingButtons.size
+        }
+
+    /**
      * whether the game is started or not
      */
     val isStarted : Boolean
         get() {
             return openedButtons.size != 0
         }
+    /**
+     * event listeners
+     */
+    private val listeners: MutableList<(Any?, String)->Unit>
+        = ArrayList<(Any?, String)->Unit>()
+
 
    /**
      * register opened button
@@ -68,6 +91,15 @@ class Status {
     fun getOpenedCellsRef(): Set<CellIndex>  {
         return openedButtons
     }
+
+    /**
+     * clear all attirbute from buttons
+     */
+    fun clearAll() {
+        clearOpenedButtons()
+        clearLockingButtons()
+    }
+
     /**
      * clear opened buttons
      */
@@ -78,15 +110,25 @@ class Status {
     /**
      * lock cell
      */
-    fun lockCell(row: Int, column: Int) {
-        lockingButtons.add(CellIndex(row, column))
+    fun lockCell(row: Int, column: Int): Boolean {
+    
+        val result = lockingButtons.add(CellIndex(row, column))
+
+        if (result) {
+            notifyChange(LOCKING_COUNT)
+        }
+        return result
     }
 
     /**
      * unlock cell
      */
-    fun unlockCell(row: Int, column: Int) {
-        lockingButtons.remove(CellIndex(row, column))
+    fun unlockCell(row: Int, column: Int): Boolean {
+        val result = lockingButtons.remove(CellIndex(row, column))
+        if (result) {
+            notifyChange(LOCKING_COUNT)
+        }
+        return result
     }
 
     /**
@@ -94,6 +136,42 @@ class Status {
      */
     fun isLocking(row: Int, column: Int): Boolean {
         return CellIndex(row, column) in lockingButtons
+    }
+
+    /**
+     * clear all locking cell
+     */
+    fun clearLockingButtons() {
+        val oldSize = lockingButtons.size
+        lockingButtons.clear()
+        if (oldSize > 0) {
+            notifyChange(LOCKING_COUNT) 
+        }
+    }
+
+    /**
+     * add listener
+     */ 
+    fun addListener(listener: (Any?, String)->Unit) {
+        listeners.add(listener) 
+    }
+    /**
+     * remove listener
+     */
+    fun removeListener(listener: (Any?, String)->Unit) {
+        val idx = listeners.indexOfLast { it == listener }
+        if (idx >= 0) {
+            listeners.removeAt(idx)
+        }
+    }
+
+
+    /**
+     * notify change
+     */
+    private fun notifyChange(name: String) {
+        val listeners = ArrayList(this.listeners)
+        listeners.forEach { it(this, name) }
     }
 }
 // vi: se ts=4 sw=4 et:

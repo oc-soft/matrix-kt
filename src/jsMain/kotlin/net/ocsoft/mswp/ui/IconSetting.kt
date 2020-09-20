@@ -112,6 +112,17 @@ class IconSetting(
     private val listeners: MutableList<(Any?, String)->Unit>
         = ArrayList<(Any?, String)->Unit>()
 
+    /**
+     * operator
+     */
+    operator fun set(key: String, icon: Persistence.Icon) {
+        when (key) {
+            OK_ICON -> okIcon = icon
+            NG_ICON -> ngIcon = icon
+            FLAG_ICON -> flagIcon = icon
+            LIGHT_MARKER -> lightMarkerIcon = icon
+        }    
+    }
 
     /**
      * add listener
@@ -129,6 +140,18 @@ class IconSetting(
         }
     }
 
+    /**
+     * replace icons
+     */
+    fun replaceIcons(icons: Map<String, Persistence.Icon?>) {
+        allIcons.forEach {
+            val icon = icons[it]
+            if (icon != null) {
+                this[it] = icon
+            }
+        }
+
+    }
 
     /**
      * notify change

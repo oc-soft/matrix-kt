@@ -6,6 +6,7 @@ import net.ocsoft.mswp.ui.ColorSelector
 import net.ocsoft.mswp.ui.PointLightSetting
 import net.ocsoft.mswp.ui.IconSetting
 import net.ocsoft.mswp.ui.GameSettings
+import net.ocsoft.mswp.ui.Flag
 
 /**
  * main page configuration
@@ -36,6 +37,10 @@ data class MainPageConfig(
             "#game_grid",
             "body" ,
             ".setting.menu",
+            ".menu-bar .flags .flag-icon", 
+            arrayOf(".menu-bar .flags .flag-icon",
+                ".menu-bar .flags .flag-count"),
+            "color-to-transparent-1",
             "#back-to-main svg"),
         IconSelector.Option("#icon_list",
             "#icon_list .icons", 
@@ -67,7 +72,11 @@ data class MainPageConfig(
             "color-scheme",
             ".description",
             "#synchronizing-icon"),
-        PointLightSetting.Option("#synchronizing-icon-2"))) {
+        PointLightSetting.Option("#synchronizing-icon-2"),
+        Flag.Option(".menu-bar .flags",
+            ".flag-icon",
+            ".flag-count",
+            "blink-color"))) {
 }
 
 // vi: se ts=4 sw=4 et: 

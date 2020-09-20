@@ -43,8 +43,6 @@ class ShadowMap {
         grid: Grid,
         gl: WebGLRenderingContext) {
         
-        val viewport = gl.getParameter(
-            WebGLRenderingContext.VIEWPORT) as Int32Array?
 
         val frameBufferSize = calcFrameBufferSizeForShadowDepth(gl)
 
@@ -89,7 +87,7 @@ class ShadowMap {
      */
     fun calcFrameBufferSizeForShadowDepth(
         gl: WebGLRenderingContext): IntArray {
-        val canvas = gl.canvas as HTMLCanvasElement 
+        val canvas = gl.canvas 
 
         return intArrayOf(
             Display.calcPower2Value(canvas.width),
@@ -156,6 +154,7 @@ class ShadowMap {
                 grid.display.drawButtonI(gl, rowIndex, colIndex)
             }
         }
+        grid.display.unbindButtonVerticesBuffer(gl)
         gl.bindBuffer(
             WebGLRenderingContext.ARRAY_BUFFER,
             savedArrayBuffer)
@@ -218,7 +217,7 @@ class ShadowMap {
                 })
 
             val pt = glrs.matrix_apply_r_32(matRef, srcPt)
-            println("${pt!![0]}, ${pt!![1]}, ${pt!![2]}, ${pt!![3]}")
+            println("${pt!![0]}, ${pt[1]}, ${pt[2]}, ${pt[3]}")
         }
         
         glrs.matrix_release(lookFromMatRef)
@@ -250,6 +249,7 @@ class ShadowMap {
     /**
      * restore gl 
      */
+    @Suppress("UNUSED_PARAMETER")
     fun endEnv(grid: Grid,
         gl: WebGLRenderingContext) {
     }
@@ -304,6 +304,7 @@ class ShadowMap {
     /**
      * attach shadow mapping texture
      */
+    @Suppress("UNUSED_PARAMETER")
     fun attachShadowTexture(
         gl: WebGLRenderingContext,
         renderingCtx: RenderingCtx) {
@@ -438,7 +439,6 @@ class ShadowMap {
         height: Int) {
         val savedTexture = gl.getParameter(
             WebGLRenderingContext.TEXTURE_BINDING_2D) as WebGLTexture?
-        var txtNumber = Textures.ShadowmappingTextureIndex
         gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture)
         updateShadowDepthTextureSizeI(gl, width, height)
         gl.texImage2D(WebGLRenderingContext.TEXTURE_2D, 0,
@@ -471,7 +471,7 @@ class ShadowMap {
         return calcOrtho(grid.glrs!!,
             grid.pointLight!!,
             grid.camera!!,  
-            grid.display!!) 
+            grid.display) 
     }    
 
     /**
@@ -504,18 +504,6 @@ class ShadowMap {
         pointLight: net.ocsoft.mswp.PointLight,
         camera: Camera,
         display: Display): Array<FloatArray> {
-        val ptLight = pointLight.point
-        val center = camera.center
-        val normVec = Float64Array(Array<Double>(ptLight.size) { 
-            ptLight[it].toDouble() - center[it].toDouble()
-        })
-        var normVecLength = 0.0
-        
-        for (i in 0 until normVec.length) {
-            normVecLength += normVec[i].pow(2.0)
-        }
-        normVecLength = sqrt(normVecLength)
-        
 
         val vertices = getGameBounds(display)
 

@@ -110,6 +110,12 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         set(value) {
             pointLightEdit.pointLight = value
         }
+
+    /**
+     * flag 
+     */
+    var flag: Flag? = null
+
     /**
      * buttons row count
      */
@@ -676,9 +682,62 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         }
         
     } 
+    /**
+     * handle the user input event
+     */
     fun handleUserInput(gl: WebGLRenderingContext,
         x: Int, y: Int) {
         val model = this.model!!
+        val location = findCell(gl, x, y)
+        if (location != null) {
+            if (!model.logic.isOpened(location[0], location[1])) { 
+                model.logic.startIfNot(location[0], location[1])
+                if (!model.logic.status!!.inAnimating
+                    && !model.logic.isOver) {
+                    handleMineCell(gl, location)
+                    // update session
+                    Activity.record()
+                } 
+            }
+        }
+    }
+
+
+    /**
+     * handle main cell
+     */
+    fun handleMineCell(
+        gl: WebGLRenderingContext,
+        location: IntArray) {
+        val flag = this.flag!!
+        val flagging = flag.isFlagging
+        if (flagging != null && flagging) {
+            toggleFlag(gl, location) 
+        } else {
+            openMine(gl, location)
+        }
+    }
+
+    /**
+     * toggle flag
+     */
+    fun toggleFlag(
+        gl: WebGLRenderingContext, 
+        location: IntArray) {
+
+        val model = this.model!! 
+        val succeded = model.logic.toggleLock(location[0], location[1])
+        if (succeded) {
+            postDrawScene(gl)
+        }
+    }
+
+
+    /**
+     * find button cell from x,y coordinate on display
+     */
+    fun findCell(gl: WebGLRenderingContext,
+        x: Int, y: Int): IntArray? {
         beginDrawingForPicking(gl)
         val buffer = Uint8Array(4)
         gl.readPixels(x, y, 1, 1,
@@ -686,36 +745,40 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
             WebGLRenderingContext.UNSIGNED_BYTE, 
             buffer)
         val colorVal = ByteArray(buffer.length) { buffer[it] } 
-        val location = buttons.findPositionByPickingColor(colorVal)
-        if (location != null) {
-            if (!model.logic.isOpened(location[0], location[1])) { 
-                model.logic.startIfNot(location[0], location[1])
-                if (!model.logic.status!!.inAnimating
-                    && !model.logic.isOver) {
-                    
-                    var cells : Set<CellIndex> = model.logic.getOpenableCells(
-                        location[0], location[1])
-                    if (cells.size == 0) {
-                        cells = model.logic.mineLocations
-                    }
-                
-                    startAnimation(cells)
-                    val buttonIndices = Array<IntArray>(cells.size) {
-                        cells.elementAt(it).toIntArray()
-                    }
-                    
+        val result = buttons.findPositionByPickingColor(colorVal)
+        endDrawingForPicking(gl)
+        return result
+    } 
 
-                    Animation.setupButtons(buttons, 
-                        model.logic.status!!.getOpenedIndices(),
-                        buttonIndices, renderingCtx)
-                    postStartAnimation(gl, { finishAnimation(cells) })
-                    // update session
-                    Activity.record()
-                } 
+    /**
+     * open mine buttons
+     */
+    private fun openMine(
+        gl: WebGLRenderingContext,
+        location: IntArray) {
+        val model = this.model!!
+        val cellsAndLocking = model.logic.getOpenableCells(
+            location[0], location[1])
+        if (cellsAndLocking.second == false) {
+            var cells: Set<CellIndex> = cellsAndLocking.first
+            if (cells.size == 0) {
+                cells = model.logic.mineLocations
+            }
+            if (cells.size > 0) { 
+                startAnimation(cells)
+                val buttonIndices = Array<IntArray>(cells.size) {
+                    cells.elementAt(it).toIntArray()
+                }
+                
+                Animation.setupButtons(buttons, 
+                    model.logic.status!!.getOpenedIndices(),
+                    buttonIndices, renderingCtx)
+                postStartAnimation(gl, { finishAnimation(cells) })
             }
         }
-        endDrawingForPicking(gl)
     }
+    
+
 
     /**
      * handle user input for editing point-light
@@ -771,6 +834,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         model: Model,
         camera: Camera,
         pointLight: net.ocsoft.mswp.PointLight,
+        flag: Flag,
         colorScheme: ColorScheme,
         environment: Environment,
         shaderPrograms: ShaderPrograms,
@@ -778,12 +842,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         
         model.logic.rowSize = rowCount
         model.logic.columnSize = columnCount
+
         this.model = model
         this.buttons.logic = model.logic
         this.buttons.textures = this.textures
         this.board.textures = this.textures
         this.camera = camera
         this.pointLight = pointLight
+        this.flag = flag
         this.colorScheme = colorScheme
         this.shaderPrograms = shaderPrograms
         this.canvasId = settings.canvasId 
@@ -884,11 +950,14 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
     fun syncIconImageWithSettings() {
         val iconSetting = this.iconSetting
         if (iconSetting != null) {
-            glyph.updateSpecialImage(iconSetting)
+            glyph.updateImages(iconSetting)
             var gl = renderingContext
             if (gl != null) {
                 textures.updateOkTexture(gl, glyph)
                 textures.updateNgTexture(gl, glyph) 
+                textures.updateNumberFlagTexture(gl, glyph)
+                textures.updateOkFlagTexture(gl, glyph)
+                textures.updateNgFlagTexture(gl, glyph)
                 textures.updateNumberFlagTexture(gl, glyph)
                 postDrawScene(gl)
             }
@@ -922,6 +991,9 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
                 textures.updateNumberBlankTexture(gl, glyph)
                 textures.updateOkTexture(gl, glyph)
                 textures.updateNgTexture(gl, glyph) 
+                textures.updateOkFlagTexture(gl, glyph)
+                textures.updateNgFlagTexture(gl, glyph)
+                textures.updateNumberFlagTexture(gl, glyph)
                 textures.updatePointLightMarkerTexture(gl, glyph)
                 postDrawScene(gl)
             }
@@ -1830,7 +1902,7 @@ class Grid(val pointLightSettingOption: PointLightSetting.Option,
         val model = this.model!!
         val status = model.logic.status 
         if (status != null) {
-            status.clearOpenedButtons()
+            status.clearAll()
             val buttonIndices = Array<IntArray>(0) { intArrayOf(0,0) }
             Animation.setupButtons(buttons, 
                 status.getOpenedIndices(),

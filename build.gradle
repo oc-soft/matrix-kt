@@ -116,6 +116,12 @@ task webpackGradleBuild {
     }
 }
 
+jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
+jsBrowserProductionWebpack.inputs.files fileTree("src/jsMain/less")
+
+jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
+jsBrowserDevelopmentWebpack.inputs.files fileTree("src/jsMain/less")
+
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
 

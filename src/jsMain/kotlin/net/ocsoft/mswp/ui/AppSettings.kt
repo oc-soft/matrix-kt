@@ -18,7 +18,8 @@ class AppSettings(val option : Option) {
         val environmentOption: Environment.Option,
         val iconOption : IconSelector.Option,
         val colorOption: ColorSelector.Option,
-        val pointLightSettingOption: PointLightSetting.Option)
+        val pointLightSettingOption: PointLightSetting.Option,
+        val flagOption: Flag.Option)
 
     /**
      * runtime configuration

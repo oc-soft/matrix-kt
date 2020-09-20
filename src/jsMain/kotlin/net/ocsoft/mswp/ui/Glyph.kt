@@ -334,6 +334,7 @@ class Glyph(
         ctx: CanvasRenderingContext2D,
         iconSetting: IconSetting) {
         setupSpecialImages(ctx, iconSetting, IconSetting.allIcons)
+        setupUdSpecialImages(ctx, iconSetting, arrayOf(IconSetting.FLAG_ICON))
         setupSpecialImageBlanks(ctx, iconSetting, 
             arrayOf(IconSetting.NG_ICON,
                 IconSetting.OK_ICON))

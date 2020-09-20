@@ -261,6 +261,11 @@ class Display(var renderingCtx : RenderingCtx,
             }
             gl.activeTexture(savedTexNum as Int)
 
+            gl.disableVertexAttribArray(normalVecLoc)
+            gl.disableVertexAttribArray(texLoc)
+            gl.disableVertexAttribArray(verColor)
+
+            unbindButtonVerticesBuffer(gl) 
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 savedTex as WebGLTexture?)
  
@@ -312,6 +317,22 @@ class Display(var renderingCtx : RenderingCtx,
             }
         }
     }
+
+    /**
+     * bind button vertices buffer
+     */
+    fun unbindButtonVerticesBuffer(gl: WebGLRenderingContext) {
+        val shaderProg = gl.getParameter(
+            WebGLRenderingContext.CURRENT_PROGRAM) as WebGLProgram?
+        if (shaderProg != null) {
+            val verLoc = gl.getAttribLocation(shaderProg, 
+                "aVertexPosition")
+            if (verLoc != null) { 
+                gl.disableVertexAttribArray(verLoc)
+            }
+        }
+    }
+
 
     /**
      * update button view matrix
@@ -611,6 +632,10 @@ class Display(var renderingCtx : RenderingCtx,
                 }))
             drawBoardI(gl)
 
+            gl.disableVertexAttribArray(verColor)
+            gl.disableVertexAttribArray(normalVecLoc)
+
+            
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 savedTex as WebGLTexture?)
             gl.activeTexture(

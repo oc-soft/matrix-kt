@@ -13,6 +13,20 @@
         "prefix": "",
         "iconName": ""
       }
+    },
+    "0.2" : {
+      "ng" : {
+        "prefix": "",
+        "iconName": ""
+      },
+      "ok" : {
+        "prefix": "",
+        "iconName": ""
+      },
+      "flag" : {
+        "prefix": "",
+        "iconName": ""
+      }
     }
   },
   "pointLight": {
