@@ -7,7 +7,9 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.multiplatform' version '1.4.10'
+    id 'net.ocsoft.nodejs' version '0.1'
 }
+
 
 ext.site_dir = 'mswp/'
 ext.web_dir = 'prg/'
@@ -25,6 +27,7 @@ ext.rustBinDir = new File(new File(buildDir, "rust"), "bin")
 repositories { // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenCentral()
 }
 
 
@@ -68,6 +71,7 @@ kotlin {
                 implementation npm('css-loader','3.5.2')
                 implementation npm('less-loader', '5.0.0')
                 implementation npm('null-loader', '4.0.0')
+                implementation npm('less', '3.10.3')
 
                 implementation npm('bootstrap', '4.4.1')
                 implementation npm('@popperjs/core', '2.2.3')
@@ -93,6 +97,26 @@ kotlin {
     }
 }
 
+
+nodejsSettings {
+    installNodeModules = true  
+}
+
+
+tasks.nodeCli_less_lessc_1 {
+    def srcFile = new File(projectDir, 'src/jsMain/less/responsive.less')
+    def dstFile = new File(projectDir, 'css/responsive.css')
+    inputs.file srcFile
+    outputs.file dstFile
+    args '--no-color', srcFile, dstFile
+}
+
+
+task entryLessCompile {
+    dependsOn tasks.nodeCli_less_lessc_1
+}
+
+
 task xgetText(type: Exec) {
     executable = 'xgettext'
 }
@@ -117,10 +141,7 @@ task webpackGradleBuild {
 }
 
 jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
-jsBrowserProductionWebpack.inputs.files fileTree("src/jsMain/less")
-
 jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
-jsBrowserDevelopmentWebpack.inputs.files fileTree("src/jsMain/less")
 
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
@@ -267,6 +288,7 @@ task msgfmts {
     }
 }
 
+
 build.dependsOn msgfmts
 
 task cleanMsgfmts(type: Delete) {
@@ -317,6 +339,8 @@ task webpackDeploy(type: Copy) {
     }
 }
 
+build.dependsOn entryLessCompile 
+
 jsMainClasses.dependsOn webpackDeploy
 
 
@@ -366,6 +390,9 @@ task webpackViewDeploy(type: Copy) {
     include '*.php'
     into new File(projectDir, 'template')
 }
+
+
+
 jsMainClasses.dependsOn webpackViewDeploy
 
 task cleanWebpackViewDeploy(type: Delete) {

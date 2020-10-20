@@ -1,4 +1,4 @@
-@import "config";
+<?php require(implode('/', array(__DIR__, 'config-less.php'))); ?>
 #game_grid {
   width: 480px;
   height: 480px;
@@ -12,7 +12,7 @@
 
 
 body {
-   background-color: black; 
+   background-color: @env-color-background; 
 }
 
 #glyph_workarea {
@@ -35,9 +35,8 @@ body {
     transition: 0.5s;
 }
 
-
 .splash_text {
-    color: @text-color;
+    color: @env-color-foreground;
 }
 
 .loading {
@@ -48,10 +47,10 @@ body {
 
 @keyframes color-to-transparent-1 {
     0%, 20% { 
-        color: @text-color; 
+        color: @env-color-foreground; 
     }
     80%, 100% {
-        color: fade(@text-color, 20);
+        color: fade(@env-color-foreground, 20);
     }
 }
 
@@ -105,7 +104,7 @@ div.menu-bar {
     top: 0px;
     left: 0px;
     svg {
-        color: @text-color;
+        color: @env-color-foreground;
     }
 }
 
@@ -237,9 +236,5 @@ li.icon-item svg.svg-inline--fa path {
         }
     }
 }
-
-
-
-@import "responsive";
-
+<?php
 // vi: se ts=4 sw=4 et:

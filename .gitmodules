@@ -13,3 +13,6 @@
 [submodule "color-picker"]
 	path = color-picker
 	url = ../../npm/color-picker.git
+[submodule "gradle-nodejs"]
+	path = gradle-nodejs
+	url = ../../gradle-nodejs.git

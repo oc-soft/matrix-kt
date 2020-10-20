@@ -44,6 +44,9 @@ class Modules {
         root: 'WebFont'
       }
     });
+    config.externals.push({
+      less: 'less'
+    })
   }
 }
 

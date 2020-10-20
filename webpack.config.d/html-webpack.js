@@ -27,6 +27,7 @@ class HtmlWebpack {
     const HtmlWebpackPlugin = require('html-webpack-plugin');
     const htmlPluginConfig = {
       title: 'Mine sweeper',
+      inject: false,
       filename: 'entry.php',
       template: 'src/mswp.ejs'
     };
@@ -51,6 +52,10 @@ class HtmlWebpack {
         },
         {
           name: 'jquery'
+        },
+        {
+          name: 'less',
+          path: 'dist/less.min.js'
         },
         {
           name: 'bootstrap',

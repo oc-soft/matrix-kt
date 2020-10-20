@@ -13,8 +13,10 @@
   <script>
     var mswpSettings = <?php echo json_encode($mswp_settings); ?> ;
   </script>
+  <%= htmlWebpackPlugin.tags.headTags %>
+  <link href="index.php?less=entry" type="text/css" rel="stylesheet/less">
+  <link href="css/responsive.css" type="text/css" rel="stylesheet">
 </head>
-
 <body>
   <div id="splash_pane" class="overlay">
     <div class="loading text-white">
@@ -220,6 +222,7 @@
   <template id="icons_paginating_item_tmpl">
     <button class="btn btn-light page-number"></button>
   </template>
+  <%= htmlWebpackPlugin.tags.bodyTags %>
 </body>
 
 </html><?php

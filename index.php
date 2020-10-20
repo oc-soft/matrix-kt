@@ -23,7 +23,14 @@ if (count($_GET)) {
 		if (isset($doc_setting) && count($doc_setting)) {
 			$contents = 'doc-template.php';
 		}
-	}
+    } else if (isset($_GET['css'])) {
+        require 'css-function.php';
+	    $contents = css_get_contents($_GET['css']); 
+    } else if (isset($_GET['less'])) {
+        if ($_GET['less'] == 'entry') {
+            $contents = 'entry-less.php';     
+        }
+    }
 }
 if (!isset($contents)) {
 	$contents = 'entry.php';

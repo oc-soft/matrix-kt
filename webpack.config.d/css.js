@@ -16,6 +16,8 @@ class Css {
    */
   setupWebpack(config) {
     const ExtractCss = require('mini-css-extract-plugin');
+    
+
     config.module.rules.push({
       test: /\.css$/i,
       use: [
@@ -35,6 +37,7 @@ class Css {
         'less-loader'
       ],
     });
+
     const cssDir = GradleBuild.config.cssDir;
     config.plugins.push(
       new ExtractCss({

@@ -1,0 +1,245 @@
+#game_grid {
+  width: 480px;
+  height: 480px;
+  margin: auto;
+  display: block;
+}
+.icon-item {
+  width: calc(99.96% / 6);
+}
+body {
+  background-color: black;
+}
+#glyph_workarea {
+  display: none;
+}
+.resource {
+  display: none;
+}
+.overlay {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  transition: 0.5s;
+}
+.splash_text {
+  color: #ffffff;
+}
+.loading {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}
+@keyframes color-to-transparent-1 {
+  0%,
+  20% {
+    color: #ffffff;
+  }
+  80%,
+  100% {
+    color: rgba(255, 255, 255, 0.2);
+  }
+}
+div.menu-bar {
+  display: flex;
+  justify-content: space-between;
+}
+div.menu-bar div.setting.menu {
+  color: #ffffff;
+}
+div.menu-bar div.flags {
+  color: #ffffff;
+}
+div.menu-bar div.flags .blink-color {
+  animation-name: color-to-transparent-1;
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+div.menu-bar div.flags span {
+  cursor: default;
+}
+.setting .menu.item {
+  width: 1.5em;
+  height: 1.5em;
+  display: flex;
+  justify-content: center;
+}
+.setting .menu.item > i {
+  margin: auto;
+}
+.setting .menu.item > svg {
+  margin: auto;
+}
+.setting.menu.contents {
+  display: none;
+  cursor: default;
+}
+#back-to-main {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+#back-to-main svg {
+  color: #ffffff;
+}
+.icons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.icon.kind {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+ul.list.icons {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+li.icon-item div {
+  display: flex;
+  justify-content: center;
+  border-radius: 0.25em;
+  padding: 4px;
+  border: solid #ffffff;
+}
+li.icon-item div:hover {
+  border: solid var(--secondary);
+}
+li.icon-item.selected div:hover,
+li.icon-item.selected div {
+  border: solid var(--primary);
+}
+.pagination.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 12px;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+}
+li.icon-item div i {
+  font-size: 36px;
+}
+li.icon-item div div {
+  height: 36px;
+  padding: initial;
+  border: initial;
+}
+li.icon-item svg.svg-inline--fa {
+  font-size: 36px;
+}
+.btn.page-number {
+  width: 2.5em;
+}
+li.icon-item svg.svg-inline--fa path {
+  fill: #1B1B1B;
+}
+#color-selector div.description {
+  text-align: center;
+}
+#color-selector div.colors.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#color-selector div.colors.container div.color-scheme {
+  border-radius: 0.2em;
+  border-color: #dee2e6;
+  border-style: solid;
+  border-width: thin;
+  margin: 0.2em;
+  width: 1em;
+  height: 1em;
+}
+#color-selector div.colors.container div.color-scheme.selected:hover,
+#color-selector div.colors.container div.color-scheme.selected {
+  border-color: var(--primary);
+}
+#color-selector div.colors.container div.color-scheme:hover {
+  border-color: var(--secondary);
+}
+#color-selector div.color-circle-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#color-selector div.color-value-controller {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+#color-selector canvas.oc-color-circle {
+  width: 160px;
+  height: 160px;
+}
+#color-selector .modal-footer {
+  display: block;
+}
+#color-selector .modal-footer .left-side {
+  float: left;
+}
+#color-selector .modal-footer .right-side {
+  float: right;
+}
+@media (orientation: portrait) and (max-width: 479px) and (min-height: 479px) {
+  #game_grid {
+    width: 100%;
+    height: 480px;
+  }
+}
+@media (orientation: landscape) and (min-width: 479px) and (min-height: 319px) and (max-height: 359px) {
+  #game_grid {
+    width: 480px;
+    height: 300px;
+  }
+}
+@media (orientation: landscape) and (min-width: 479px) and (min-height: 359px) and (max-height: 379px) {
+  #game_grid {
+    width: 480px;
+    height: 360px;
+  }
+}
+@media (orientation: landscape) and (min-width: 479px) and (min-height: 379px) and (max-height: 419px) {
+  #game_grid {
+    width: 480px;
+    height: 380px;
+  }
+}
+@media (orientation: landscape) and (min-width: 479px) and (min-height: 419px) and (max-height: 479px) {
+  #game_grid {
+    width: 480px;
+    height: 400px;
+  }
+}
+@media (orientation: landscape) and (min-width: 479px) and (max-width: 639px) and (min-height: 479px) and (max-height: 639px) {
+  #game_grid {
+    width: 480px;
+    height: 480px;
+  }
+}
+@media (min-width: 639px) and (min-height: 639px) {
+  #game_grid {
+    width: 640px;
+    height: 640px;
+  }
+}
+@media (min-width: 479px) and (max-width: 639px) and (min-height: 479px) and (max-height: 639px) {
+  #game_grid {
+    width: 480px;
+    height: 480px;
+  }
+}

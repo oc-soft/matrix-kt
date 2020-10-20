@@ -25,7 +25,6 @@ class Entries {
     }
     config.entry.kotlin = ['kotlin'];
     config.entry.main.push('bootstrap');
-    config.entry.main.push(FindFile.sync('src/jsMain/less/entry.less'));
   }
     
 }

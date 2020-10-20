@@ -67,6 +67,28 @@ class ColorScheme {
     }
 
     /**
+     * get color scheme as array object  
+     */
+    function get_color_scheme($id) {
+        $color_scheme_str = $this->read($id);
+        if ($color_scheme_str) {
+            $result = json_decode($color_scheme_str, TRUE);
+        } else {
+            $result = $this->get_default_color_scheme();
+        }
+        return $result;
+    }
+    /**
+     * get default color scheme
+     */
+    function get_default_color_scheme() {
+        $specs_str = file_get_contents(
+            implode('/', array(dirname(__DIR__), 'specs', 'config.js')));
+        $specs = json_decode($specs_str, TRUE);
+        return $specs['colorScheme'];
+     }
+
+    /**
      * filter only you wanna save 
      */
     function get_necessary_data($data) {
