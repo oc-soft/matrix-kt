@@ -39,24 +39,10 @@ class Karma {
   }
 }
 
-/**
- * create webpack config
- */
-var createWebpackConfig = (function(superFunc) {
-  return function() {
-    let result = undefined;
-    if (typeof superFunc === 'function') {
-      result = superFunc();
-      (new Karma()).setupWebpack(result);
-    }
-    return result;
-  }
-})(createWebpackConfig);
-
 (config => {
   const path = require('path');
   const confName = path.basename(__filename);
-  if (confName == 'karma.config.js') {
+  if (confName == 'karma.conf.js') {
     (new Karma()).setupKarma(config);
   }
 })(config);
