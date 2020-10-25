@@ -25,11 +25,7 @@ class Fonts {
 (config=>{
 
   const path = require('path');
-  const configName = path.basename(__filename);
-  if (configName == 'webpack.config.js') {
-    (new Fonts()).setupWebpack(config);
-  }
-
+  (new Fonts()).setupWebpack(config);
 })(config);
 
 

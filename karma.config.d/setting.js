@@ -14,15 +14,16 @@ class Setting {
    * setup karuma
    */
   setupKarma(config) {
+    const path = require('path')
+
+    config.customDebugFile = path.join(
+      GradleBuild.config.jsTestSourceDir,
+      'karma', 'debug.html')
   }
 }
 
 (config=>{
-  const path = require('path');
-  const configName = path.basename(__filename);
-  if (configName == 'karma.config.js') {
-    (new Setting()).setupKarma(config);
-  }
+  (new Setting()).setupKarma(config)
 })(config);
 
 

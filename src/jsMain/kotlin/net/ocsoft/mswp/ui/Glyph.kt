@@ -16,7 +16,6 @@ import org.w3c.dom.svg.*
 import jQuery
 import kotlin.math.*
 import net.ocsoft.mswp.ColorScheme
-import fontawesome.SvgCore;
 
 /**
  * glyph setting

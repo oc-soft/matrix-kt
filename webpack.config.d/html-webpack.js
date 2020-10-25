@@ -103,9 +103,7 @@ class HtmlWebpack {
 (function(config) {
   const path = require('path');
   const confName = path.basename(__filename);
-  if (confName == 'webpack.config.js') {
-    (new HtmlWebpack()).setupWebpack(config);
-  }
+  (new HtmlWebpack()).setupWebpack(config);
 })(config);
 
 

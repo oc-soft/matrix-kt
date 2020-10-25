@@ -1,0 +1,15 @@
+{
+  "colorScheme" : {
+    "less": {
+      "mapping": {
+        "@env-color-background": [ "environment", 0 ],
+        "@env-color-foreground": [ "environment", 1 ]
+      },
+      "data": {
+        "@env-color-background": "",
+        "@env-color-foreground": ""
+      }
+    }
+  },
+  "__comments": "/* vi: se ts=2 sw=2 et: */"
+}

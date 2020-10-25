@@ -47,8 +47,8 @@ class Environment(val option: Option,
      * synchronize environment with color scheme
      */
     fun syncWithColorScheme() {
-        syncMainPlaygroundWithColorScheme()
-        syncBackgroundWithColorScheme()
+        // syncMainPlaygroundWithColorScheme()
+        // syncBackgroundWithColorScheme()
         syncMenuTextWithColorScheme()
         syncFlagsWithColorScheme()
         syncFlaggingAnimationWithColorScheme()

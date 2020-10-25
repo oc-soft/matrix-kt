@@ -10,25 +10,33 @@ plugins {
     id 'net.ocsoft.nodejs' version '0.1'
 }
 
-
-ext.site_dir = 'mswp/'
-ext.web_dir = 'prg/'
-ext.web_app_pkg = 'mswp/'
-ext.packageVersion = '0.4.0'
-ext.ocSoftEmail0 = 'toshi@oc-soft.net'
-ext.webpackSetting = [
-    gradleBuildJs: 'gradle-build.js' 
-]
-ext.webpackSetting.gradleBuildPath =
-    new File(new File(projectDir, "webpack.config.d"),
-         "_${webpackSetting.gradleBuildJs}")
-ext.rustBinDir = new File(new File(buildDir, "rust"), "bin")
-
 repositories { // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
     mavenCentral()
 }
+
+
+ext.siteDir = 'mswp/'
+ext.webDir = 'prg/'
+ext.webAppPkg = 'mswp/'
+ext.packageVersion = '0.4.0'
+ext.ocSoftEmail0 = 'toshi@oc-soft.net'
+ext.webpackSetting = [
+    gradleBuildJs: 'gradle-build.js',
+    libraryTarget: 'umd' 
+]
+
+ext.webpackSetting.gradleBuildPath =
+    new File(new File(projectDir, "webpack.config.d"),
+         "_${webpackSetting.gradleBuildJs}")
+
+ext.karmaWebpackSetting = [
+    gradleBuildPath: new File(new File(projectDir, "karma.config.d"),
+        "_${webpackSetting.gradleBuildJs}")
+]
+
+ext.rustBinDir = new File(new File(buildDir, "rust"), "bin")
 
 
 
@@ -39,7 +47,7 @@ kotlin {
     js {
         browser {
             webpackTask {
-                output.libraryTarget = 'umd'
+                output.libraryTarget = webpackSetting.libraryTarget
             }
         } 
     }
@@ -98,6 +106,18 @@ kotlin {
 }
 
 
+
+kotlin.js {
+    browser {
+        webpackTask {
+            println configFile
+            println delegate.class
+        }
+    }
+}
+
+println kotlinNodeJs.installationDir
+
 nodejsSettings {
     installNodeModules = true  
 }
@@ -124,19 +144,33 @@ task xgetText(type: Exec) {
 
 task webpackGradleBuild {
     doLast {
-        def jsName = 'gradle-build.js'
+        def jsName = webpackSetting.gradleBuildJs
         def gradleBuildSrc = new File(new File(projectDir, "tools"), jsName)    
+
+        def commonSourceDir = new File(
+            new File(projectDir, "src"), "commonMain") 
+        def jsSourceDir = new File(
+            new File(projectDir, "src"), "jsMain")
+        def jsTestSourceDir = new File(
+            new File(projectDir, "src"), "jsTest")
+
         def binding = [
             config: """{
-    programDir: '${site_dir}${web_dir}',
-    cssDir: '${site_dir}css'
-}"""
+                |  programDir: '${siteDir}${webDir}',
+                |  cssDir: '${siteDir}css',
+                |  jsSourceDir: '${jsSourceDir}',
+                |  jsTestSourceDir: '${jsTestSourceDir}',
+                |  commonSourceDir: '${commonSourceDir}',
+                |  projectDir: '${projectDir}',
+                |  libraryTarget: '${webpackSetting.libraryTarget}'
+                |}""".stripMargin()
         ]
         def tmp = new groovy.text.StreamingTemplateEngine()
         tmp = tmp.createTemplate(gradleBuildSrc) 
         def gradleBuildDestDir = new File(projectDir, "webpack.config.d")    
-        def gradleBuildDest = new File(gradleBuildDestDir, "${jsName}") 
-        webpackSetting.gradleBuildPath.text = tmp.make(binding)
+        def gradleBuildContents = tmp.make(binding)
+        webpackSetting.gradleBuildPath.text = gradleBuildContents
+        karmaWebpackSetting.gradleBuildPath.text = gradleBuildContents
     }
 }
 
@@ -145,6 +179,9 @@ jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
 
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
+
+
+jsBrowserTest.inputs.files files("webpack.conf.d/*.js")
 
 
 clean.doFirst {
@@ -244,16 +281,6 @@ task glrsBuild {
 
 kotlinNpmInstall.dependsOn glrsBuild
 
-task jsLibraries(type: Copy) {
-    def jsRoot = new File(new File(new File(projectDir, 'src'), 'jsMain'), 'js')
-    def dstRoot = kotlinNodeJs.projectPackagesDir
-    from new File(jsRoot, 'libraries.js')
-    into new File(dstRoot, project.name)
-}
-
-jsBrowserProductionWebpack.dependsOn jsLibraries
-jsBrowserDevelopmentWebpack.dependsOn jsLibraries
-
 
 task msgfmts {
     def srcDir = file("${projectDir}/src/i18n")
@@ -325,8 +352,8 @@ task resolveEllipseCenter(type: JavaExec) {
 task webpackDeploy(type: Copy) {
     def distDir = null
     distDir = jsBrowserDistributeResources.destinationDir
-    if (web_app_pkg?.trim()) {
-        distDir = new File(distDir, web_app_pkg)
+    if (webAppPkg?.trim()) {
+        distDir = new File(distDir, webAppPkg)
     }
 
     from distDir
@@ -347,12 +374,12 @@ jsMainClasses.dependsOn webpackDeploy
 task deployResources0(type: Copy) {
     def distDir = jsBrowserDistributeResources.destinationDir
    
-    if (web_app_pkg?.trim()) {
-        distDir = new File(distDir, web_app_pkg)
+    if (webAppPkg?.trim()) {
+        distDir = new File(distDir, webAppPkg)
     }
 
     from jsProcessResources.destinationDir
-    into new File(distDir, web_dir)
+    into new File(distDir, webDir)
 }
 
 webpackDeploy.dependsOn deployResources0
@@ -363,19 +390,19 @@ task deployResources1(type: Copy) {
     def src = new File(
         new File(kotlinNodeJs.rootPackageDir, pkgname),
         "glrs_bg.wasm")
-    if (web_app_pkg?.trim()) {
-        distDir = new File(distDir, web_app_pkg)
+    if (webAppPkg?.trim()) {
+        distDir = new File(distDir, webAppPkg)
     }
 
     from  src
-    into new File(distDir, web_dir)
+    into new File(distDir, webDir)
 }
 
 webpackDeploy.dependsOn deployResources1
 
 task cleanWebpackDeploy(type: Delete) {
-    delete web_dir 
-    delete site_dir
+    delete webDir 
+    delete siteDir
     delete new File(projectDir, 'css')
 }
 clean.dependsOn cleanWebpackDeploy
@@ -414,7 +441,7 @@ clean.dependsOn cleanWebpackViewDeploy
 //
 //    includeEmptyDirs false
 //    from compilation.output.resourcesDir
-//    into "${web_dir}/mswp"
+//    into "${webDir}/mswp"
 //}
 
 

@@ -22,10 +22,7 @@ class Clean {
 
 (function(config) {
   const path = require('path');
-  const confName = path.basename(__filename);
-  if (confName == 'webpack.config.js') {
-    (new Clean()).setupWebpack(config);
-  }
+  (new Clean()).setupWebpack(config);
 })(config);
 
 /* vi: se ts=2 sw=2 et: */

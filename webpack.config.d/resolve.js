@@ -14,11 +14,22 @@ class Resolve {
    * set up webpack configuration.
    */
   setupWebpack(config) {
+    const path = require('path')
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};
     // config.resolve.alias['popper.js'] = require.resolve('@popperjs/core');
     config.resolve.alias['popper.js'] = '@popperjs/core';
-    this.setupFontAwesome(config);
+
+    config.resolve.alias['color-scheme.json'] = path.join(
+      GradleBuild.config.commonSourceDir, 
+        'resources', 'net', 'ocsoft',
+        'mswp', 'settings', 'color-scheme.json')
+     
+    config.resolve.alias['./libraries.js'] = path.join(
+      GradleBuild.config.jsSourceDir, 
+        'js', 'libraries.js')
+
+     this.setupFontAwesome(config);
   }
 
 
@@ -48,11 +59,7 @@ class Resolve {
 
 (config=>{
   const path = require('path');
-  const configName = path.basename(__filename);
-  if (configName == 'webpack.config.js') {
-    (new Resolve()).setupWebpack(config);
-  }
-
+  (new Resolve()).setupWebpack(config);
 })(config);
 
 

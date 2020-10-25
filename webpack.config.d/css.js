@@ -51,10 +51,7 @@ class Css {
 (config=>{
 
   const path = require('path');
-  const configName = path.basename(__filename);
-  if (configName == 'webpack.config.js') {
-    (new Css()).setupWebpack(config);
-  }
+  (new Css()).setupWebpack(config);
 
 })(config);
 

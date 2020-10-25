@@ -217,6 +217,7 @@ class ColorScheme(
         if (0 <= index && index < envColorSize) {
             result = envColors[index].copyOf()
         }
+
         return result
     }
 

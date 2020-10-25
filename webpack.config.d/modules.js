@@ -3,7 +3,6 @@
  * handle modules
  */
 class Modules {
-
   /**
    * constructor
    */
@@ -14,6 +13,12 @@ class Modules {
    * setup webpack
    */
   setupWebpack(config) {
+    const path = require('path');
+    const fileInfo = path.parse(__filename)
+    this.setupExternals(config)
+  }
+
+  setupExternals(config) {
     if (!config.externals) {
       config.externals = [];
     } 
@@ -26,7 +31,6 @@ class Modules {
       }
     });
     config.externals.push('@fortawesome/fontawesome-free');
-    config.externals.push('@fortawesome/fontawesome-svg-core');
     config.externals.push('@fortawesome/fontawesome-free/css/fontawesome.css');
     config.externals.push('@fortawesome/fontawesome-free/css/solid.css');
     config.externals.push('@fortawesome/fontawesome-free/js/solid.js');
@@ -51,12 +55,7 @@ class Modules {
 }
 
 ((config)=> {
-  const path = require('path');
-  const confName = path.basename(__filename);
-  if (confName == 'webpack.config.js') {
-    (new Modules()).setupWebpack(config);
-  }
-
+  (new Modules()).setupWebpack(config);
 })(config);
 
 /* vi: se ts=2 sw=2 et: */
