@@ -15,10 +15,11 @@ class Setting {
    */
   setupKarma(config) {
     const path = require('path')
-
+/*
     config.customDebugFile = path.join(
       GradleBuild.config.jsTestSourceDir,
       'karma', 'debug.html')
+*/
   }
 }
 

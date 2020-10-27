@@ -160,7 +160,7 @@ class MineButton(
 
 
     fun createPolygons(xDivider: Int, yDivider: Int): FloatArray {
-        val thickness = buttonSize.min()!! * this.thickness
+        val thickness = buttonSize.minOrNull()!! * this.thickness
         val frontV = Polygon.divideSquare2(buttonSize, 
             xDivider, yDivider, false, thickness)
         val backV = Polygon.divideSquare2(buttonSize, 

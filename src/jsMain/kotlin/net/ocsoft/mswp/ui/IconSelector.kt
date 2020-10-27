@@ -9,7 +9,7 @@ import org.w3c.dom.Element
 import fontawesome.Icons
 
 import kotlin.text.toIntOrNull
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.collections.List
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
@@ -17,6 +17,7 @@ import kotlin.collections.Map
 import kotlin.collections.HashMap
 import net.ocsoft.mswp.Activity
 import net.ocsoft.mswp.*
+import org.w3c.dom.HTMLElement
 
 /**
  * icon selector
@@ -541,7 +542,7 @@ class IconSelector(val option : Option) {
      * unbind handler from paging control
      */
     fun unbindPagingCtrl() {
-        val pagingContainer = jQuery(option.pagingContainerQuery)
+        val pagingContainer = jQuery(option.pagingContainerQuery) 
         val pagingCtrl = pagingContainer.children().eq(0) as JQuery?
 
         if (firstPageHdlr != null) {
@@ -691,7 +692,7 @@ class IconSelector(val option : Option) {
         val pageNumber = pageIndex + 1
         var elemIndex : Int? = null
         pageNumbers.each { idx, elem -> 
-            val elemNum = jQuery(elem).text().toIntOrNull()
+            val elemNum = jQuery(elem as HTMLElement).text().toIntOrNull()
             var notMatched = true
             if (elemNum != null) {
                 notMatched = elemNum != pageNumber  
@@ -714,7 +715,7 @@ class IconSelector(val option : Option) {
      */
     fun readPageNumbersFromUi(): Pair<Int, Int>? {
         val pagingContainer = jQuery(option.pagingContainerQuery)
-        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery? 
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery?
         val pageNumbers = jQuery(".page-number", pagingCtrl)
         val firstNode = pageNumbers.eq(0)
         val lastNode = pageNumbers.eq(pageNumbers.length.toInt() - 1)
@@ -773,7 +774,7 @@ class IconSelector(val option : Option) {
      */
     fun calcCountOfPageNumUi(): Int {
         val pagingContainer = jQuery(option.pagingContainerQuery)
-        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery? 
+        val pagingCtrl =  pagingContainer.children().eq(0) as JQuery?
         val pageNumbers = jQuery(".page-number", pagingCtrl)
         val result = pageNumbers.length.toInt()
         return result 
@@ -866,9 +867,9 @@ class IconSelector(val option : Option) {
             var selected = false
             if (item != null) {
                 val newLine = jQuery(option.itemTemplateQuery).html()
-                newNode = jQuery(newLine) 
-                val divNode = jQuery("div", newNode as JQuery?)
-                val iNode = jQuery("i", divNode as JQuery?)
+                newNode = jQuery(newLine) as JQuery?
+                val divNode = jQuery("div", newNode) as JQuery?
+                val iNode = jQuery("i", divNode)
                 iNode.addClass("${item.prefix} fa-${item.name}")
                 selected = selectedIcon == Persistence.Icon(
                     item.prefix, item.name)
@@ -881,10 +882,10 @@ class IconSelector(val option : Option) {
                     items.eq(index).off(
                         "click", iconItemClickHdlr!!) 
                 }
-                items.eq(index).replaceWith(newNode) 
+                items.eq(index).replaceWith(newNode!!) 
                 items = jQuery(option.itemsQuery)
             } else {
-                jQuery(option.itemListQuery).append(newNode)
+                jQuery(option.itemListQuery).append(newNode!!)
                 items = jQuery(option.itemsQuery)
              }
 
@@ -973,10 +974,8 @@ class IconSelector(val option : Option) {
     fun createIconIdFromNode(node : JQuery): Persistence.Icon? {
         val prefix = node.data("prefix")
         val iconName = node.data("icon")
-        var result: Persistence.Icon? = null
-        if (prefix != null && iconName != null) {
-            result = Persistence.Icon(prefix as String, iconName as String)
-        }
+        var result: Persistence.Icon? 
+        result = Persistence.Icon(prefix as String, iconName as String)
         return result
     }
 }

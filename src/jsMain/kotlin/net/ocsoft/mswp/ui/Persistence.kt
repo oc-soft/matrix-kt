@@ -6,7 +6,7 @@ import JQueryAjaxSettings
 import kotlin.js.Promise
 import kotlin.collections.Map
 import kotlin.collections.HashMap
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.text.toIntOrNull
 import kotlin.math.roundToInt
 import kotlin.math.min

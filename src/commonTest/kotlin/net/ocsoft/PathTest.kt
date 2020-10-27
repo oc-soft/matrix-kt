@@ -36,7 +36,7 @@ class PathTest {
         
         val st = Path.Stream(data)
         
-        var state = false
+        var state: Boolean
         do {
             state = Path.parseWsp(st) 
         } while(state)
@@ -89,7 +89,7 @@ class PathTest {
             "M200 100"
         )
         var strRes = ""
-        var parseRes = false
+        var parseRes: Boolean
         parseRes = Path.parseMoveto(Path.Stream(data[0]), {
             assertEquals(it.data[0], it.data[0].toInt().toDouble())
             assertEquals(it.data[1], it.data[1].toInt().toDouble())
@@ -128,7 +128,7 @@ class PathTest {
             "M200 100"
         )
         var strRes = ""
-        var parseRes = false
+        var parseRes: Boolean
         parseRes = Path.parseDrawto(Path.Stream(data[0]), {
             assertEquals(it.data[0], it.data[0].toInt().toDouble())
             assertEquals(it.data[1], it.data[1].toInt().toDouble())
@@ -278,7 +278,7 @@ class PathTest {
             "C100 100 250 100 250 200"
         )
         var dataRes = ""
-        var error = -1
+        var error: Int 
         val res = Path.parseCurveto(Path.Stream(data[0]), {
             val dataArray = ArrayList<Int>()
             it.data.forEach {
@@ -321,7 +321,7 @@ class PathTest {
             "S400 300 400 200"
         )
         var dataRes = ""
-        var error = -1
+        var error: Int
         val res = Path.parseSmoothCurveto(Path.Stream(data[0]),
             {
                 val dataArray = ArrayList<Int>()

@@ -85,11 +85,11 @@ class GameSettings(val option: Option) {
         }
         // settingItem.on("click", settingItemHandler!!)
         dropdown.bind(option.queries.setting, option.queries.dropdown)
-        labelSettingItem?.on("click", labelSettingItemHandler!!)
-        lightSettingItem?.on("click", lightEditItemHandler!!) 
-        colorSettingItem?.on("click", colorSettingItemHandler!!)
-        popperInstance = Popper.createPopper(labelSettingItem!![0],
-            jQuery(option.queries.dropdown)!![0]!!,
+        labelSettingItem.on("click", labelSettingItemHandler!!)
+        lightSettingItem.on("click", lightEditItemHandler!!) 
+        colorSettingItem.on("click", colorSettingItemHandler!!)
+        popperInstance = Popper.createPopper(labelSettingItem[0],
+            jQuery(option.queries.dropdown)[0]!!,
             object {
                 val modifiers = arrayOf(
                     object {
@@ -107,17 +107,17 @@ class GameSettings(val option: Option) {
     fun unbind() {
         if (labelSettingItemHandler != null) {
             val labelSettingItem = jQuery(option.queries.labelSetting)
-            labelSettingItem?.off("click", labelSettingItemHandler!!)
+            labelSettingItem.off("click", labelSettingItemHandler!!)
             labelSettingItemHandler = null
         }
         if (colorSettingItemHandler != null) {
             val colorSettingItem = jQuery(option.queries.colorSetting)
-            colorSettingItem?.off("click", colorSettingItemHandler!!)
+            colorSettingItem.off("click", colorSettingItemHandler!!)
             colorSettingItemHandler = null
         }
         if (lightEditItemHandler != null) {
             val lightSettingItem = jQuery(option.queries.lightSetting)
-            lightSettingItem?.off("click", lightEditItemHandler!!)
+            lightSettingItem.off("click", lightEditItemHandler!!)
             lightEditItemHandler = null
         }
 
@@ -131,6 +131,7 @@ class GameSettings(val option: Option) {
     /**
      * handle setting item
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onClickOnLabelSettingItem(
         eventObj : JQueryEventObject, args: Any) : Any {
         appSettings?.iconSelector?.show()
@@ -142,6 +143,7 @@ class GameSettings(val option: Option) {
     /**
      * handle click event for color setting
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onClickOnColorSetting(eventObj: JQueryEventObject, args: Any): Any {
         appSettings?.editColorScheme()
         hideDropdown()
@@ -151,6 +153,7 @@ class GameSettings(val option: Option) {
     /**
      * handle setting item for light editing
      */
+    @Suppress("UNUSED_PARAMETER")
     fun onClickOnLightEditItem(
         eventObj: JQueryEventObject, args: Any) : Any {
         hideDropdown()

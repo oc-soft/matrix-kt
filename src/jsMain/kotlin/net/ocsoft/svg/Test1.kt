@@ -4,7 +4,7 @@ import jQuery
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.Path2D
-import kotlin.browser.window
+import kotlinx.browser.window
 
 /**
  * test runner for svg
@@ -52,7 +52,7 @@ class Test1 {
             val dataLen = setting.pathData.length
             val pathData = setting.pathData
             this.testData = Array<Pair<String, Double>>(dataLen) {
-                var strData = ""
+                var strData: String
                 var scale = 1.0
                 val pathItem = pathData[it]
                 if (js("typeof pathItem") == "object") {
@@ -133,21 +133,19 @@ class Test1 {
         canvasQuery: String) {
         val canvas = jQuery(canvasQuery)
         val ua = window.navigator.userAgent; 
-        var path: Path2D? = null
+        var path: Path2D?
         if (ua.indexOf("Edge") == -1 && !debugInChrome) {
             path = Path2D(pathData)
         } else {
             path = ms.Svg.createPath2D(pathData)
         }
-        if (canvas != null && path != null) {
-            val canvasElem = canvas[0] as HTMLCanvasElement
-            val ctx = canvasElem.getContext("2d") as CanvasRenderingContext2D? 
-            ctx?.save()
-            ctx?.setTransform(scale, 0.0, 0.0, scale, 0.0, 0.0)
-            // ctx?.fill(path)
-            ctx?.stroke(path) 
-            ctx?.restore()
-        }
+        val canvasElem = canvas[0] as HTMLCanvasElement
+        val ctx = canvasElem.getContext("2d") as CanvasRenderingContext2D? 
+        ctx?.save()
+        ctx?.setTransform(scale, 0.0, 0.0, scale, 0.0, 0.0)
+        // ctx?.fill(path)
+        ctx?.stroke(path) 
+        ctx?.restore()
     }
 }
 

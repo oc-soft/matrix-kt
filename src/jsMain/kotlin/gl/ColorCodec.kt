@@ -31,7 +31,7 @@ class ColorCodec {
          * decode float value less than 1 from color
          */
         fun decodeFloatLess1(buffer: Uint8Array): Float? {
-            var result: Float? = null 
+            var result: Float?
             
             result = decodeFloat(buffer)
             if (result != null) {

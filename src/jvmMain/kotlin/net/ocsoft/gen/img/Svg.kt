@@ -9,37 +9,37 @@ import java.io.Reader
 import java.io.IOException
 import java.io.FileNotFoundException
 
-import java.util.Map
+import kotlin.collections.Map
 
 import javax.script.*
 
 
 class Svg {
 
-    var option: Map<String, Object>? = null
+    var option: Map<String, Any>? = null
 
 
     fun run() {
-        var svgOption = option?.get("svg") as Map<String, Object>?
-        var destOption = svgOption?.get("dest") as Map<String, Object>?
-        val templateOption = destOption?.get("template") as Map<String, Object>?
+        var svgOption = option?.get("svg") as Map<String, Any>?
+        var destOption = svgOption?.get("dest") as Map<String, Any>?
+        val templateOption = destOption?.get("template") as Map<String, Any>?
         val rootDir = destOption?.get("root") as String?
         val imgList = ArrayList<Pair<File, String>>()
         if (svgOption != null  
             && rootDir != null && templateOption != null) {
             val destDirFile = File(rootDir)
             var ellipseOptionObj = option?.get("ellipseCenter")
-            var ellipseOption = ellipseOptionObj as Map<String, Object>?
+            var ellipseOption = ellipseOptionObj as Map<String, Any>?
             if (ellipseOption != null) {
                 val ftmpObj = templateOption["ellipseCenter"] 
                 val fileTemplate = ftmpObj as String?
                 if (fileTemplate != null) {
-                    for (idx in 0 .. ellipseOption?.size() - 1) {
+                    for (idx in 0 .. ellipseOption.size - 1) {
                         val paramObj = ellipseOption["${idx}"]
-                        var param = paramObj as Map<String, Object>?
+                        var param = paramObj as Map<String, Any>?
                         if (param != null) {
                             val imgGen = CenterFromPoints()
-                            imgGen.parseOption(param!!)
+                            imgGen.parseOption(param)
                             val fName = String.format(fileTemplate, 
                                 idx as Any?)
                             val f = File(destDirFile, fName)
@@ -67,7 +67,7 @@ class Svg {
         val mgr = ScriptEngineManager()
         val eng = mgr.getEngineByName("JavaScript")
         var evalContent = "eval(${jsonStr})"
-        option = eng.eval(evalContent) as Map<String, Object>
+        option = eng.eval(evalContent) as Map<String, Any>
 
     }
 
@@ -76,8 +76,8 @@ class Svg {
         val optionsMap = HashMap<String, (Array<String>, IntArray)->Unit>()
 
         optionsMap["-f"] = { 
-            args, ioIndex ->
-            handleJsonFile(args, ioIndex)
+            args1, ioIndex ->
+            handleJsonFile(args1, ioIndex)
         }
 
         var i = 0
@@ -114,7 +114,7 @@ class Svg {
             do {
                 val sizeRead = fr.read(buffer, 0, buffer.size)
                 if (sizeRead > 0) {
-                    var str = ""
+                    var str: String 
                     if (sizeRead < buffer.size) {
                         str = String(buffer.sliceArray(0..sizeRead - 1))
                     } else {

@@ -1,5 +1,5 @@
 package net.ocsoft.mswp
-import kotlin.browser.window
+import kotlinx.browser.window
 import org.w3c.dom.get
 import kotlin.js.Promise
 
@@ -12,10 +12,10 @@ class Polyfill {
          * load polyfill
          */
         fun load(): Promise<Unit> {
-            var result : Promise<Unit>? = null
+            var result : Promise<Unit>?
             
             result = Promise<Unit> {
-                resolve, reject ->
+                resolve, _ ->
                 val te = window.get("TextDecoder")
                 if (te == null) {
                     val scriptElem = window.document.createElement("script")
@@ -30,14 +30,14 @@ class Polyfill {
                     resolve(Unit)
                 }
             } 
-            return result!!
+            return result
         }
  
         /**
          * load polyfill
          */
         fun load1(): Promise<Unit> {
-            var result : Promise<Unit>? = null
+            var result : Promise<Unit>?
             val te = window.get("TextDecoder")
             if (te != null) {
                 var prm = window.fetch(
@@ -52,11 +52,11 @@ class Polyfill {
                 })
             } else {
                 result = Promise<Unit> {
-                    resolve, reject ->
+                    resolve, _ ->
                     resolve(Unit)
                 } 
             }
-            return result!!
+            return result
         }
     }
 }

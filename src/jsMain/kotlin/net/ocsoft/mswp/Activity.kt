@@ -1,6 +1,6 @@
 package net.ocsoft.mswp
 
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.js.Promise
 
 /**

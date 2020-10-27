@@ -15,7 +15,7 @@ import popper.Popper
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.browser.window
+import kotlinx.browser.window
 /**
  * user interface to select color
  */

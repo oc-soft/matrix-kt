@@ -90,7 +90,7 @@ class Display(var renderingCtx : RenderingCtx,
      * bind buffer for button texture for picking
      */ 
     val buttonTextureBindForPicking : (WebGLRenderingContext, Int, Int) -> Unit
-        = { gl, rowIndex, colIndex -> 
+        = { gl, _, _ -> 
 
             gl.bindTexture(WebGLRenderingContext.TEXTURE_2D,
                 buttons.transparentTexture)
@@ -130,7 +130,7 @@ class Display(var renderingCtx : RenderingCtx,
      * set up color data for display
      */
     val buttonColorDataForDisplay : (WebGLRenderingContext, Int, Int) -> Unit
-        = { gl, rowIndex, columnIndex ->
+        = { _, _, _ ->
         }
 
     /**
@@ -438,7 +438,6 @@ class Display(var renderingCtx : RenderingCtx,
             intArrayOf(0, columnCount - 1),
             intArrayOf(rowCount - 1, columnCount - 1),
             intArrayOf(rowCount - 1, 0))
-        val buttonMatrices = renderingCtx.cloneButtonMatrices()!! 
         val buttonVertices = buttons.mineButton.verticesAsFloat32
         val spinVMotionMatricesIndex = renderingCtx.spinVMotionMatricesIndex!!
         val result = Array<Array<Array<FloatArray>>>(boundsIndices.size) {

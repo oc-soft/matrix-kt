@@ -60,7 +60,7 @@ class Dropdown {
             val oldState = visibledDropdown
             if (oldState != null) {
                 if (value != null) {
-                    doSet = oldState!! != value!!
+                    doSet = oldState != value
                 } else {
                     doSet = true
                 }
@@ -71,14 +71,9 @@ class Dropdown {
             }
             if (doSet) {
                 if (value != null) {
-                    var css = "block"
-                    if (value!!) {
-                        css = "block"  
-                        attachHandlerToHideDropdown()
-                    } else {
-                        css = "none"
-                        detachHandlerToHideDropdown()
-                    }
+                    var css: String
+                    css = "block"  
+                    attachHandlerToHideDropdown()
                     dropdownTarget?.css("display", css)
                 }
             }
@@ -89,10 +84,10 @@ class Dropdown {
      * bind html node 
      */
     fun bind(eventSource: String, dropdownTarget: String) {
-        this.sourceClickHdlr = { evt, args -> handleSourceNodeClick(evt) }
-        this.targetClickHdlr = { evt, args -> handleTargetNodeClick(evt) }
-        jQuery(eventSource)?.on("click", sourceClickHdlr!!)
-        jQuery(dropdownTarget)?.on("click", targetClickHdlr!!)
+        this.sourceClickHdlr = { evt, _ -> handleSourceNodeClick(evt) }
+        this.targetClickHdlr = { evt, _ -> handleTargetNodeClick(evt) }
+        jQuery(eventSource).on("click", sourceClickHdlr!!)
+        jQuery(dropdownTarget).on("click", targetClickHdlr!!)
         sourceQuery = eventSource
         dropdownQuery = dropdownTarget
         val visibleDropdown = this.visibledDropdown
@@ -107,11 +102,11 @@ class Dropdown {
     fun unbind() {
         detachHandlerToHideDropdown()
         if (targetClickHdlr != null) {
-            jQuery(dropdownQuery!!)?.off("click", targetClickHdlr!!)
+            jQuery(dropdownQuery!!).off("click", targetClickHdlr!!)
             targetClickHdlr = null
         }
         if (sourceClickHdlr != null) {
-            jQuery(sourceQuery!!)?.off("click", sourceClickHdlr!!)
+            jQuery(sourceQuery!!).off("click", sourceClickHdlr!!)
             sourceClickHdlr = null
         }
         sourceQuery = null 
@@ -124,7 +119,7 @@ class Dropdown {
     fun handleSourceNodeClick(eventObj: JQueryEventObject) {
         val visibledDropdown = this.visibledDropdown
         if (visibledDropdown != null) {
-            this.visibledDropdown = !visibledDropdown!!
+            this.visibledDropdown = !visibledDropdown
         }
         eventObj.stopPropagation()
     }
@@ -141,11 +136,11 @@ class Dropdown {
      */
     fun attachHandlerToHideDropdown() {
         if (this.backgroundClickHdlr == null) {
-            this.backgroundClickHdlr = { e: JQueryEventObject, args : Any ->
+            this.backgroundClickHdlr = { _: JQueryEventObject, _: Any ->
                 this.visibledDropdown = false 
                 Unit 
             }
-            jQuery(kotlin.browser.document)?.on("click",
+            jQuery(kotlinx.browser.document).on("click",
                 this.backgroundClickHdlr!!)
         }
     } 
@@ -156,7 +151,7 @@ class Dropdown {
      */
     fun detachHandlerToHideDropdown() {
         if (this.backgroundClickHdlr != null) {
-            jQuery(kotlin.browser.document)?.off(
+            jQuery(kotlinx.browser.document).off(
                 "click", this.backgroundClickHdlr!!)
             this.backgroundClickHdlr = null 
         }

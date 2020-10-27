@@ -63,7 +63,7 @@ class Svg {
             get() {
                 var result: Map<Path.ElementType, 
                     (Path.Element,
-                        pathParsing: PathParsing)->Boolean>? = null
+                        pathParsing: PathParsing)->Boolean>?
                 if (HANDLER_MAP_VALUE == null) {
                     val hdr_map = HashMap<Path.ElementType,
                         (Path.Element, PathParsing)->Boolean>()
@@ -197,6 +197,7 @@ class Svg {
         /**
          * handle closepath
          */
+	@Suppress("UNUSED_PARAMETER")
         fun handleClosepath(elm: Path.Element,
             pp: PathParsing): Boolean {
             pp.lm = pp.cp
@@ -226,6 +227,7 @@ class Svg {
         /**
          * equality conversion
          */
+	@Suppress("UNUSED_PARAMETER")
         fun noConversion(cp: Pair<Double, Double>, cb: Double,
             pos: Pair<Double, Double>): Pair<Double, Double> {
             return pos    
@@ -406,8 +408,7 @@ class Svg {
             if (elm.type == Path.ElementType.a) {
                 coordConversion = ::relativeToAbsoluteF
             }
-            val convertedCoords = ArrayList<Double>()
-           var result = false
+            var result = false
 
             if (elm.type == Path.ElementType.A
                 || elm.type == Path.ElementType.a) { 
@@ -437,7 +438,7 @@ class Svg {
                         pp.cp = p2f
                         result = true
                     } else {
-                        var lineElem: Path.Element? = null
+                        var lineElem: Path.Element?
                         val coords = elm.data.slice(5..6)
                         if (elm.type == Path.ElementType.A) {
                             lineElem = Path.Element(Path.ElementType.L,

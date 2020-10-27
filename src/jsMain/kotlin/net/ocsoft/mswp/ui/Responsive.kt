@@ -1,7 +1,7 @@
 package net.ocsoft.mswp.ui
 
 import kotlin.js.Json
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.collections.ArrayList
 
 /**
@@ -71,7 +71,7 @@ class Responsive {
             minKeyword: String,
             maxKeyword: String,
             countKeyword: String = "count"): Int? {
-            var result : Int? = null
+            var result : Int?
             result = findCountInRange(setting, windowSize, 
                 minKeyword, maxKeyword, countKeyword)
             if (result == null) {

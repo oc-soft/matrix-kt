@@ -15,6 +15,7 @@ class ColorScheme {
         /**
          * convert color scheme object to less var string
          */
+        @ExperimentalUnsignedTypes
         fun convertToLessVars(
             colorSchemeObj: net.ocsoft.mswp.ColorScheme): Map<String, String> {
             val less = colorScheme.less
@@ -25,7 +26,6 @@ class ColorScheme {
                 val replacementKeys = mapping[key] 
                 var strValue: String? = null
                 if (replacementKeys != null) {
-                    val colorSchemeKey = replacementKeys[0]
                     var color: Color? = null
                     if ("environment" == replacementKeys[0]) {
                         val idx: Int = replacementKeys[1] as Int

@@ -21,18 +21,17 @@ class EllipseCenter(
     val axisAngle get() = (axisAngleAsDegree / 180) * PI
 
 
-    fun parseOption(rootObj: Map<String, Object>) {
+    fun parseOption(rootObj: Map<String, Any>) {
           
-        val radii = rootObj["radii"] as Map<String, Object>
-        var res = "" 
+        val radii = rootObj["radii"] as Map<String, Any>
         val radii0 = doubleArrayOf(this.radii.first, this.radii.second)
         for (i in 0..1) {
             val num = radii["${i}"]            
             if (num != null) {
-                if ((num as Any?) is String) {
-                    radii0[i] = (num as String).toDouble()
+                if (num is String) {
+                    radii0[i] = num.toDouble()
                 } else {
-                    radii0[i] = (num as java.lang.Number).doubleValue()         
+                    radii0[i] = (num as Number).toDouble()         
                 }
             }
         } 
@@ -41,14 +40,14 @@ class EllipseCenter(
             this.points[0].first, this.points[0].second,
             this.points[1].first, this.points[1].second) 
 
-        val points = rootObj["points"] as Map<String, Object>
+        val points = rootObj["points"] as Map<String, Any>
         for (i in 0..3) {
             val num = points["${i}"]            
             if (num != null) {
-                if ((num as Any?) is String) {
-                    points0[i] = (num as String).toDouble()
+                if (num is String) {
+                    points0[i] = num.toDouble()
                 } else {
-                    points0[i] = (num as java.lang.Number).doubleValue()
+                    points0[i] = (num as Number).toDouble()
                 }
             }
         }
@@ -56,25 +55,25 @@ class EllipseCenter(
         this.points[1] = Pair(points0[2], points0[3])
         val axis = rootObj["axis"]
         if (axis != null) {
-            var axisValue = 0.0
-            if ((axis as Any?) is String) {
+            var axisValue : Double
+            if (axis is String) {
                 val axisStr = axis as String
                 axisValue = axisStr.toDouble() 
             } else {
-                axisValue = (axis as java.lang.Number).doubleValue()
+                axisValue = (axis as Number).toDouble()
             }
             this.axisAngleAsDegree = axisValue
         }
 
         val largeArcObj = rootObj["largeArc"]
         if (largeArcObj != null) {
-            if ((largeArcObj as Any?) is String) {
+            if (largeArcObj is String) {
                 this.largeArc = (largeArcObj as String).toBoolean()
             }
         }
         val sweepObj = rootObj["sweep"]
         if (sweepObj != null) {
-            if ((sweepObj as Any?) is String) {
+            if (sweepObj is String) {
                 this.sweep = (sweepObj as String).toBoolean()
             }
         }
@@ -84,7 +83,7 @@ class EllipseCenter(
         val mgr = ScriptEngineManager()
         val eng = mgr.getEngineByName("JavaScript")
         var evalContent = "(${jsonStr})"
-        val option = eng.eval(evalContent) as Map<String, Object>
+        val option = eng.eval(evalContent) as Map<String, Any>
         parseOption(option)
     }
 
@@ -93,8 +92,8 @@ class EllipseCenter(
         val optionsMap = HashMap<String, (Array<String>, IntArray)->Unit>()
 
         optionsMap["-f"] = { 
-            args, ioIndex ->
-            handleJsonFile(args, ioIndex)
+            args1, ioIndex ->
+            handleJsonFile(args1, ioIndex)
         }
 
         var i = 0
@@ -130,7 +129,7 @@ class EllipseCenter(
             do {
                 val sizeRead = fr.read(buffer, 0, buffer.size)
                 if (sizeRead > 0) {
-                    var str = ""
+                    var str: String
                     if (sizeRead < buffer.size) {
                         str = String(buffer.sliceArray(0..sizeRead - 1))
                     } else {
@@ -169,10 +168,8 @@ class EllipseCenter(
                 sweep,
                 points[0], points[1])!!
 
-        if (param != null) {
-            println("${points[0]}, ${points[1]}")
-            println(param)
-        }
+        println("${points[0]}, ${points[1]}")
+        println(param)
     }
 }
 

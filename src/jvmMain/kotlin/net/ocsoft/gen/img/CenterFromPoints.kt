@@ -5,13 +5,13 @@ import net.ocsoft.Matrix2
 
 import kotlin.math.*
 import kotlin.collections.HashMap
+import kotlin.collections.Map
 import kotlin.collections.ArrayList
 import kotlin.collections.MutableList
 
 
 import javax.script.*
 import jdk.nashorn.api.scripting.JSObject
-import java.util.Map
 import java.io.Reader
 import java.io.FileReader
 import java.io.BufferedReader
@@ -47,23 +47,23 @@ class CenterFromPoints(
     companion object {
         fun joinMultilines(mapObj : Map<String, Any?>): String {
             val strList = ArrayList<String>()
-            for (i in 0 .. mapObj.size() - 1) {
+            for (i in 0 .. mapObj.size - 1) {
                 val elm = mapObj["${i}"]
                 if (elm is String) {
-                    strList.add(elm as String) 
+                    strList.add(elm) 
                 }
             }
             return strList.joinToString("") 
         }
         fun parseDoubleList(idxMap: Map<String, Any?>): List<Double> {
             val result = ArrayList<Double>() 
-            for (i in 0 .. idxMap.size()  -  1) {
+            for (i in 0 .. idxMap.size  -  1) {
                 val elm = idxMap["${i}"]
                 if (elm != null) {
                     if (elm is Number) {
-                        result.add((elm as Number).toDouble())
+                        result.add(elm.toDouble())
                     } else if (elm is String) {
-                        result.add((elm as String).toDouble()) 
+                        result.add(elm.toDouble()) 
                     }
                 }
             }
@@ -71,14 +71,14 @@ class CenterFromPoints(
         }
         fun parseBooleanList(idxMap: Map<String, Any?>): List<Boolean> {
             val result = ArrayList<Boolean>() 
-            for (i in 0 .. idxMap.size()  -  1) {
+            for (i in 0 .. idxMap.size  -  1) {
                 val elm = idxMap["${i}"]
                 if (elm != null) {
                     if (elm is Number) {
-                        val tmpVal = (elm as Number).toDouble() 
+                        val tmpVal = elm.toDouble() 
                         result.add(tmpVal !=  0.0 && tmpVal != -0.0)
                     } else if (elm is String) {
-                        result.add((elm as String).toBoolean()) 
+                        result.add(elm.toBoolean()) 
                     }
                 }
             }
@@ -156,7 +156,6 @@ class CenterFromPoints(
 
     fun createVisualEllipseParam(
         ellipseParam: Path.EllipseParam): String {
-        val radii = doubleArrayOf(ellipseParam.radiusX, ellipseParam.radiusY)
         val ct = doubleArrayOf(ellipseParam.x, ellipseParam.y)
         
         var p1 = calcEllipsePoint(ellipseParam.x, ellipseParam.y,
@@ -282,7 +281,6 @@ class CenterFromPoints(
             arrowPt,
             mRot * Pair(1.0, 0.0),
             arrowHeadSize)
-        val rotMat = Matrix2.rotate(axisAngle)
         arrowPt =  mRot * Pair(0.0, yRange.second)
         arrowPt += center
         val yArrowHead = createArrowHeadPoly(
@@ -399,17 +397,16 @@ class CenterFromPoints(
         return result
     }
 
-    fun parseOption(rootObj: Map<String, Object>) {
-        val radii = rootObj["radii"] as Map<String, Object>
-        var res = "" 
+    fun parseOption(rootObj: Map<String, Any>) {
+        val radii = rootObj["radii"] as Map<String, Any>
         val radii0 = doubleArrayOf(this.radii.first, this.radii.second)
         for (i in 0..1) {
             val num = radii["${i}"]            
             if (num != null) {
-                if ((num as Any?) is String) {
-                    radii0[i] = (num as String).toDouble()
+                if (num is String) {
+                    radii0[i] = num.toDouble()
                 } else {
-                    radii0[i] = (num as java.lang.Number).doubleValue()         
+                    radii0[i] = (num as kotlin.Number).toDouble()         
                 }
             }
         } 
@@ -418,14 +415,14 @@ class CenterFromPoints(
             this.points[0].first, this.points[0].second,
             this.points[1].first, this.points[1].second) 
 
-        val points = rootObj["points"] as Map<String, Object>
+        val points = rootObj["points"] as Map<String, Any>
         for (i in 0..3) {
             val num = points["${i}"]            
             if (num != null) {
-                if ((num as Any?) is String) {
-                    points0[i] = (num as String).toDouble()
+                if (num is String) {
+                    points0[i] = num.toDouble()
                 } else {
-                    points0[i] = (num as java.lang.Number).doubleValue()
+                    points0[i] = (num as Number).toDouble()
                 }
             }
         }
@@ -433,32 +430,30 @@ class CenterFromPoints(
         this.points[1] = Pair(points0[2], points0[3])
         val axis = rootObj["axis"]
         if (axis != null) {
-            var axisValue = 0.0
-            if ((axis as Any?) is String) {
-                val axisStr = axis as String
-                axisValue = axisStr.toDouble() 
+            var axisValue: Double
+            if (axis is String) {
+                axisValue = axis.toDouble() 
             } else {
-                axisValue = (axis as java.lang.Number).doubleValue()
+                axisValue = (axis as Number).toDouble()
             }
             this.axisAngleAsDegree = axisValue
         }
         val axisLeading = rootObj["axisLeading"]
         if (axisLeading != null) {
-            var leadingValue = 0.0
-            if ((axisLeading as Any?) is String) {
-                val leadingStr = axisLeading as String
-                leadingValue = leadingStr.toDouble()
+            var leadingValue: Double
+            if (axisLeading is String) {
+                leadingValue =  axisLeading.toDouble()
             } else {
-                leadingValue = (axisLeading as java.lang.Number).doubleValue()
+                leadingValue = (axisLeading as Number).toDouble()
             }
             this.axisLeading = leadingValue
         }
  
         val svgHeader = rootObj["header"]  
         if (svgHeader != null) {
-            if ((svgHeader as Any?) is String) {
+            if (svgHeader is String) {
                 this.svgHeader = svgHeader as String
-            } else if ((svgHeader as Any?) is Map<*, *>) {
+            } else if (svgHeader is Map<*, *>) {
                 this.svgHeader = joinMultilines(svgHeader as Map<String, Any?>)
             }
         }
@@ -505,7 +500,7 @@ class CenterFromPoints(
         val mgr = ScriptEngineManager()
         val eng = mgr.getEngineByName("JavaScript")
         var evalContent = "eval(${jsonStr})"
-        var rootObj = eng.eval(evalContent) as Map<String, Object>
+        var rootObj = eng.eval(evalContent) as Map<String, Any>
         parseOption(rootObj)
 
     }
@@ -519,8 +514,8 @@ class CenterFromPoints(
         val optionsMap = HashMap<String, (Array<String>, IntArray)->Unit>()
 
         optionsMap["-f"] = { 
-            args, ioIndex ->
-            handleJsonFile(args, ioIndex)
+            args1, ioIndex ->
+            handleJsonFile(args1, ioIndex)
         }
 
         var i = 0
@@ -557,7 +552,7 @@ class CenterFromPoints(
             do {
                 val sizeRead = fr.read(buffer, 0, buffer.size)
                 if (sizeRead > 0) {
-                    var str = ""
+                    var str: String 
                     if (sizeRead < buffer.size) {
                         str = String(buffer.sliceArray(0..sizeRead - 1))
                     } else {

@@ -580,9 +580,9 @@ class PointLight(
                 indices.add(Pair(idx, dis)) 
             }
         })
-        var result: FloatArray? = null
+        var result: FloatArray? 
         if (indices.size == 2) {
-            var pt: Float32Array? = null
+            var pt: Float32Array?
             if ((indices[0].first + 1) % lightEditViewTable!!.size
                     == indices[1].first) {
                 pt = lightEditViewTable!![indices[1].first]

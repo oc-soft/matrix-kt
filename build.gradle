@@ -70,7 +70,6 @@ kotlin {
             dependencies {
                 implementation kotlin('stdlib')
                 implementation kotlin('stdlib-js')
-
                 implementation npm('find-file-up', '2.0.1' )
                 implementation npm('html-webpack-plugin', '4.0.2')
                 implementation npm('webpack-cdn-plugin', '3.3.1')
@@ -79,15 +78,6 @@ kotlin {
                 implementation npm('css-loader','3.5.2')
                 implementation npm('less-loader', '5.0.0')
                 implementation npm('null-loader', '4.0.0')
-                implementation npm('less', '3.10.3')
-
-                implementation npm('bootstrap', '4.4.1')
-                implementation npm('@popperjs/core', '2.2.3')
-                implementation npm('webfontloader', '1.6.28')
-                implementation npm('jquery', '3.5.0')
-                implementation npm('@fortawesome/fontawesome-svg-core',
-                    '1.2.28')
-                implementation npm('@fortawesome/fontawesome-free', '5.13.0')
                 implementation npm('./glrs', 'latest')
                 implementation npm('@oc-soft/color-picker', '1.0.20')
             }

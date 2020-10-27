@@ -121,12 +121,11 @@ class Environment(val option: Option,
             val keys = ArrayList<String>()
             for (i in 0 until rules.length) {
                 val keyFrameRule = rules.item(i) as CSSKeyframeRule
-                val cssRule = keyFrameRule as CSSRule  
                 var cssText = keyFrameRule.cssText
                 val matchList = colorPattern.findAll(cssText).toList()
                 if (matchList.size > 0) {
-                    for (i in 0 until matchList.size) {
-                        val matchItem = matchList[matchList.size - i - 1]
+                    for (j in 0 until matchList.size) {
+                        val matchItem = matchList[matchList.size - j - 1]
                         val color = Color.parse(matchItem.groupValues[1]) 
                         if (color != null) {
                             val newColor = Color(
