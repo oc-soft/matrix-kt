@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "jquery": "^3.5.1",
     "find-package": "file:find-package",
     "find-style": "file:find-style",
     "less": "^3.10.3",
@@ -10,6 +11,5 @@
     "webfontloader": "^1.6.28"
   },
   "dependencies": {
-    "jquery": "^3.5.1"
   }
 }

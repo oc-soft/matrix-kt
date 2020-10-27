@@ -31,8 +31,9 @@ class HtmlWebpack {
       filename: 'entry.php',
       template: 'src/mswp.ejs'
     };
-    const FindFile = require('find-file-up');
-    htmlPluginConfig.template = FindFile.sync(htmlPluginConfig.template);
+    const path = require('path');
+    htmlPluginConfig.template = path.join(
+      GradleBuild.config.projectDir, htmlPluginConfig.template)
 
     config.plugins.push(new HtmlWebpackPlugin(htmlPluginConfig));
 
@@ -86,25 +87,20 @@ class HtmlWebpack {
         }
       ]
     };
-    const FindFile = require('find-file-up');
-    const path = require('path');
-    let yarnLockPath = FindFile.sync('yarn.lock');
-    let result = undefined;
-
-    if (yarnLockPath) {
-      const pathInfo = path.parse(yarnLockPath);
-      cdnPluginConfig.pathToNodeModules = pathInfo.dir;
-    }
+    cdnPluginConfig.pathToNodeModules = GradleBuild.config.projectDir 
     config.plugins.push(new WebpackCdnPlugin(cdnPluginConfig));
   }
 
 }
 
 (function(config) {
-  const path = require('path');
-  const confName = path.basename(__filename);
-  (new HtmlWebpack()).setupWebpack(config);
-})(config);
+  const path = require('path')
+  const pathInfo = path.parse(__filename)
+  if (pathInfo.name != 'karma.conf') {
+    const htmlWebpack = new HtmlWebpack()
+    htmlWebpack.setupWebpack(config)
+  }
+})(config)
 
 
 

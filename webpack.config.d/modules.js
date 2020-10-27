@@ -15,7 +15,9 @@ class Modules {
   setupWebpack(config) {
     const path = require('path');
     const fileInfo = path.parse(__filename)
-    this.setupExternals(config)
+    if (fileInfo.name != 'karma.conf') {
+      this.setupExternals(config)
+    }
   }
 
   setupExternals(config) {

@@ -15,9 +15,6 @@ class Entries {
    * set webpack configuration
    */
   setupWebpack(config) {
-    const FindFile = require('find-file-up');
-    const FindStyle = require('find-style');
-   
     let libMod = './libraries.js';
     config.entry = config.entry || { };
     if (libMod) {

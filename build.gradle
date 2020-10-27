@@ -70,7 +70,6 @@ kotlin {
             dependencies {
                 implementation kotlin('stdlib')
                 implementation kotlin('stdlib-js')
-                implementation npm('find-file-up', '2.0.1' )
                 implementation npm('html-webpack-plugin', '4.0.2')
                 implementation npm('webpack-cdn-plugin', '3.3.1')
                 implementation npm('clean-webpack-plugin', '3.0.0')
@@ -96,17 +95,6 @@ kotlin {
 }
 
 
-
-kotlin.js {
-    browser {
-        webpackTask {
-            println configFile
-            println delegate.class
-        }
-    }
-}
-
-println kotlinNodeJs.installationDir
 
 nodejsSettings {
     installNodeModules = true  
@@ -164,8 +152,10 @@ task webpackGradleBuild {
     }
 }
 
-jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
-jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
+jsBrowserProductionWebpack.inputs.files "src/mswp.ejs", 
+    "src/jsMain/js/libraries.js"
+jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs",
+    "src/jsMain/js/libraries.js"
 
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
