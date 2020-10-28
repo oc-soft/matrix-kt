@@ -152,10 +152,8 @@ task webpackGradleBuild {
     }
 }
 
-jsBrowserProductionWebpack.inputs.files "src/mswp.ejs", 
-    "src/jsMain/js/libraries.js"
-jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs",
-    "src/jsMain/js/libraries.js"
+jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
+jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
 
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
