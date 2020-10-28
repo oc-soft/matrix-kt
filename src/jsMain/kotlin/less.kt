@@ -25,7 +25,7 @@ class Less() {
     /**
      * js less obecect 
      */
-    private var lessObject: dynamic? = null
+    private var lessObject: dynamic = null
 
     /**
      * constructor
@@ -42,8 +42,14 @@ class Less() {
      */
     fun modifyVars(record: Map<String, String>) {
         val lessObj = this.lessObject
+
+         
         if (lessObj != null) {
-            lessObj.modifyVars(record)
+            val recordObj = js("{}")
+            record.forEach {
+                recordObj[it.key] = it.value
+            } 
+            lessObj.modifyVars(recordObj)
         }
     }
 

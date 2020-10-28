@@ -8,7 +8,7 @@ import jQuery
 import net.ocsoft.Color
 import kotlin.collections.HashMap
 import kotlin.collections.ArrayList
-
+import less.Less
 import css.CSSKeyframesRule
 import css.CSSKeyframeRule
 
@@ -17,6 +17,21 @@ import css.CSSKeyframeRule
  */
 class Environment(val option: Option,
     colorScheme: ColorScheme) {
+
+    /**
+     * class instance
+     */
+    companion object {
+
+        /**
+         * convert color scheme to less variables
+         */
+        @ExperimentalUnsignedTypes
+        fun convertToLessVars(colorScheme: ColorScheme): Map<String, String>  {
+            return net.ocsoft.mswp.settings.ColorScheme.convertToLessVars(
+                colorScheme)
+        }
+    }
 
     /**
      * option
@@ -49,10 +64,15 @@ class Environment(val option: Option,
     fun syncWithColorScheme() {
         // syncMainPlaygroundWithColorScheme()
         // syncBackgroundWithColorScheme()
-        syncMenuTextWithColorScheme()
-        syncFlagsWithColorScheme()
-        syncFlaggingAnimationWithColorScheme()
-        syncBacktoMainWithColorScheme()
+        // syncMenuTextWithColorScheme()
+        // syncFlagsWithColorScheme()
+        // syncFlaggingAnimationWithColorScheme()
+        // syncBacktoMainWithColorScheme()
+
+        val colorScheme = this.colorScheme
+        val lessVars = convertToLessVars(colorScheme)
+        Less.instance.modifyVars(lessVars)  
+        
     }
 
     /**

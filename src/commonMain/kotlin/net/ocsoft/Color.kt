@@ -371,15 +371,14 @@ class Color(red: Value,
     /**
      * convert to string
      */
-    @ExperimentalUnsignedTypes
     override fun toString(): String {
         val alpha = this.alpha
         var result: String
-        result = "#${red.intValue.toUByte().toString(16)}" 
-        result += "${green.intValue.toUByte().toString(16)}"
-        result += "${blue.intValue.toUByte().toString(16)}"
+        result = "#${red.intValue.toString(16, 2)}" 
+        result += "${green.intValue.toString(16, 2)}"
+        result += "${blue.intValue.toString(16, 2)}"
         if (alpha != null) {
-            result += "${alpha.intValue.toUByte().toString(16)}"
+            result += "${alpha.intValue.toString(16, 2)}"
         }
         return result
     }

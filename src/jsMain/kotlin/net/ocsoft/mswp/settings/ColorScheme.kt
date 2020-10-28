@@ -19,7 +19,7 @@ class ColorScheme {
         fun convertToLessVars(
             colorSchemeObj: net.ocsoft.mswp.ColorScheme): Map<String, String> {
             val less = colorScheme.less
-            val keys = less.data.keys 
+            val keys = less.keys 
             val mapping = less.mapping
             val result = HashMap<String, String>()
             keys.forEach { key ->
@@ -35,7 +35,7 @@ class ColorScheme {
                                 Color.Value(colorValues[0]),
                                 Color.Value(colorValues[1]),
                                 Color.Value(colorValues[2]),
-                                Color.Value(colorValues[1])) 
+                                Color.Value(colorValues[3])) 
                         }
                         
                     }
