@@ -14,6 +14,7 @@
     var mswpSettings = <?php echo json_encode($mswp_settings); ?> ;
   </script>
   <%= htmlWebpackPlugin.tags.headTags %>
+  <link href="index.php?css=entry-css-0" type="text/css" rel="stylesheet">
   <link href="index.php?less=entry" type="text/css" rel="stylesheet/less">
   <link href="css/responsive.css" type="text/css" rel="stylesheet">
 </head>
@@ -32,7 +33,7 @@
   </div>
   <canvas id="game_grid" class=play-ground></canvas>
   <canvas id="glyph_workarea" width="256" height="256"></canvas>
-  <div class="setting menu contents">
+  <div class="setting menu contents" data-popper-reference-hidden>
     <table>
       <tbody>
         <tr id="label-setting">

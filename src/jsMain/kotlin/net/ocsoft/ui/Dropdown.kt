@@ -1,9 +1,11 @@
 
 package net.ocsoft.ui
 
+import org.w3c.dom.HTMLElement
 import jQuery
 import JQuery
 import JQueryEventObject
+import popper.Popper
 
 /**
  * manage drop down user interface
@@ -53,7 +55,7 @@ class Dropdown {
      */
     var visibledDropdown: Boolean? 
         get() {
-            return dropdownTarget?.css("display") != "none"
+            return dropdownTarget?.css("visibility") != "hidden"
         }
         set(value) {
             var doSet = false 
@@ -72,13 +74,22 @@ class Dropdown {
             if (doSet) {
                 if (value != null) {
                     var css: String
-                    css = "block"  
-                    attachHandlerToHideDropdown()
-                    dropdownTarget?.css("display", css)
+                    if (value) {
+                        dropdownTarget?.css("visibility", "visible")
+                        dropdownTarget?.css("pointer-event", "auto")
+                    } else { 
+                        dropdownTarget?.css("visibility", "hidden")
+                        dropdownTarget?.css("pointer-event", "none")
+                    } 
                 }
             }
         }
     
+    /**
+     * popper instance
+     */
+    var popperInstance : popper.Instance? = null
+
 
     /**
      * bind html node 
@@ -86,14 +97,22 @@ class Dropdown {
     fun bind(eventSource: String, dropdownTarget: String) {
         this.sourceClickHdlr = { evt, _ -> handleSourceNodeClick(evt) }
         this.targetClickHdlr = { evt, _ -> handleTargetNodeClick(evt) }
-        jQuery(eventSource).on("click", sourceClickHdlr!!)
-        jQuery(dropdownTarget).on("click", targetClickHdlr!!)
+        val jqReference = jQuery(eventSource)
+        val jqTarget = jQuery(dropdownTarget)
+
+        jqReference.on("click", sourceClickHdlr!!)
+        jqTarget.on("click", targetClickHdlr!!)
         sourceQuery = eventSource
         dropdownQuery = dropdownTarget
         val visibleDropdown = this.visibledDropdown
-        if (visibledDropdown!= null && visibleDropdown!!) {
-            attachHandlerToHideDropdown()
-        }
+
+        val reference = jqReference[0] as HTMLElement
+        val target = jqTarget[0] as HTMLElement
+        val popperOption = popper.Css.readOption(target)
+
+        popperInstance = Popper.createPopper(reference, target, 
+            popperOption as Any)
+        attachHandlerToHideDropdown()
     }
 
     /**
@@ -108,6 +127,10 @@ class Dropdown {
         if (sourceClickHdlr != null) {
             jQuery(sourceQuery!!).off("click", sourceClickHdlr!!)
             sourceClickHdlr = null
+        }
+        if (popperInstance != null) {
+            popperInstance!!.destroy()
+            popperInstance = null
         }
         sourceQuery = null 
         dropdownQuery = null

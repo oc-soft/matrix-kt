@@ -2,7 +2,6 @@ package net.ocsoft.mswp.ui
 
 import jQuery
 import JQueryEventObject
-import popper.Popper
 import net.ocsoft.ui.Dropdown
 
 /**
@@ -31,16 +30,10 @@ class GameSettings(val option: Option) {
     var dropdown = Dropdown()
 
     /**
-     * popper instance
-     */
-    var popperInstance : popper.Instance? = null
-
-    /**
      * option for game settings
      */
     data class Option(
-        val queries: Queries,
-        val menu: Menu) {
+        val queries: Queries) {
         /**
          * html dom queries 
          */
@@ -50,13 +43,7 @@ class GameSettings(val option: Option) {
             val labelSetting: String,
             val colorSetting: String,
             val lightSetting: String)   
-
-        /**
-         * menu setting
-         */
-        data class Menu(
-            val offset: Array<Int>) 
-    } 
+   } 
      
     /**
      * application settings
@@ -88,17 +75,6 @@ class GameSettings(val option: Option) {
         labelSettingItem.on("click", labelSettingItemHandler!!)
         lightSettingItem.on("click", lightEditItemHandler!!) 
         colorSettingItem.on("click", colorSettingItemHandler!!)
-        popperInstance = Popper.createPopper(labelSettingItem[0],
-            jQuery(option.queries.dropdown)[0]!!,
-            object {
-                val modifiers = arrayOf(
-                    object {
-                        val name = "offset"
-                        val options = object {
-                            val offset = option.menu.offset
-                        }
-                    })
-                })
     }
 
     /**
@@ -121,10 +97,7 @@ class GameSettings(val option: Option) {
             lightEditItemHandler = null
         }
 
-        if (popperInstance != null) {
-            popperInstance!!.destroy()
-            popperInstance = null
-        }
+
         dropdown.unbind()
         this.appSettings = null
     }

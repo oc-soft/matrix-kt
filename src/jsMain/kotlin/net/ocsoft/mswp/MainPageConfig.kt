@@ -30,9 +30,7 @@ data class MainPageConfig(
                 ".setting.menu.contents",
                 "#label-setting",
                 "#color-setting",
-                "#lighting-setting"),
-            GameSettings.Option.Menu(
-                arrayOf(0, 20))),
+                "#lighting-setting")),
         Environment.Option(
             "#game_grid",
             "body" ,

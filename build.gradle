@@ -7,7 +7,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.multiplatform' version '1.4.10'
-    id 'net.ocsoft.nodejs' version '0.1'
+    id 'net.ocsoft.nodejs' version '0.2'
 }
 
 repositories { // Use jcenter for resolving dependencies.
@@ -109,9 +109,24 @@ tasks.nodeCli_less_lessc_1 {
     args '--no-color', srcFile, dstFile
 }
 
+tasks.nodeCli_less_lessc_2 {
+    def srcFile = new File(projectDir, 'src/entry-css-0-php.less')
+    def dstFile = new File(projectDir, 'template/entry-css-0.php')
+    inputs.file srcFile
+    outputs.file dstFile
+    args '--no-color', srcFile, dstFile
+}
+
+tasks.npm_install {
+    inputs.file new File(projectDir, 'package.json')
+    outputs.file new File(projectDir, 'package-lock.json')
+    command = 'install'
+}
+
 
 task entryLessCompile {
     dependsOn tasks.nodeCli_less_lessc_1
+    dependsOn tasks.nodeCli_less_lessc_2
 }
 
 
@@ -154,6 +169,9 @@ task webpackGradleBuild {
 
 jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
 jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
+
+jsBrowserProductionWebpack.dependsOn npm_install
+jsBrowserDevelopmentWebpack.dependsOn npm_install
 
 jsBrowserProductionWebpack.dependsOn webpackGradleBuild
 jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
