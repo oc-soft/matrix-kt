@@ -258,6 +258,7 @@ class Logic(rowSize: Int,
         }
         return result
     }
+
     /**
      * you get true if the cell is opened
      */
@@ -341,6 +342,14 @@ class Logic(rowSize: Int,
         } 
         return result
     }
+
+    /**
+     * you get true if the cell is locked 
+     */
+    fun isLocking(cell: CellIndex) : Boolean? {
+        return isLocking(cell.row, cell.column)
+    }
+
 
     /**
      * get the number to display on button if it was opened
@@ -443,10 +452,10 @@ class Logic(rowSize: Int,
                     currentCell.row + cellDisp.row,
                     currentCell.column + cellDisp.column)
                 if (isValidCell(neighborCell)) {
-                    if (neighborCell !in mineLocations) {
-                        if (!isOpened(neighborCell)) {
-                            result.add(neighborCell)
-                        }
+                    if (neighborCell !in mineLocations &&
+                        !isOpened(neighborCell) &&
+                        !isLocking(neighborCell)!!) {
+                        result.add(neighborCell)
                     }
                 }
             })
