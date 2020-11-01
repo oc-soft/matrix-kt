@@ -1,0 +1,30 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/mswp-flag.png",
+            "title": "Put flag on without opening button",
+            "type": "website"
+        },
+        "css" : [
+            "doc/ui-5.css"
+        ], 
+        "title": "Put flag on without opening button",
+        "using": [
+            "fontawesome"
+        ]	
+    },
+    "body" : {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/mswp-flag.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    },
+    "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}

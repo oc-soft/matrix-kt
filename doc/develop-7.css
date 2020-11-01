@@ -1,0 +1,14 @@
+
+header img {
+  width: auto;
+  max-height: 300px;
+}
+
+header div.banner {
+  background-color: black;
+  display: flex;
+  justify-content: center;
+}
+
+
+/* vi: se ts=2 sw=2 et: */

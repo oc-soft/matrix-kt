@@ -1,0 +1,53 @@
+# Run npm in gradle build system
+
+I needed to run less.js without webpack, when I run "./gradlew build". To make change flag icon color when user click ok button color on ui dialog, I had to manipulate @keyfames in css style sheet.
+
+## Code to change color in animation frame
+
+I wrote the code to change "@keyframes" color. But it did not satisfy me.
+It is too complex for me to maitenance code. I would like to make code easy for
+me. I decided to use less.js library on client browser.
+
+## Use less.js on browsers
+
+The less.js gave me effective way to change color on the game.
+At serving  the less file for user, I would like to get color setting from
+server side database also. 
+The color setting might be changed among each users. 
+The initial less file have to be process by server side.
+Some less lines have to be escaped by 'e' function for server side processing.
+
+## Using less-loader with webpack
+At first time, I embeded it into the game app with less-loader in webpack setting. The webpack 
+requires well defined css file by css-loader. 
+The webpack complein about illeagal lines which are escaped by less for
+server side processing.
+I gave up to load my less file with webpack.
+I wanted to run less.js with out webpack.
+
+## develop gradle-nodejs plugin
+
+To use less.js without webpack, I have to choose ways to run less.js while I develop the app.
+
+1. I run less.js directlly every time I want to get new app.
+2. Write hook code to run less.js in build.gradle file. 
+
+I would like to have simple build command in developping process.
+I chose 2nd way to develop the app
+I searched nodejs gradle plugins. I got some plugins for my request. 
+Each plugins are developed well but All of them satisfy my requirement.
+I wanted to tune command argments for each npm modules. I wrote the plugin for me. 
+The my plugin can tune each npm cli command arguments by build.gradle file.
+
+## What did I learn throgh this plugin development.
+
+Through the develop plugin for gradle, I learned following items.
+
+1. groovy syntax. -- especially closure
+2. gradle api
+3. test api for gradle plugin
+
+You can get nodejs plugin from [here](https://plugins.gradle.org/plugin/net.ocsoft.nodejs).
+
+You can clone at [here](https://github.com/toshiyuki-rs/gradle-nodejs)clone.
+

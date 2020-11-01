@@ -1,0 +1,31 @@
+
+header img {
+  width: auto;
+  max-height: 300px;
+}
+
+header div.banner {
+  background-color: black;
+  display: flex;
+  justify-content: center;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table th,td {
+  border: solid 1px;
+}
+
+div.ui-image {
+  display: flex;
+  justify-content: center;
+}
+
+div.ui-image img {
+    width: auto;
+    max-height: 300px;
+}
+
+/* vi: se ts=2 sw=2 et: */

@@ -1,0 +1,32 @@
+{
+    "head": {
+        "og": {
+            "image": "/img/gradle-nodejs-plugin-0.png",
+            "title": "Color picker",
+            "type": "website"
+        },
+        "title": "Gradle nodejs plugin",
+        "customs" : [
+
+        ], 
+        "css" : [
+            "doc/develop-7.css"
+        ], 
+        "using": [
+        ]	
+    },
+    "body": {
+        "header": [
+           "<div class=\"banner\">",
+           "<img src=\"img/gradle-nodejs-plugin.png\">",
+           "</div>"
+        ],
+        "markdown-type": "github",
+        "footer": [
+            "<a href=\"entry.php\">Play the mine sweeper</a>"
+        ]
+    },
+    "__comment": [
+        "/* vi: se ts=4 sw=4 et: */"
+    ]
+}
