@@ -1,18 +1,6 @@
 [submodule "webpack-cdn-plugin"]
 	path = webpack-cdn-plugin
 	url = https://toshiyuki-rs@github.com/toshiyuki-rs/webpack-cdn-plugin.git
-[submodule "find-style"]
-	path = find-style
-	url = ../../npm/find-style.git
-[submodule "find-package"]
-	path = find-package
-	url = ../../npm/find-package.git
-[submodule "glrs"]
-	path = glrs
-	url = ../../glrs.git
 [submodule "color-picker"]
 	path = color-picker
 	url = ../../npm/color-picker.git
-[submodule "gradle-nodejs"]
-	path = gradle-nodejs
-	url = ../../gradle-nodejs.git

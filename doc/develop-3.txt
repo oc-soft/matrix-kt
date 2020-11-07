@@ -1,4 +1,0 @@
-To solve ellipse center
-=======================
-This article is only available japanese.
-Please check [this page](index.php?doc=develop-3&lang=ja)

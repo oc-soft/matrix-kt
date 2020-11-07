@@ -1,6 +1,0 @@
-Using nmp module on gradle
-==========================
-
-I needed to beautify html part of my php sources. I use vim to write code. The vim is nice. It is light and available on any os, but difficult to format source code rathar than emacs. I need to format tagged based source like html a lot. In html, I checked whether data is collect or not with simple tag. Then I make the apperance nice. The data displaying part was have to move indent into some outer tags which are added for nice appearance. I have to make each data lines having indent space. I want to make it easy. I didnot find gradle plugin like the npm beautify, but got the [gradle-node-plugin] which can run npm without node.js.
-
-[gradle-node-plugin]: https://github.com/srs/gradle-node-plugin

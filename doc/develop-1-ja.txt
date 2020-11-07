@@ -1,7 +1,0 @@
-Web font の読み込み
-==================
-
-[webfontloader]によってゲーム内のテキスト表示します。最初は、うまく動作しませんでした。 処理はactiveイベントを待ってからのものとしました。なぜか想定しているフォントとは異なるフォントでレンダリングされてしまいます。使用しているフォントは 2つのwoffファイルがクライアント側に到達することに気づきました。activeイベントは、最初のwoffファイルがクライアントに到達した時に発行されるのではないかと思いました。もしこちらが使用したいグリフに対応するフォントパスが、2つめのwoffにふくまれているとすると、当該挙動が理解できます。そこで、webfontloaderの[textパラメータ]に使用するグリフを設定したところ、最初から指定したフォントのテキストで表示されるようになりました。
-
-[webfontloader]: https://github.com/typekit/webfontloader
-[textパラメータ]: https://rs-app.oc-soft.net/git/?p=rs-app/mswp.git;a=blob_plain;f=src/jsMain/kotlin/net/ocsoft/mswp/WebFontConfig.kt;hb=678ff1ff31bed2b224257fdd60572f1a6a407947
