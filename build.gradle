@@ -7,7 +7,9 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.multiplatform' version '1.4.10'
-    id 'net.ocsoft.nodejs' version '0.2'
+    id 'org.jetbrains.dokka' version '1.4.10.2'
+    id 'maven-publish'
+    id 'signing'
 }
 
 repositories { // Use jcenter for resolving dependencies.
@@ -16,74 +18,93 @@ repositories { // Use jcenter for resolving dependencies.
     mavenCentral()
 }
 
+group = 'com.github.oc-soft'
+version = '0.1.0'
+ext.pom = [
+    description: 'kotlin matrix library',
+    url: 'https://github.com/oc-soft/matrix-kt',
+    licenses: [
+        [
+            name: 'ISC'
+        ]
+    ],
+    developers: [
+        [
+            id: 'toshi',
+            name: 'Toshiyuki Ogawa',
+            email: 'toshi@oc-soft.net'
+        ]
+    ],
+    organization: [
+        name: 'oc-soft',
+        url: 'https://oc-soft.net/'
+    ],
+    scm: [
+        connection: 'https://github.com/oc-soft/matrix-kt.git',
+        developerConnection:
+            'https://github.com/oc-soft/matrix-kt.git',
 
-ext.siteDir = 'mswp/'
-ext.webDir = 'prg/'
-ext.webAppPkg = 'mswp/'
-ext.packageVersion = '0.4.0'
-ext.ocSoftEmail0 = 'toshi@oc-soft.net'
-ext.webpackSetting = [
-    gradleBuildJs: 'gradle-build.js',
-    libraryTarget: 'umd' 
+        url:
+            'https://github.com/oc-soft/matrix-kt#matrix'
+    ]
 ]
 
-ext.webpackSetting.gradleBuildPath =
-    new File(new File(projectDir, "webpack.config.d"),
-         "_${webpackSetting.gradleBuildJs}")
+ext.setupPom = {
+    pom ->
 
-ext.karmaWebpackSetting = [
-    gradleBuildPath: new File(new File(projectDir, "karma.config.d"),
-        "_${webpackSetting.gradleBuildJs}")
-]
+    pom.description = ext.pom.description
+    pom.url = ext.pom.url
+    def projPom = ext.pom
+    pom.organization {
+        name = projPom.organization.name
+        url = projPom.organization.url
+    }    
+    pom.scm {
+        connection = projPom.scm.connection
+        developerConnection = projPom.scm.developerConnection
+        url = projPom.scm.url
+    }
 
-ext.rustBinDir = new File(new File(buildDir, "rust"), "bin")
+    pom.licenses {
+        def licOwner = owner
+        projPom.licenses.each {
+            licItem ->
+            licOwner.license {
+                name = licItem.name  
+            }
+        } 
+    }
 
+    pom.developers {
+        def devOwner = owner
+        projPom.developers.each { 
+            devItem ->
+            devOwner.developer {
+                id = devItem.id
+                name = devItem.name
+                email = devItem.email
+            }
+        }
+    }
+}
 
 
 kotlin {
     jvm {
-
     }
     js {
-        browser {
-            webpackTask {
-                output.libraryTarget = webpackSetting.libraryTarget
-            }
-        } 
+        nodejs()
     }
     sourceSets {
         commonMain {
             dependencies {
                 implementation kotlin('stdlib')
-                implementation kotlin('stdlib-js')
              } 
         }
         commonTest {
             dependencies {
                 implementation kotlin('test-common')
-                implementation kotlin('test')
-                implementation kotlin('test-junit')
-                implementation kotlin('test-js')
-            }
-        }
-        jsMain {
-            dependencies {
-                implementation kotlin('stdlib')
-                implementation kotlin('stdlib-js')
-                implementation npm('html-webpack-plugin', '4.0.2')
-                implementation npm('webpack-cdn-plugin', '3.3.1')
-                implementation npm('clean-webpack-plugin', '3.0.0')
-                implementation npm('mini-css-extract-plugin', '0.9.0')
-                implementation npm('css-loader','3.5.2')
-                implementation npm('less-loader', '5.0.0')
-                implementation npm('null-loader', '4.0.0')
-                implementation npm('./glrs', 'latest')
-                implementation npm('@oc-soft/color-picker', '1.0.20')
-            }
-        }
-        jvmMain {
-            dependencies {
-                implementation kotlin('stdlib') 
+                implementation kotlin('test-annotations-common')
             }
         }
         jvmTest {
@@ -91,367 +112,73 @@ kotlin {
                 implementation kotlin('test-junit')
             }
         }
-    }
-}
-
-
-
-nodejsSettings {
-    installNodeModules = true  
-}
-
-
-tasks.nodeCli_less_lessc_1 {
-    def srcFile = new File(projectDir, 'src/jsMain/less/responsive.less')
-    def dstFile = new File(projectDir, 'css/responsive.css')
-    inputs.file srcFile
-    outputs.file dstFile
-    args '--no-color', srcFile, dstFile
-}
-
-tasks.nodeCli_less_lessc_2 {
-    def srcFile = new File(projectDir, 'src/entry-css-0-php.less')
-    def dstFile = new File(projectDir, 'template/entry-css-0.php')
-    inputs.file srcFile
-    outputs.file dstFile
-    args '--no-color', srcFile, dstFile
-}
-
-tasks.npm_install {
-    inputs.file new File(projectDir, 'package.json')
-    outputs.file new File(projectDir, 'package-lock.json')
-    command = 'install'
-}
-
-
-task entryLessCompile {
-    dependsOn tasks.nodeCli_less_lessc_1
-    dependsOn tasks.nodeCli_less_lessc_2
-}
-
-
-task xgetText(type: Exec) {
-    executable = 'xgettext'
-}
-
-
-task webpackGradleBuild {
-    doLast {
-        def jsName = webpackSetting.gradleBuildJs
-        def gradleBuildSrc = new File(new File(projectDir, "tools"), jsName)    
-
-        def commonSourceDir = new File(
-            new File(projectDir, "src"), "commonMain") 
-        def jsSourceDir = new File(
-            new File(projectDir, "src"), "jsMain")
-        def jsTestSourceDir = new File(
-            new File(projectDir, "src"), "jsTest")
-
-        def binding = [
-            config: """{
-                |  programDir: '${siteDir}${webDir}',
-                |  cssDir: '${siteDir}css',
-                |  jsSourceDir: '${jsSourceDir}',
-                |  jsTestSourceDir: '${jsTestSourceDir}',
-                |  commonSourceDir: '${commonSourceDir}',
-                |  projectDir: '${projectDir}',
-                |  libraryTarget: '${webpackSetting.libraryTarget}'
-                |}""".stripMargin()
-        ]
-        def tmp = new groovy.text.StreamingTemplateEngine()
-        tmp = tmp.createTemplate(gradleBuildSrc) 
-        def gradleBuildDestDir = new File(projectDir, "webpack.config.d")    
-        def gradleBuildContents = tmp.make(binding)
-        webpackSetting.gradleBuildPath.text = gradleBuildContents
-        karmaWebpackSetting.gradleBuildPath.text = gradleBuildContents
-    }
-}
-
-jsBrowserProductionWebpack.inputs.files "src/mswp.ejs"
-jsBrowserDevelopmentWebpack.inputs.files "src/mswp.ejs"
-
-jsBrowserProductionWebpack.dependsOn npm_install
-jsBrowserDevelopmentWebpack.dependsOn npm_install
-
-jsBrowserProductionWebpack.dependsOn webpackGradleBuild
-jsBrowserDevelopmentWebpack.dependsOn webpackGradleBuild
-
-
-jsBrowserTest.inputs.files files("webpack.conf.d/*.js")
-
-
-clean.doFirst {
-    delete webpackSetting.gradleBuildPath
-}
-
-task runMainJvm(type: JavaExec) {
-    main = 'net.ocsoft.mswp.EntryKt' 
-    def target = kotlin.targets.jvm
-    def compilation = target.compilations.main
-
-    classpath += compilation.runtimeDependencyFiles
-    classpath += files(jvmJar.archivePath)
-}
-
-
-runMainJvm.dependsOn jvmJar
-
-
-task xgettextphp {
-    def srcFiles = fileTree(dir: './',
-        include: '**/*.php',
-        excludes: ['vendor/**/*.php'])
-    def outDir = "${projectDir}/src/i18n" 
-    xgetText.workingDir = './'
-    xgetText.args += '-p'
-    xgetText.args += outDir
-    xgetText.args += '--copyright-holder=OC software'
-    xgetText.args += '--package-name=Mine sweeper'
-    xgetText.args += "--package-version=${packageVersion}"
-    xgetText.args += "--msgid-bugs-address=${ocSoftEmail0}" 
-    xgetText.args += '-j'
-    xgetText.args += '--no-location'
-    xgetText.args += srcFiles
-    finalizedBy xgetText
-    doFirst {
-        mkdir(outDir)        
-    }
-}
-
-task installWasmBindGen(type: Exec) {
-    def cargoBin = new File(new File(System.env.HOME, '.cargo'), 'bin')
-    executable = new File(cargoBin, 'cargo')
-    args += 'install'
-    args += '--root'
-    args += new File(buildDir, "rust")
-    args += '--git'
-    args += 'https://github.com/toshiyuki-rs/wasm-bindgen.git'
-    args += 'wasm-bindgen-cli'
-}
-
-
-task buildGlrsLib(type: Exec) {
-    executable = 'cargo'
-    args += "build"
-    args += "--lib"
-    args += "--manifest-path"
-    args += new File(new File(projectDir, "glrs"), "Cargo.toml")
-    args += "--target-dir"
-    args += new File(buildDir, "rust")
-    args += "--target"
-    args += "wasm32-unknown-unknown"
-}
-
-task buildGlrsPkg(type: Exec) {
-    def pkgname = 'glrs@latest'
-    def pkgdir = new File(kotlinNodeJs.rootPackageDir, pkgname)   
-    def rustBuildDir = new File(buildDir, "rust")
-    def targetDir = new File(rustBuildDir, "wasm32-unknown-unknown")
-    def wasmDir = new File(targetDir, "debug")
-    def wasmPath = new File(wasmDir, "glrs.wasm")
-    executable = new File(rustBinDir, 'wasm-bindgen')
-    args += "--out-dir"
-    args += pkgdir
-    args += "--target"
-    args += "web-bundler"
-    args += wasmPath
-
-    doLast {
-        new File(pkgdir, 'package.json').text = """{
-    "name": "glrs",
-    "version": "0.1.0",
-    "main": "glrs.js", 
-    "files": ["glrsd.ts", "glrs_bg.d.ts", "glrs_bg.wasm"]
-}
-"""
-    }
-}
-
-buildGlrsPkg.dependsOn buildGlrsLib
-buildGlrsPkg.dependsOn installWasmBindGen
-
-
-task glrsBuild {
-    finalizedBy buildGlrsPkg
-}
-
-kotlinNpmInstall.dependsOn glrsBuild
-
-
-task msgfmts {
-    def srcDir = file("${projectDir}/src/i18n")
-    def targetDir = "${projectDir}/i18n"
-
-    def col = layout.files { srcDir.listFiles() }
-    
-    col = col.filter { 
-        def res = it.name != 'messages.po'
-        if (res) {
-            res = it.name.endsWith('.po')
-        }
-        res
-    }
-     
-    doLast {
-        col.each { 
-            def nameWithExt = it.name
-            def name = nameWithExt.substring(0,
-                nameWithExt.length() - '.po'.length()) 
-            def destDir = new File(new File(targetDir, name), 'LC_MESSAGES')
-            mkdir destDir
-            def srcPath = it
-
-            exec {
-                executable 'msgfmt'
-                args += '-o'
-                args += new File(destDir, 'messages.mo')
-                args += srcPath
+        jsTest {
+            dependencies {
+                implementation kotlin('test-js')
             }
         }
     }
 }
 
-
-build.dependsOn msgfmts
-
-task cleanMsgfmts(type: Delete) {
-    delete "${projectDir}/i18n"
-}
-clean.dependsOn cleanMsgfmts
-
-task createFigureForDoc(type: JavaExec) {
-    def target = kotlin.targets.jvm
-    def compilation = target.compilations.main
-
-
-    classpath = files(compilation.runtimeDependencyFiles,
-        compilation.output.allOutputs)
-    
-    // def target = kotlin.target.jvm
-    // classpath = target.compilations.main.runtimeDependencyFiles
-    main = 'net.ocsoft.gen.img.SvgKt'
-    args = ['-f', 'imgen.json' ]
-}
-
-task resolveEllipseCenter(type: JavaExec) {
-    def target = kotlin.targets.jvm
-    def compilation = target.compilations.main
-
-    classpath = files(compilation.runtimeDependencyFiles,
-        compilation.output.allOutputs)
-    
-    args = ['-f', 'elli-param-1.json' ]
-    main = 'net.ocsoft.geom.EllipseCenterKt'
+signing {
+    useGpgCmd()
+    sign publishing.publications.jvm
+    sign publishing.publications.js
 }
 
 
-task webpackDeploy(type: Copy) {
-    def distDir = null
-    distDir = jsBrowserDistributeResources.destinationDir
-    if (webAppPkg?.trim()) {
-        distDir = new File(distDir, webAppPkg)
-    }
-
-    from distDir
-    exclude '**/*.php'
-    into projectDir
-    // todo: you need to have a switch whether development or prduction
-    // jsBrowserProductionWebpack.mode
-    if (true) {
-        // include '**/*.js.map'
+tasks.withType(org.jetbrains.dokka.gradle.DokkaTask).configureEach {
+    dokkaSourceSets {
+        configureEach {
+            includes.from 'Module.md'
+        }
     }
 }
 
-build.dependsOn entryLessCompile 
 
-jsMainClasses.dependsOn webpackDeploy
+task(dokkaHtmlJar, type: Jar) {
+    dependsOn dokkaHtml
+    from dokkaHtml.outputDirectory
+    archiveClassifier = 'javadoc'
+}
 
 
-task deployResources0(type: Copy) {
-    def distDir = jsBrowserDistributeResources.destinationDir
-   
-    if (webAppPkg?.trim()) {
-        distDir = new File(distDir, webAppPkg)
+publishing {
+    repositories {
+        maven {
+            name = 'snapshots'
+            url = 'https://oss.sonatype.org/content/repositories/snapshots'
+            credentials {
+                username = project.property('sonatype.username')
+                password = project.property('sonatype.password')
+            }
+        }
+        maven {
+            name = 'release'
+            url =
+                'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+            credentials {
+                username = project.property('sonatype.username')
+                password = project.property('sonatype.password')
+            }
+        }
     }
+    publications {
 
-    from jsProcessResources.destinationDir
-    into new File(distDir, webDir)
-}
+        js {
+            setupPom(pom)
+            pom.name = "${project.name}-js"
+            artifact dokkaHtmlJar
+        }
+        jvm {
+            setupPom(pom)
+            pom.name = "${project.name}-jvm"
+            artifact dokkaHtmlJar
+        }
 
-webpackDeploy.dependsOn deployResources0
-
-task deployResources1(type: Copy) {
-    def distDir = jsBrowserDistributeResources.destinationDir
-    def pkgname = 'glrs@latest'
-    def src = new File(
-        new File(kotlinNodeJs.rootPackageDir, pkgname),
-        "glrs_bg.wasm")
-    if (webAppPkg?.trim()) {
-        distDir = new File(distDir, webAppPkg)
-    }
-
-    from  src
-    into new File(distDir, webDir)
-}
-
-webpackDeploy.dependsOn deployResources1
-
-task cleanWebpackDeploy(type: Delete) {
-    delete webDir 
-    delete siteDir
-    delete new File(projectDir, 'css')
-}
-clean.dependsOn cleanWebpackDeploy
-
-webpackDeploy.dependsOn cleanWebpackDeploy
-
-task webpackViewDeploy(type: Copy) {
-    def distDir = null
-    distDir = jsBrowserDistributeResources.destinationDir
-
-    from distDir
-    include '*.php'
-    into new File(projectDir, 'template')
+    } 
 }
 
 
-
-jsMainClasses.dependsOn webpackViewDeploy
-
-task cleanWebpackViewDeploy(type: Delete) {
-    delete "${projectDir}/template/entry.php"
-}
-clean.dependsOn cleanWebpackViewDeploy
-
-//task webpackCssDeploy(type: Copy) {
-//    def distDir = null
-//    distDir = jsBrowserDistributeResources.destinationDir
-//    from distDir
-//    include 'css/**/*.css'
-//    into projectDir
-//}
-
-//task jsDeployResources(type: Copy) {
-//    def target = kotlin.targets.js
-//    def compilation = target.compilations.main
-//
-//    includeEmptyDirs false
-//    from compilation.output.resourcesDir
-//    into "${webDir}/mswp"
-//}
-
-
-
-
-// jsMainClasses.dependsOn webpackCssDeploy
-// jsMainClasses.dependsOn jsDeployResources
-
-createFigureForDoc.description = 'generate figure for document' 
-createFigureForDoc.group = 'Documentation'
-createFigureForDoc.dependsOn jvmJar
-
-resolveEllipseCenter.description = 'resolve ellipse center from two points on ellipse.'
-resolveEllipseCenter.group = 'Calculation'
-resolveEllipseCenter.dependsOn jvmJar
 
 /* vi: se ts=4 sw=4 et: */
