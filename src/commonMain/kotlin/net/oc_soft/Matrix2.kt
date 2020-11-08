@@ -81,7 +81,24 @@ class Matrix2(
             components[1][1] = value
         }
 
-  
+    /**
+     * row size
+     */
+    val rowSize: Int = 2
+       
+
+    /**
+     * column size
+     */
+    val columnSize: Int = 2
+
+    /**
+     * constructor
+     */
+    constructor(m00: Int, m01: Int, m10: Int, m11: Int):
+        this(m00.toDouble(), m01.toDouble(), m10.toDouble(), m11.toDouble()) {
+    }
+ 
     /**
      * indexed operator
      */
@@ -123,13 +140,6 @@ class Matrix2(
      * mulitiply vector
      */
     operator fun times(vector: DoubleArray): DoubleArray {
-        // var v1 = 0.0 
-        // var v2 = 0.0
-        // val otherMat = Matrix2(v1, 0, v2, 1)
-        // val resMat = this * otherMat
-        // val result = doubleArrayOf(
-        //    resMat[0, 0],
-        //    resMat[1, 0])
         val srcVec = DoubleArray(2) {
             var cmp = 0.0
             if (vector.size > it) {
@@ -157,12 +167,11 @@ class Matrix2(
         return result
     }
 
-
     /**
      * cofactor
      */
     fun cofactor(rowIdx: Int, colIdx: Int): Double {
-        val sign = -1f.pow(rowIdx + colIdx)
+        val sign = (-1f).pow(rowIdx + colIdx)
         val result = sign * this[(rowIdx + 1) % 2, (colIdx + 1) % 2] 
         return result
     }
@@ -171,9 +180,9 @@ class Matrix2(
      * determinant
      */
     fun determinant(): Double {
-        var result = 0.toDouble() 
+        var result = 0.0
         for (i in 0..1) {
-            result += cofactor(0, i)
+            result += cofactor(0, i) * this[0, i]
         }
         return result
     }
@@ -191,6 +200,40 @@ class Matrix2(
         }
         return result
     }
+    /**
+     * calculate hash code
+     */
+    override fun hashCode(): Int {
+        var result = 0
+        
+        for (r in 0 until rowSize) {
+            for (c in 0 until columnSize) {
+                result = result xor this[r, c].roundToInt() 
+            }
+        }
+
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        var result = this === other
+        if (!result) {
+            result = other is Matrix2
+            if (result) {
+                val otherMat: Matrix2 = other as Matrix2
+                rowLoop@
+                for (r in 0 until rowSize) {
+                    for (c in 0 until columnSize) {
+                        result = this[r, c] == otherMat[r, c]
+                        if (!result) {
+                            break@rowLoop     
+                        }
+                    }
+                }
+            }
+        }
+        return result
+    }
 
 
     /**
@@ -205,3 +248,4 @@ class Matrix2(
         return fields.joinToString()
     }
 }
+// vi: se ts=4 sw=4 et:

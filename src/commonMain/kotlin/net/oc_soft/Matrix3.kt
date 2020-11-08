@@ -133,6 +133,24 @@ class Matrix3(
         }
 
     /**
+     * constructor
+     */
+    constructor(
+        m00: Int,
+        m01: Int,
+        m02: Int,
+        m10: Int,
+        m11: Int,
+        m12: Int,
+        m20: Int,
+        m21: Int,
+        m22: Int):
+            this(m00.toDouble(), m01.toDouble(), m02.toDouble(),
+                m10.toDouble(), m11.toDouble(), m12.toDouble(),
+                m20.toDouble(), m21.toDouble(), m22.toDouble()) 
+    
+
+    /**
      * indexed operator
      */
     operator fun get(rowIndex: Int, colIndex: Int): Double {
@@ -164,6 +182,26 @@ class Matrix3(
         return result
     }
 
+
+    /**
+     * multiply vector and get vector
+     */
+    operator fun times(vec: DoubleArray): DoubleArray {
+        val result = DoubleArray(3)
+        val vec0 = DoubleArray(3) {
+            if (it < vec.size) { vec[it] } else { 0.0 }
+        }
+        
+        for (ridx in 0 until 3) {
+            var comp = 0.0
+            for (cidx in 0 until 3) {
+                comp += this[ridx, cidx] * vec0[cidx]
+            }
+            result[ridx] = comp
+        }
+        return result
+    }
+
     /**
      * cofactor matrix
      */
@@ -190,7 +228,7 @@ class Matrix3(
      * cofactor
      */
     fun cofactor(rowIdx: Int, colIndex: Int): Double {
-        val sign = -1f.pow(rowIdx + colIndex)
+        val sign = (-1f).pow(rowIdx + colIndex)
         val det2 = cofactorMatrix(rowIdx, colIndex).determinant() 
         val result = sign * det2
         return result
@@ -202,7 +240,7 @@ class Matrix3(
     fun determinant(): Double {
         var result = 0.0
         for (i in 0..2) {
-            result += cofactor(0, i)
+            result += this[0, i] * cofactor(0, i) 
         }            
         return result
     }
@@ -227,7 +265,43 @@ class Matrix3(
                 cofactor(2, 2) / det)
                   
         }
-
         return result
     }
+
+
+    override fun hashCode(): Int {
+        var result = 0 
+        for (ridx in 0 until 3) {
+            for (cidx in 0 until 3) {
+                result = result xor this[ridx, cidx].roundToInt()
+            }
+        }
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        var result = this === other
+        if (!result) {
+            result = other is Matrix3
+            if (result) {
+                val otherMat: Matrix3 = other as Matrix3
+                for (ridx in 0 until 3) {
+                    for (cidx in 0 until 3) {
+                        result = this[ridx, cidx] == otherMat[ridx, cidx]
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    override fun toString(): String {
+        val fields = Array<String>(9) {
+            val rowIdx = it / 3 
+            val colIdx = it % 3
+            "m${rowIdx}${colIdx} : ${this[rowIdx, colIdx]}"
+        }
+        return fields.joinToString()   
+    }
 }
+// vi: se ts=4 sw=4 et:
