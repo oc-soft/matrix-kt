@@ -49,7 +49,7 @@ class Matrix3Test {
         val mat0 = Matrix3(0, -3, -2, 1, -4, -2, -3, 4, 1)
         val mat0Inv = mat0.inverse()
         assertNotNull(mat0Inv)
-        val matE = mat0 * mat0Inv!!
+        val matE = mat0 * mat0Inv
         val testValues = arrayOf(
             matE.m00 - 1.0,
             matE.m01,
